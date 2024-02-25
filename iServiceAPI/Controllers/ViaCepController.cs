@@ -1,7 +1,4 @@
-﻿using iServiceRepositories.Models.Auth;
-using iServiceServices.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using iServiceServices.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace iServiceAPI.Controllers
