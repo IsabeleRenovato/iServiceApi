@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using iServiceRepositories.Models;
-using iServiceRepositories.Models.Auth;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 
@@ -19,80 +18,43 @@ namespace iServiceRepositories.Repositories
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public List<(User, UserRole)> GetAll()
+        public User Login(string email, string password)
         {
             try
             {
-                using (MySqlConnection connection = _connectionSingleton.GetConnection())
+                using (var connection = _connectionSingleton.GetConnection())
                 {
-                    var query = "SELECT * FROM User U INNER JOIN UserRole UR ON U.UserRoleID = UR.UserRoleID;";
-                    var result = connection.Query<User, UserRole, (User, UserRole)>(
-                        query,
-                        (user, role) =>
-                        {
-                            return (user, role);
-                        },
-                        splitOn: "UserRoleID"
-                    ).ToList();
+                    var query = @"SELECT * FROM User WHERE Email = @Email;";
 
-                    return result;
-                }
-            }
-            catch (Exception)
-            {
+                    var user = connection.QuerySingleOrDefault<User>(query, new { Email = email });
 
-                throw;
-            }
-            finally
-            {
-                _connectionSingleton.CloseConnection();
-            }
-        }
+                    if (user != null && BCrypt.Net.BCrypt.Verify(password, user.Password))
+                    {
+                        return user;
+                    }
 
-        public (User User, UserRole UserRole) Get(string email, string password)
-        {
-            try
-            {
-                using (MySqlConnection connection = _connectionSingleton.GetConnection())
-                {
-                    var query = @"SELECT 
-                                    *
-                                  FROM User U 
-                                  INNER JOIN UserRole UR 
-                                        ON U.UserRoleID = UR.UserRoleID";
-
-                    var response = connection.Query<User, UserRole, (User User, UserRole UserRole)>(
-                        query,
-                        (user, role) =>
-                        {
-                            return (user, role);
-                        },
-                        splitOn: "UserRoleID"
-                    ).ToList();
-
-                    return response
-                        .FirstOrDefault(x =>
-                            x.User.Email.Equals(email, StringComparison.OrdinalIgnoreCase) // Considerando case-insensitive
-                            && x.User.Password == password); // Certifique-se de que a senha está sendo tratada de forma segura
+                    return null;
                 }
             }
             catch (Exception ex)
             {
-                // Aqui você pode adicionar algum log sobre a exceção
-                throw;
+                throw new Exception("Ocorreu um erro ao tentar fazer login.", ex);
             }
         }
 
-        public bool Insert(PreRegister model)
+        public User Insert(User model)
         {
             try
             {
+                model.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
+
                 using (MySqlConnection connection = _connectionSingleton.GetConnection())
                 {
                     var query = @"INSERT INTO User (UserRoleID, Email, Password, Name) 
-                              VALUES (@UserRoleID, @Email, @Password, @Name)";
+                          VALUES (@UserRoleID, @Email, @Password, @Name);
+                          SELECT * FROM User WHERE UserID = LAST_INSERT_ID();";
 
-                    int rowsAffected = connection.Execute(query, new
+                    model = connection.QuerySingle<User>(query, new
                     {
                         model.UserRoleID,
                         model.Email,
@@ -100,7 +62,7 @@ namespace iServiceRepositories.Repositories
                         model.Name
                     });
 
-                    return rowsAffected > 0;
+                    return model;
                 }
             }
             catch (Exception ex)
@@ -133,6 +95,27 @@ namespace iServiceRepositories.Repositories
                     ).FirstOrDefault();
 
                     return response;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Aqui você pode adicionar algum log sobre a exceção
+                throw;
+            }
+        }
+
+        public bool CheckUser(string email)
+        {
+            try
+            {
+                using (MySqlConnection connection = _connectionSingleton.GetConnection())
+                {
+                    var query = @$"SELECT 
+                                       COUNT(*)
+                                   FROM User
+                                   WHERE Email = @email;";
+
+                    return connection.QuerySingle<bool>(query, new { email });
                 }
             }
             catch (Exception ex)
