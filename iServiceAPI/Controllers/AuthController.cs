@@ -1,4 +1,5 @@
-﻿using iServiceRepositories.Models.Auth;
+﻿using iServiceRepositories.Models;
+using iServiceRepositories.Models.Auth;
 using iServiceServices.Models.Auth;
 using iServiceServices.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -19,69 +20,88 @@ namespace iServiceAPI.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<ActionResult<dynamic>> LoginAsync([FromBody] Login model)
+        public async Task<ActionResult<UserInfo>> LoginAsync([FromBody] Login model)
         {
-            var auth = new AuthService(_configuration).Get(model);
-
-            if (auth.User == null || auth.UserRole == null)
+            if (!ModelState.IsValid)
             {
-                return NotFound(new 
-                { 
-                    message = "Usuário ou senha inválidos" 
-                });
+                return BadRequest(ModelState);
             }
 
-            var token = TokenService.GenerateToken((auth.User, auth.UserRole));
-
-            auth.User.Password = "";
-
-            return Ok(new
+            try
             {
-                auth.User,
-                auth.UserRole,
-                Token = token
-            });
+                var result = new AuthService(_configuration).Login(model);
+                result.Value.Token = TokenService.GenerateToken((result.Value.User, result.Value.UserRole));
+
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Value);
+                }
+                else
+                {
+                    return BadRequest(new { message = result.ErrorMessage });
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Ocorreu um erro inesperado.");
+            }
         }
 
         [HttpPost]
         [Route("preregister")]
-        public async Task<ActionResult<dynamic>> PreRegisterAsync([FromBody] PreRegister model)
+        public async Task<ActionResult<UserInfo>> PreRegisterAsync([FromBody] PreRegister model)
         {
-            var auth = new AuthService(_configuration).PreRegister(model);
-
-            auth.User.Password = "";
-
-            return Ok(new
+            if (!ModelState.IsValid)
             {
-                auth.User,
-                auth.UserRole
-            });
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var result = new AuthService(_configuration).PreRegister(model);
+
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Value);
+                }
+                else
+                {
+                    return BadRequest(new { message = result.ErrorMessage });
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Ocorreu um erro inesperado.");
+            }
         }
 
         [HttpPost]
         [Route("register")]
-        public async Task<ActionResult<dynamic>> RegisterAsync([FromBody] Register model)
+        public async Task<ActionResult<UserInfo>> RegisterAsync([FromBody] Register model)
         {
-            var auth = new AuthService(_configuration).Register(model);
 
-            if (auth.User == null)
+            if (!ModelState.IsValid)
             {
-                return NotFound(new
-                {
-                    message = "Usuário inválido"
-                });
+                return BadRequest(ModelState);
             }
 
-            auth.User.Password = "";
-
-            return Ok(new
+            try
             {
-                auth.User,
-                auth.UserRole,
-                auth.ClientProfile,
-                auth.EstablishmentProfile,
-                auth.Adress
-            });
+                var result = new AuthService(_configuration).Register(model);
+
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Value);
+                }
+                else
+                {
+                    return BadRequest(new { message = result.ErrorMessage });
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Ocorreu um erro inesperado.");
+            }
         }
 
         [HttpGet]
