@@ -1,4 +1,6 @@
-﻿namespace iServiceServices.Models.Auth
+﻿using iServiceRepositories.Models;
+
+namespace iServiceServices.Models.Auth
 {
     public class Register
     {
