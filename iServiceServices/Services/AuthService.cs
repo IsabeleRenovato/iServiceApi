@@ -27,7 +27,7 @@ namespace iServiceServices.Services
                 {
                     UserRoleID = model.UserRoleID,
                     Email = model.Email,
-                    Password = model.Password,
+                    Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
                     Name = model.Name,
                 });
 
@@ -114,10 +114,76 @@ namespace iServiceServices.Services
 
         public Result<UserInfo> Login(Login model)
         {
-            var userInfo = new UserInfo();
-            userInfo.User = new UserRepository(_configuration).Login(model.Email, model.Password);
+            try
+            {
+                var user = new UserRepository(_configuration).Login(model.Email, model.Password);
+                if (user?.UserID == null || !BCrypt.Net.BCrypt.Verify(model.Password, user?.Password))
+                {
+                    return Result<UserInfo>.Failure("Email ou senha incorretos.");
+                }
 
-            return Result<UserInfo>.Failure("Usuário não cadastrado.");
+                var userRole = new UserRoleRepository(_configuration).Get(user.UserRoleID);
+                if (userRole?.UserRoleID == null)
+                {
+                    return Result<UserInfo>.Failure("Falha ao realizar o login do usuário. (UserRole)");
+                }
+
+                var profileResult = LoadUserProfile(user.UserRoleID, user.UserID.GetValueOrDefault());
+                if (!profileResult.IsSuccess)
+                {
+                    return Result<UserInfo>.Failure(profileResult.ErrorMessage);
+                }
+
+                var userInfo = new UserInfo
+                {
+                    User = user,
+                    UserRole = userRole,
+                    EstablishmentProfile = profileResult.Value.EstablishmentProfile,
+                    ClientProfile = profileResult.Value.ClientProfile,
+                    Address = profileResult.Value.Address
+                };
+
+                return Result<UserInfo>.Success(userInfo);
+            }
+            catch (Exception ex)
+            {
+                return Result<UserInfo>.Failure($"Falha ao realizar o login do usuário: {ex.Message}");
+            }
+        }
+
+        private Result<UserInfo> LoadUserProfile(int userRoleId, int userId)
+        {
+            var userInfo = new UserInfo();
+
+            switch (userRoleId)
+            {
+                case 1:
+                    var establishmentProfile = new EstablishmentRepository(_configuration).Get(userId);
+                    if (establishmentProfile?.EstablishmentProfileID == null)
+                    {
+                        return Result<UserInfo>.Failure("Falha ao realizar o login do usuário. (EstablishmentProfile)");
+                    }
+                    userInfo.EstablishmentProfile = establishmentProfile;
+                    break;
+                case 2:
+                    var clientProfile = new ClientRepository(_configuration).Get(userId);
+                    if (clientProfile?.ClientProfileID == null)
+                    {
+                        return Result<UserInfo>.Failure("Falha ao realizar o login do usuário. (ClientProfile)");
+                    }
+                    userInfo.ClientProfile = clientProfile;
+                    break;
+                default:
+                    return Result<UserInfo>.Failure("Tipo de usuário desconhecido.");
+            }
+
+            userInfo.Address = new AddressRepository(_configuration).Get(userInfo.EstablishmentProfile?.AddressID ?? userInfo.ClientProfile?.AddressID ?? 0);
+            if (userInfo.Address?.AddressID == null)
+            {
+                return Result<UserInfo>.Failure("Falha ao realizar o login do usuário. (Address)");
+            }
+
+            return Result<UserInfo>.Success(userInfo);
         }
     }
 }
