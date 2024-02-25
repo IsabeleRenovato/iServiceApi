@@ -30,10 +30,10 @@ namespace iServiceAPI.Controllers
             try
             {
                 var result = new AuthService(_configuration).Login(model);
-                result.Value.Token = TokenService.GenerateToken((result.Value.User, result.Value.UserRole));
-
+               
                 if (result.IsSuccess)
                 {
+                    result.Value.Token = TokenService.GenerateToken((result.Value.User, result.Value.UserRole));
                     return Ok(result.Value);
                 }
                 else
