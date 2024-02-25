@@ -26,7 +26,7 @@ namespace iServiceRepositories.Repositories
                 {
                     var query = @"SELECT * FROM UserRole WHERE UserRoleId = @userRoleId";
 
-                    return connection.QuerySingle<UserRole>(query, new { userRoleId });
+                    return connection.QuerySingleOrDefault<UserRole>(query, new { userRoleId });
                 }
             }
             catch (Exception ex)

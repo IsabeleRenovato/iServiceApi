@@ -26,14 +26,7 @@ namespace iServiceRepositories.Repositories
                 {
                     var query = @"SELECT * FROM User WHERE Email = @Email;";
 
-                    var user = connection.QuerySingleOrDefault<User>(query, new { Email = email });
-
-                    if (user != null && BCrypt.Net.BCrypt.Verify(password, user.Password))
-                    {
-                        return user;
-                    }
-
-                    return null;
+                    return connection.QuerySingleOrDefault<User>(query, new { Email = email });
                 }
             }
             catch (Exception ex)
@@ -46,8 +39,6 @@ namespace iServiceRepositories.Repositories
         {
             try
             {
-                model.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
-
                 using (MySqlConnection connection = _connectionSingleton.GetConnection())
                 {
                     var query = @"INSERT INTO User (UserRoleID, Email, Password, Name) 

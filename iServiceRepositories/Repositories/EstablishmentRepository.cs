@@ -18,6 +18,23 @@ namespace iServiceRepositories.Repositories
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
+        public EstablishmentProfile Get(int? userId)
+        {
+            try
+            {
+                using (MySqlConnection connection = _connectionSingleton.GetConnection())
+                {
+                    var query = @"SELECT * FROM EstablishmentProfile WHERE UserId = @userId";
+
+                    return connection.QuerySingleOrDefault<EstablishmentProfile>(query, new { userId });
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
         public EstablishmentProfile Insert(EstablishmentProfile model)
         {
             try
