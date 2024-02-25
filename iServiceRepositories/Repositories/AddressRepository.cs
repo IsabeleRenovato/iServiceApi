@@ -18,6 +18,23 @@ namespace iServiceRepositories.Repositories
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
+        public Address Get(int? addressId)
+        {
+            try
+            {
+                using (MySqlConnection connection = _connectionSingleton.GetConnection())
+                {
+                    var query = @"SELECT * FROM Address WHERE AddressId = @addressId";
+
+                    return connection.QuerySingleOrDefault<Address>(query, new { addressId });
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
         public Address Insert(Address model)
         {
             try

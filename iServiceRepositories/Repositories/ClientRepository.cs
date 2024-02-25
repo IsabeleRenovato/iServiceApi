@@ -18,6 +18,23 @@ namespace iServiceRepositories.Repositories
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
+        public ClientProfile Get(int? userId)
+        {
+            try
+            {
+                using (MySqlConnection connection = _connectionSingleton.GetConnection())
+                {
+                    var query = @"SELECT * FROM ClientProfile WHERE UserId = @userId";
+
+                    return connection.QuerySingleOrDefault<ClientProfile>(query, new { userId });
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
         public ClientProfile Insert(ClientProfile model)
         {
             try
@@ -28,7 +45,7 @@ namespace iServiceRepositories.Repositories
                                     VALUES (@UserID, @CPF, @DateOfBirth, @Phone, @AddressID, @ProfilePicture);
                                     SELECT * FROM ClientProfile WHERE ClientProfileId = LAST_INSERT_ID();";
 
-                    model = connection.QuerySingle<ClientProfile>(insertQuery, new
+                    model = connection.QuerySingleOrDefault<ClientProfile>(insertQuery, new
                     {
                         model.UserID,
                         model.CPF,
