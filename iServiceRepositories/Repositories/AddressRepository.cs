@@ -1,7 +1,7 @@
 ﻿using Dapper;
-using iServiceRepositories.Models;
+using iServiceRepositories.Repositories.Models;
+using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
-using MySql.Data.MySqlClient;
 
 namespace iServiceRepositories.Repositories
 {
@@ -18,56 +18,46 @@ namespace iServiceRepositories.Repositories
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public Address Get(int? addressId)
+        public List<Address> Get()
         {
-            try
+            using (var connection = _connectionSingleton.GetConnection())
             {
-                using (MySqlConnection connection = _connectionSingleton.GetConnection())
-                {
-                    var query = @"SELECT * FROM Address WHERE AddressId = @addressId";
-
-                    return connection.QuerySingleOrDefault<Address>(query, new { addressId });
-                }
-            }
-            catch (Exception ex)
-            {
-                throw;
+                return connection.Query<Address>("SELECT AddressID, Street, Number, AdditionalInfo, City, State, Country, PostalCode, CreationDate, LastUpdateDate FROM Address").AsList();
             }
         }
 
-        public Address Insert(Address model)
+        public Address GetById(int addressId)
         {
-            try
+            using (var connection = _connectionSingleton.GetConnection())
             {
-                using (MySqlConnection connection = _connectionSingleton.GetConnection())
-                {
-                    var query = @"INSERT INTO Address (Street, Number, AdditionalInfo, City, State, Country, PostalCode)
-                              VALUES (@Street, @Number, @AdditionalInfo, @City, @State, @Country, @PostalCode);
-                              SELECT LAST_INSERT_ID();";
-
-                    // Executando a inserção e capturando o último ID inserido
-                    var id = connection.QuerySingle<int>(query, new
-                    {
-                        model.Street,
-                        model.Number,
-                        model.AdditionalInfo,
-                        model.City,
-                        model.State,
-                        model.Country,
-                        model.PostalCode
-                    });
-
-                    // Configurando o ID no modelo
-                    model.AddressID = id;
-
-                    // Retornando o modelo atualizado com o ID
-                    return model;
-                }
+                return connection.QueryFirstOrDefault<Address>("SELECT AddressID, Street, Number, AdditionalInfo, City, State, Country, PostalCode, CreationDate, LastUpdateDate FROM Address WHERE AddressID = @AddressID", new { AddressID = addressId });
             }
-            catch (Exception ex)
+        }
+
+        public Address Insert(AddressModel addressModel)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
             {
-                // Aqui você pode adicionar algum log sobre a exceção
-                throw;
+                var id = connection.QuerySingle<int>("INSERT INTO Address (Street, Number, AdditionalInfo, City, State, Country, PostalCode) VALUES (@Street, @Number, @AdditionalInfo, @City, @State, @Country, @PostalCode); SELECT LAST_INSERT_ID();", addressModel);
+                return GetById(id);
+            }
+        }
+
+        public Address Update(Address address)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                connection.Execute("UPDATE Address SET Street = @Street, Number = @Number, AdditionalInfo = @AdditionalInfo, City = @City, State = @State, Country = @Country, PostalCode = @PostalCode, LastUpdateDate = NOW() WHERE AddressID = @AddressID", address);
+                return GetById(address.AddressID);
+            }
+        }
+
+        public bool Delete(int addressId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                int affectedRows = connection.Execute("DELETE FROM Address WHERE AddressID = @AddressID", new { AddressID = addressId });
+                return affectedRows > 0;
             }
         }
     }

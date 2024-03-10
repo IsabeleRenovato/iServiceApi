@@ -1,4 +1,4 @@
-﻿namespace iServiceRepositories.Models.Auth
+﻿namespace iServiceServices.Services.Models.Auth
 {
     public class PreRegister
     {
