@@ -1,4 +1,4 @@
-using iServiceServices.Models;
+using iServiceServices.Services.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;

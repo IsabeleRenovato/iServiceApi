@@ -1,6 +1,8 @@
-﻿using iServiceRepositories.Models;
-using iServiceRepositories.Models.Auth;
-using iServiceRepositories.Repositories;
+﻿using iServiceRepositories.Repositories;
+using iServiceRepositories.Repositories.Models;
+using iServiceRepositories.Repositories.Models.Request;
+using iServiceServices.Services.Models;
+using iServiceServices.Services.Models.Auth;
 using Microsoft.Extensions.Configuration;
 
 namespace iServiceServices.Services
@@ -16,14 +18,16 @@ namespace iServiceServices.Services
 
         public Result<UserInfo> PreRegister(PreRegister model)
         {
-            if (new UserRepository(_configuration).CheckUser(model.Email))
+            var userCheck = new UserRepository(_configuration).GetByEmail(model.Email);
+
+            if (userCheck != null)
             {
                 return Result<UserInfo>.Failure("Usuário já cadastrado.");
             }
 
             try
             {
-                var user = new UserRepository(_configuration).Insert(new User
+                var user = new UserRepository(_configuration).Insert(new UserModel
                 {
                     UserRoleID = model.UserRoleID,
                     Email = model.Email,
@@ -31,7 +35,7 @@ namespace iServiceServices.Services
                     Name = model.Name,
                 });
 
-                var userRole = new UserRoleRepository(_configuration).Get(model.UserRoleID);
+                var userRole = new UserRoleRepository(_configuration).GetById(model.UserRoleID);
 
                 return Result<UserInfo>.Success(new UserInfo
                 {
@@ -47,16 +51,23 @@ namespace iServiceServices.Services
 
         public Result<UserInfo> Register(Models.Auth.Register model)
         {
-            var auth = new UserRepository(_configuration).GetUser(model.UserId);
-
-            if (auth.User == null)
+            var user = new UserRepository(_configuration).GetById(model.UserId);
+            
+            if (user == null)
             {
                 return Result<UserInfo>.Failure("Usuário não cadastrado.");
             }
 
+            var userRole = new UserRoleRepository(_configuration).GetById(user.UserRoleID);
+
+            if (userRole == null)
+            {
+                return Result<UserInfo>.Failure("Falha ao buscar os dados do usuário.");
+            }
+
             try
             {
-                var address = new AddressRepository(_configuration).Insert(new Address
+                var address = new AddressRepository(_configuration).Insert(new AddressModel
                 {
                     Street = model.Address.Street,
                     Number = model.Address.Number,
@@ -70,39 +81,44 @@ namespace iServiceServices.Services
                 var clientProfile = new ClientProfile();
                 var establishmentProfile = new EstablishmentProfile();
 
-                if (string.IsNullOrEmpty(model?.Client?.CPF))
+                if (model.EstablishmentProfile != null)
                 {
-                    establishmentProfile = new EstablishmentRepository(_configuration).Insert(new EstablishmentProfile
+                    establishmentProfile = new EstablishmentProfileRepository(_configuration).Insert(new EstablishmentProfileModel
                     {
                         UserID = model.UserId,
-                        CNPJ = model.Establishment.CNPJ,
-                        CommercialName = model.Establishment.CommercialName,
-                        AddressID = address.AddressID.GetValueOrDefault(),
-                        Description = model.Establishment.Description,
-                        CommercialPhone = model.Establishment.CommercialPhone,
-                        CommercialEmail = model.Establishment.CommercialEmail,
+                        CNPJ = model.EstablishmentProfile.CNPJ,
+                        CommercialName = model.EstablishmentProfile.CommercialName,
+                        EstablishmentCategoryID = model.EstablishmentProfile.EstablishmentCategoryID,
+                        AddressID = address.AddressID,
+                        Description = model.EstablishmentProfile.Description,
+                        CommercialPhone = model.EstablishmentProfile.CommercialPhone,
+                        CommercialEmail = model.EstablishmentProfile.CommercialEmail,
                         Logo = new byte[0]
+                    });
+                }
+                else if (model.ClientProfile != null)
+                {
+                    clientProfile = new ClientProfileRepository(_configuration).Insert(new ClientProfileModel
+                    {
+                        UserID = model.UserId,
+                        CPF = model.ClientProfile.CPF,
+                        DateOfBirth = model.ClientProfile.DateOfBirth,
+                        Phone = model.ClientProfile.Phone,
+                        AddressID = address.AddressID,
+                        ProfilePicture = new byte[0]
                     });
                 }
                 else
                 {
-                    clientProfile = new ClientRepository(_configuration).Insert(new ClientProfile
-                    {
-                        UserID = model.UserId,
-                        CPF = model.Client.CPF,
-                        DateOfBirth = model.Client.DateOfBirth,
-                        Phone = model.Client.Phone,
-                        AddressID = address.AddressID.GetValueOrDefault(),
-                        ProfilePicture = new byte[0]
-                    });
+                    return Result<UserInfo>.Failure("Falha no registro do usuário.");
                 }
 
                 return Result<UserInfo>.Success(new UserInfo
                 {
-                    User = auth.User,
-                    UserRole = auth.UserRole,
-                    ClientProfile = clientProfile,
-                    EstablishmentProfile = establishmentProfile,
+                    User = user,
+                    UserRole = userRole,
+                    ClientProfile = clientProfile?.ClientProfileID > 0 ? clientProfile : null,
+                    EstablishmentProfile = establishmentProfile?.EstablishmentProfileID > 0 ? establishmentProfile : null,
                     Address = address
                 });
             }
@@ -116,34 +132,40 @@ namespace iServiceServices.Services
         {
             try
             {
-                var user = new UserRepository(_configuration).Login(model.Email, model.Password);
-                if (user?.UserID == null || !BCrypt.Net.BCrypt.Verify(model.Password, user?.Password))
+                var user = new UserRepository(_configuration).GetByEmail(model.Email);
+
+                if (user == null)
+                {
+                    return Result<UserInfo>.Failure("Usuário não cadastrado.");
+                }
+
+                if (!BCrypt.Net.BCrypt.Verify(model.Password, user.Password))
                 {
                     return Result<UserInfo>.Failure("Email ou senha incorretos.");
                 }
 
-                var userRole = new UserRoleRepository(_configuration).Get(user.UserRoleID);
-                if (userRole?.UserRoleID == null)
+                var userRole = new UserRoleRepository(_configuration).GetById(user.UserRoleID);
+
+                if (userRole == null)
                 {
-                    return Result<UserInfo>.Failure("Falha ao realizar o login do usuário. (UserRole)");
+                    return Result<UserInfo>.Failure("Falha ao recuperar os dados do usuário. (UserRole)");
                 }
 
-                var profileResult = LoadUserProfile(user.UserRoleID, user.UserID.GetValueOrDefault());
+                var profileResult = LoadUserProfile(user.UserID, user.UserRoleID);
+
                 if (!profileResult.IsSuccess)
                 {
                     return Result<UserInfo>.Failure(profileResult.ErrorMessage);
                 }
 
-                var userInfo = new UserInfo
+                return Result<UserInfo>.Success(new UserInfo
                 {
                     User = user,
                     UserRole = userRole,
-                    EstablishmentProfile = profileResult.Value.EstablishmentProfile,
-                    ClientProfile = profileResult.Value.ClientProfile,
+                    EstablishmentProfile = profileResult.Value.EstablishmentProfile?.EstablishmentProfileID > 0 ? profileResult.Value.EstablishmentProfile : null,
+                    ClientProfile = profileResult.Value.ClientProfile?.ClientProfileID > 0 ? profileResult.Value.ClientProfile : null,
                     Address = profileResult.Value.Address
-                };
-
-                return Result<UserInfo>.Success(userInfo);
+                });
             }
             catch (Exception ex)
             {
@@ -151,25 +173,26 @@ namespace iServiceServices.Services
             }
         }
 
-        private Result<UserInfo> LoadUserProfile(int userRoleId, int userId)
+        private Result<UserInfo> LoadUserProfile(int userId, int userRoleId)
         {
             var userInfo = new UserInfo();
 
             switch (userRoleId)
             {
                 case 1:
-                    var establishmentProfile = new EstablishmentRepository(_configuration).Get(userId);
-                    if (establishmentProfile?.EstablishmentProfileID == null)
+                    var establishmentProfile = new EstablishmentProfileRepository(_configuration).GetByUserId(userId);
+                    if (establishmentProfile == null)
                     {
-                        return Result<UserInfo>.Failure("Falha ao realizar o login do usuário. (EstablishmentProfile)");
+                        return Result<UserInfo>.Failure("Falha ao recuperar os dados do usuário. (EstablishmentProfile)");
                     }
                     userInfo.EstablishmentProfile = establishmentProfile;
                     break;
                 case 2:
-                    var clientProfile = new ClientRepository(_configuration).Get(userId);
-                    if (clientProfile?.ClientProfileID == null)
+                    var clientProfile = new ClientProfileRepository(_configuration).GetByUserId(userId);
+
+                    if (clientProfile == null)
                     {
-                        return Result<UserInfo>.Failure("Falha ao realizar o login do usuário. (ClientProfile)");
+                        return Result<UserInfo>.Failure("Falha ao recuperar os dados do usuário. (ClientProfile)");
                     }
                     userInfo.ClientProfile = clientProfile;
                     break;
@@ -177,10 +200,10 @@ namespace iServiceServices.Services
                     return Result<UserInfo>.Failure("Tipo de usuário desconhecido.");
             }
 
-            userInfo.Address = new AddressRepository(_configuration).Get(userInfo.EstablishmentProfile?.AddressID ?? userInfo.ClientProfile?.AddressID ?? 0);
-            if (userInfo.Address?.AddressID == null)
+            userInfo.Address = new AddressRepository(_configuration).GetById(userInfo.EstablishmentProfile?.AddressID ?? userInfo.ClientProfile?.AddressID ?? 0);
+            if (userInfo == null)
             {
-                return Result<UserInfo>.Failure("Falha ao realizar o login do usuário. (Address)");
+                return Result<UserInfo>.Failure("Falha ao recuperar os dados do usuário. (Address)");
             }
 
             return Result<UserInfo>.Success(userInfo);
