@@ -1,14 +1,13 @@
-﻿using iServiceRepositories.Models;
-using iServiceRepositories.Models.Auth;
-using iServiceServices.Models.Auth;
-using iServiceServices.Services;
+﻿using iServiceServices.Services;
+using iServiceServices.Services.Models;
+using iServiceServices.Services.Models.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace iServiceAPI.Controllers
 {
-    [Route("v1")]
     [ApiController]
+    [Route("[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly IConfiguration _configuration;
@@ -18,8 +17,7 @@ namespace iServiceAPI.Controllers
             _configuration = configuration;
         }
 
-        [HttpPost]
-        [Route("login")]
+        [HttpPost("login")]
         public async Task<ActionResult<UserInfo>> LoginAsync([FromBody] Login model)
         {
             if (!ModelState.IsValid)
@@ -30,7 +28,7 @@ namespace iServiceAPI.Controllers
             try
             {
                 var result = new AuthService(_configuration).Login(model);
-               
+
                 if (result.IsSuccess)
                 {
                     result.Value.Token = TokenService.GenerateToken((result.Value.User, result.Value.UserRole));
@@ -47,8 +45,7 @@ namespace iServiceAPI.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("preregister")]
+        [HttpPost("preregister")]
         public async Task<ActionResult<UserInfo>> PreRegisterAsync([FromBody] PreRegister model)
         {
             if (!ModelState.IsValid)
@@ -75,8 +72,7 @@ namespace iServiceAPI.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("register")]
+        [HttpPost("register")]
         public async Task<ActionResult<UserInfo>> RegisterAsync([FromBody] Register model)
         {
 
@@ -104,9 +100,9 @@ namespace iServiceAPI.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("admin")]
+        [HttpGet("admin")]
         [Authorize(Roles = "admin")]
         public string Employee() => "admin";
     }
+
 }

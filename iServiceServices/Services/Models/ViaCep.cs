@@ -1,4 +1,4 @@
-﻿namespace iServiceServices.Models
+﻿namespace iServiceServices.Services.Models
 {
     public class ViaCep
     {

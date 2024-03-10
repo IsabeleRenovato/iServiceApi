@@ -1,7 +1,7 @@
 ﻿using Dapper;
-using iServiceRepositories.Models;
+using iServiceRepositories.Repositories.Models;
+using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
-using MySql.Data.MySqlClient;
 
 namespace iServiceRepositories.Repositories
 {
@@ -18,101 +18,54 @@ namespace iServiceRepositories.Repositories
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public User Login(string email, string password)
+        public List<User> Get()
         {
-            try
+            using (var connection = _connectionSingleton.GetConnection())
             {
-                using (var connection = _connectionSingleton.GetConnection())
-                {
-                    var query = @"SELECT * FROM User WHERE Email = @Email;";
-
-                    return connection.QuerySingleOrDefault<User>(query, new { Email = email });
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Ocorreu um erro ao tentar fazer login.", ex);
+                return connection.Query<User>("SELECT UserID, UserRoleID, Email, Password, Name, CreationDate, LastLogin, LastUpdateDate FROM User").AsList();
             }
         }
 
-        public User Insert(User model)
+        public User GetById(int userId)
         {
-            try
+            using (var connection = _connectionSingleton.GetConnection())
             {
-                using (MySqlConnection connection = _connectionSingleton.GetConnection())
-                {
-                    var query = @"INSERT INTO User (UserRoleID, Email, Password, Name) 
-                          VALUES (@UserRoleID, @Email, @Password, @Name);
-                          SELECT * FROM User WHERE UserID = LAST_INSERT_ID();";
-
-                    model = connection.QuerySingle<User>(query, new
-                    {
-                        model.UserRoleID,
-                        model.Email,
-                        model.Password,
-                        model.Name
-                    });
-
-                    return model;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Aqui você pode adicionar algum log sobre a exceção
-                throw;
+                return connection.QueryFirstOrDefault<User>("SELECT UserID, UserRoleID, Email, Password, Name, CreationDate, LastLogin, LastUpdateDate FROM User WHERE UserID = @UserID", new { UserID = userId });
             }
         }
 
-        public (User User, UserRole UserRole) GetUser(int userId)
+        public User GetByEmail(string email)
         {
-            try
+            using (var connection = _connectionSingleton.GetConnection())
             {
-                using (MySqlConnection connection = _connectionSingleton.GetConnection())
-                {
-                    var query = @$"SELECT U.*, UR.* 
-                               FROM User U 
-                               INNER JOIN UserRole UR ON U.UserRoleID = UR.UserRoleID
-                               WHERE U.UserId = @UserId";
-
-
-                    var response = connection.Query<User, UserRole, (User User, UserRole UserRole)>(
-                        query,
-                        (user, role) =>
-                        {
-                            return (user, role);
-                        },
-                        param: new { UserId = userId },
-                        splitOn: "UserRoleID"
-                    ).FirstOrDefault();
-
-                    return response;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Aqui você pode adicionar algum log sobre a exceção
-                throw;
+                return connection.QueryFirstOrDefault<User>("SELECT UserID, UserRoleID, Email, Password, Name, CreationDate, LastLogin, LastUpdateDate FROM User WHERE Email = @Email", new { Email = email });
             }
         }
 
-        public bool CheckUser(string email)
+        public User Insert(UserModel userModel)
         {
-            try
+            using (var connection = _connectionSingleton.GetConnection())
             {
-                using (MySqlConnection connection = _connectionSingleton.GetConnection())
-                {
-                    var query = @$"SELECT 
-                                       COUNT(*)
-                                   FROM User
-                                   WHERE Email = @email;";
-
-                    return connection.QuerySingle<bool>(query, new { email });
-                }
+                var id = connection.QuerySingle<int>("INSERT INTO User (UserRoleID, Email, Password, Name) VALUES (@UserRoleID, @Email, @Password, @Name); SELECT LAST_INSERT_ID();", userModel);
+                return GetById(id);
             }
-            catch (Exception ex)
+        }
+
+        public User Update(User user)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
             {
-                // Aqui você pode adicionar algum log sobre a exceção
-                throw;
+                connection.Execute("UPDATE User SET UserRoleID = @UserRoleID, Email = @Email, Password = @Password, Name = @Name, LastUpdateDate = NOW() WHERE UserID = @UserID", user);
+                return GetById(user.UserID);
+            }
+        }
+
+        public bool Delete(int userId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                int affectedRows = connection.Execute("DELETE FROM User WHERE UserID = @UserID", new { UserID = userId });
+                return affectedRows > 0;
             }
         }
     }

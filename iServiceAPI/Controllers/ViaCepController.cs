@@ -1,37 +1,24 @@
 ﻿using iServiceServices.Services;
+using iServiceServices.Services.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace iServiceAPI.Controllers
 {
-    [Route("v1")]
     [ApiController]
+    [Route("[controller]")]
     public class ViaCepController : ControllerBase
     {
-        private readonly IConfiguration _configuration;
-
-        public ViaCepController(IConfiguration configuration)
+        [HttpGet("Search/{cep}")]
+        public async Task<ActionResult<Result<ViaCep>>> Search(string cep)
         {
-            _configuration = configuration;
-        }
+            var result = await new ViaCepService().GetByCep(cep);
 
-        [HttpGet]
-        [Route("search")]
-        public async Task<ActionResult<dynamic>> SearchAsync(string cep)
-        {
-            var response = await new ViaCepService(_configuration).Search(cep);
-
-            if (response.Cep == null)
+            if (result.IsSuccess)
             {
-                return NotFound(new
-                {
-                    message = "Endereço não encontrado!"
-                });
+                return Ok(result.Value);
             }
 
-            return Ok(new
-            {
-                Address = response
-            });
+            return BadRequest(new { message = result.ErrorMessage });
         }
     }
 }
