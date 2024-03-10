@@ -1,68 +1,71 @@
 ﻿using Dapper;
-using iServiceRepositories.Models;
+using iServiceRepositories.Repositories.Models;
+using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
-using MySql.Data.MySqlClient;
 
 namespace iServiceRepositories.Repositories
 {
-    public class EstablishmentRepository
+    public class EstablishmentProfileRepository
     {
         private readonly IConfiguration _configuration;
         private readonly string _connectionString;
         private readonly MySqlConnectionSingleton _connectionSingleton;
 
-        public EstablishmentRepository(IConfiguration configuration)
+        public EstablishmentProfileRepository(IConfiguration configuration)
         {
             _configuration = configuration;
             _connectionString = _configuration.GetConnectionString("DefaultConnection");
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public EstablishmentProfile Get(int? userId)
+        public List<EstablishmentProfile> Get()
         {
-            try
+            using (var connection = _connectionSingleton.GetConnection())
             {
-                using (MySqlConnection connection = _connectionSingleton.GetConnection())
-                {
-                    var query = @"SELECT * FROM EstablishmentProfile WHERE UserId = @userId";
-
-                    return connection.QuerySingleOrDefault<EstablishmentProfile>(query, new { userId });
-                }
-            }
-            catch (Exception ex)
-            {
-                throw;
+                return connection.Query<EstablishmentProfile>("SELECT EstablishmentProfileID, UserID, CNPJ, CommercialName, EstablishmentCategoryID, AddressID, Description, CommercialPhone, CommercialEmail, Logo, CreationDate, LastUpdateDate FROM EstablishmentProfile").AsList();
             }
         }
 
-        public EstablishmentProfile Insert(EstablishmentProfile model)
+        public EstablishmentProfile GetById(int establishmentProfileId)
         {
-            try
+            using (var connection = _connectionSingleton.GetConnection())
             {
-                using (MySqlConnection connection = _connectionSingleton.GetConnection())
-                {
-                    var query = @"INSERT INTO EstablishmentProfile (UserID, CNPJ, CommercialName, AddressID, Description, CommercialPhone, CommercialEmail, Logo) 
-                              VALUES (@UserID, @CNPJ, @CommercialName, @AddressID, @Description, @CommercialPhone, @CommercialEmail, @Logo);
-                              SELECT * FROM EstablishmentProfile WHERE EstablishmentProfileId = LAST_INSERT_ID();";
-
-                    model = connection.QuerySingle<EstablishmentProfile>(query, new
-                    {
-                        model.UserID,
-                        model.CNPJ,
-                        model.CommercialName,
-                        model.AddressID,
-                        model.Description,
-                        model.CommercialPhone,
-                        model.CommercialEmail,
-                        model.Logo
-                    });
-
-                    return model;
-                }
+                return connection.QueryFirstOrDefault<EstablishmentProfile>("SELECT EstablishmentProfileID, UserID, CNPJ, CommercialName, EstablishmentCategoryID, AddressID, Description, CommercialPhone, CommercialEmail, Logo, CreationDate, LastUpdateDate FROM EstablishmentProfile WHERE EstablishmentProfileID = @EstablishmentProfileID", new { EstablishmentProfileID = establishmentProfileId });
             }
-            catch (Exception ex)
+        }
+
+        public EstablishmentProfile GetByUserId(int userId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
             {
-                throw;
+                return connection.QueryFirstOrDefault<EstablishmentProfile>("SELECT EstablishmentProfileID, UserID, CNPJ, CommercialName, EstablishmentCategoryID, AddressID, Description, CommercialPhone, CommercialEmail, Logo, CreationDate, LastUpdateDate FROM EstablishmentProfile WHERE UserID = @UserID", new { UserID = userId });
+            }
+        }
+
+        public EstablishmentProfile Insert(EstablishmentProfileModel establishmentProfileModel)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                var id = connection.QuerySingle<int>("INSERT INTO EstablishmentProfile (UserID, CNPJ, CommercialName, EstablishmentCategoryID, AddressID, Description, CommercialPhone, CommercialEmail, Logo) VALUES (@UserID, @CNPJ, @CommercialName, @EstablishmentCategoryID, @AddressID, @Description, @CommercialPhone, @CommercialEmail, @Logo); SELECT LAST_INSERT_ID();", establishmentProfileModel);
+                return GetById(id);
+            }
+        }
+
+        public EstablishmentProfile Update(EstablishmentProfile establishmentProfile)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                connection.Execute("UPDATE EstablishmentProfile SET UserID = @UserID, CNPJ = @CNPJ, CommercialName = @CommercialName, EstablishmentCategoryID = @EstablishmentCategoryID, AddressID = @AddressID, Description = @Description, CommercialPhone = @CommercialPhone, CommercialEmail = @CommercialEmail, Logo = @Logo, LastUpdateDate = NOW() WHERE EstablishmentProfileID = @EstablishmentProfileID", establishmentProfile);
+                return GetById(establishmentProfile.EstablishmentProfileID);
+            }
+        }
+
+        public bool Delete(int establishmentProfileId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                int affectedRows = connection.Execute("DELETE FROM EstablishmentProfile WHERE EstablishmentProfileID = @EstablishmentProfileID", new { EstablishmentProfileID = establishmentProfileId });
+                return affectedRows > 0;
             }
         }
     }

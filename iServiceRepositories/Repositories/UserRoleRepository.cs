@@ -1,7 +1,7 @@
 ﻿using Dapper;
-using iServiceRepositories.Models;
+using iServiceRepositories.Repositories.Models;
+using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
-using MySql.Data.MySqlClient;
 
 namespace iServiceRepositories.Repositories
 {
@@ -18,22 +18,48 @@ namespace iServiceRepositories.Repositories
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public UserRole Get(int userRoleId)
+        public List<UserRole> Get()
         {
-            try
+            using (var connection = _connectionSingleton.GetConnection())
             {
-                using (MySqlConnection connection = _connectionSingleton.GetConnection())
-                {
-                    var query = @"SELECT * FROM UserRole WHERE UserRoleId = @userRoleId";
-
-                    return connection.QuerySingleOrDefault<UserRole>(query, new { userRoleId });
-                }
+                return connection.Query<UserRole>("SELECT UserRoleId, Role, CreationDate, LastUpdateDate FROM UserRole").AsList();
             }
-            catch (Exception ex)
+        }
+
+        public UserRole GetById(int userRoleId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
             {
-                // Aqui você pode adicionar algum log sobre a exceção
-                throw;
+                return connection.QueryFirstOrDefault<UserRole>("SELECT UserRoleId, Role, CreationDate, LastUpdateDate FROM UserRole WHERE UserRoleId = @UserRoleId", new { UserRoleId = userRoleId });
+            }
+        }
+
+        public UserRole Insert(UserRoleModel userRoleModel)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                var id = connection.QuerySingle<int>("INSERT INTO UserRole (Role) VALUES (@Role); SELECT LAST_INSERT_ID();", userRoleModel);
+                return GetById(id);
+            }
+        }
+
+        public UserRole Update(UserRole userRole)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                connection.Execute("UPDATE UserRole SET Role = @Role, LastUpdateDate = NOW() WHERE UserRoleId = @UserRoleId", userRole);
+                return GetById(userRole.UserRoleId);
+            }
+        }
+
+        public bool Delete(int userRoleId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                int affectedRows = connection.Execute("DELETE FROM UserRole WHERE UserRoleId = @UserRoleId", new { UserRoleId = userRoleId });
+                return affectedRows > 0;
             }
         }
     }
+
 }
