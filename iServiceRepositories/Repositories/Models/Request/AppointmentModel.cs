@@ -2,10 +2,11 @@
 {
     public class AppointmentModel
     {
-        public int ServiceId { get; set; }
-        public int EstablishmentProfileID { get; set; }
+        public int ServiceID { get; set; }
         public int ClientProfileID { get; set; }
-        public DateTime StartDateTime { get; set; }
-        public DateTime EndDateTime { get; set; }
+        public int EstablishmentProfileID { get; set; }
+        public int AppointmentStatusID { get; set; }
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
     }
 }

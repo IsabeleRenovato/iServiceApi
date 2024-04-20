@@ -22,7 +22,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<ClientProfile>("SELECT ClientProfileID, UserID, CPF, DateOfBirth, Phone, AddressID, ProfilePicture, CreationDate, LastUpdateDate FROM ClientProfile").AsList();
+                return connection.Query<ClientProfile>("SELECT ClientProfileID, UserID, CPF, DateOfBirth, Phone, AddressID, Photo, CreationDate, LastUpdateDate FROM ClientProfile").AsList();
             }
         }
 
@@ -30,7 +30,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<ClientProfile>("SELECT ClientProfileID, UserID, CPF, DateOfBirth, Phone, AddressID, ProfilePicture, CreationDate, LastUpdateDate FROM ClientProfile WHERE ClientProfileID = @ClientProfileID", new { ClientProfileID = clientProfileId });
+                return connection.QueryFirstOrDefault<ClientProfile>("SELECT ClientProfileID, UserID, CPF, DateOfBirth, Phone, AddressID, Photo, CreationDate, LastUpdateDate FROM ClientProfile WHERE ClientProfileID = @ClientProfileID", new { ClientProfileID = clientProfileId });
             }
         }
 
@@ -38,7 +38,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<ClientProfile>("SELECT ClientProfileID, UserID, CPF, DateOfBirth, Phone, AddressID, ProfilePicture, CreationDate, LastUpdateDate FROM ClientProfile WHERE UserID = @UserID", new { UserID = userId });
+                return connection.QueryFirstOrDefault<ClientProfile>("SELECT ClientProfileID, UserID, CPF, DateOfBirth, Phone, AddressID, Photo, CreationDate, LastUpdateDate FROM ClientProfile WHERE UserID = @UserID", new { UserID = userId });
             }
         }
 
@@ -46,7 +46,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO ClientProfile (UserID, CPF, DateOfBirth, Phone, AddressID, ProfilePicture) VALUES (@UserID, @CPF, @DateOfBirth, @Phone, @AddressID, @ProfilePicture); SELECT LAST_INSERT_ID();", clientProfileModel);
+                var id = connection.QuerySingle<int>("INSERT INTO ClientProfile (UserID, CPF, DateOfBirth, Phone, AddressID, Photo) VALUES (@UserID, @CPF, @DateOfBirth, @Phone, @AddressID, @Photo); SELECT LAST_INSERT_ID();", clientProfileModel);
                 return GetById(id);
             }
         }
@@ -55,7 +55,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE ClientProfile SET UserID = @UserID, CPF = @CPF, DateOfBirth = @DateOfBirth, Phone = @Phone, AddressID = @AddressID, ProfilePicture = @ProfilePicture, LastUpdateDate = NOW() WHERE ClientProfileID = @ClientProfileID", clientProfile);
+                connection.Execute("UPDATE ClientProfile SET UserID = @UserID, CPF = @CPF, DateOfBirth = @DateOfBirth, Phone = @Phone, AddressID = @AddressID, Photo = @Photo, LastUpdateDate = NOW() WHERE ClientProfileID = @ClientProfileID", clientProfile);
                 return GetById(clientProfile.ClientProfileID);
             }
         }

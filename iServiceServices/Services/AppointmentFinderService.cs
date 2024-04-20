@@ -21,9 +21,9 @@ namespace iServiceServices.Services
             var breakEnd = string.IsNullOrEmpty(specialDay?.BreakEnd) ? (TimeSpan?)null : ParseTime(specialDay.BreakEnd);
 
             TimeSpan currentTime = start;
-            while (currentTime.Add(TimeSpan.FromMinutes(service.Duration)) <= end)
+            while (currentTime.Add(TimeSpan.FromMinutes(service.EstimatedDuration)) <= end)
             {
-                var potentialEndTime = currentTime.Add(TimeSpan.FromMinutes(service.Duration));
+                var potentialEndTime = currentTime.Add(TimeSpan.FromMinutes(service.EstimatedDuration));
 
                 if (breakStart.HasValue && breakEnd.HasValue && currentTime < breakEnd && potentialEndTime > breakStart)
                 {
@@ -32,8 +32,8 @@ namespace iServiceServices.Services
                 }
 
                 var isTimeSlotAvailable = !existingAppointments.Any(app =>
-                    app.StartDateTime.Date == date.Date &&
-                    (currentTime < app.EndDateTime.TimeOfDay && potentialEndTime > app.StartDateTime.TimeOfDay));
+                    app.Start.Date == date.Date &&
+                    (currentTime < app.End.TimeOfDay && potentialEndTime > app.Start.TimeOfDay));
 
                 if (isTimeSlotAvailable)
                 {

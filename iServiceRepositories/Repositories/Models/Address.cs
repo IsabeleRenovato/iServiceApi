@@ -11,6 +11,6 @@
         public string Country { get; set; }
         public string PostalCode { get; set; }
         public DateTime CreationDate { get; set; }
-        public DateTime? LastUpdateDate { get; set; }
+        public DateTime LastUpdateDate { get; set; }
     }
 }
