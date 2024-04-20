@@ -12,6 +12,6 @@ namespace iServiceRepositories.Repositories.Models.Request
         public string Description { get; set; }
         public string CommercialPhone { get; set; }
         public string CommercialEmail { get; set; }
-        public byte[]? Logo { get; set; }
+        public byte[]? Photo { get; set; }
     }
 }

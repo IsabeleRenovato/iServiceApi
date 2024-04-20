@@ -93,7 +93,7 @@ namespace iServiceServices.Services
                         Description = model.EstablishmentProfile.Description,
                         CommercialPhone = model.EstablishmentProfile.CommercialPhone,
                         CommercialEmail = model.EstablishmentProfile.CommercialEmail,
-                        Logo = new byte[0]
+                        Photo = new byte[0]
                     });
                 }
                 else if (model.ClientProfile != null)
@@ -105,7 +105,7 @@ namespace iServiceServices.Services
                         DateOfBirth = model.ClientProfile.DateOfBirth,
                         Phone = model.ClientProfile.Phone,
                         AddressID = address.AddressID,
-                        ProfilePicture = new byte[0]
+                        Photo = new byte[0]
                     });
                 }
                 else

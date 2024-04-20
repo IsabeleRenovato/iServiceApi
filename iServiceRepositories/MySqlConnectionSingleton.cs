@@ -3,32 +3,40 @@ using System.Data;
 
 namespace iServiceRepositories
 {
-    public class MySqlConnectionSingleton
+    public class MySqlConnectionSingleton : IDisposable
     {
         private readonly string _connectionString;
-        private static MySqlConnection _connection;
+        private MySqlConnection _connection;
 
         public MySqlConnectionSingleton(string connectionString)
         {
             _connectionString = connectionString;
-            _connection = new MySqlConnection(_connectionString);
+            _connection = CreateConnection();
+        }
+
+        private MySqlConnection CreateConnection()
+        {
+            var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+            return connection;
         }
 
         public MySqlConnection GetConnection()
         {
-            if (_connection.State != ConnectionState.Open)
+            if (_connection.State == ConnectionState.Closed || _connection.State == ConnectionState.Broken)
             {
-                _connection.Open();
+                _connection.Dispose(); // Dispose the old connection
+                _connection = CreateConnection(); // Create a new connection
             }
 
             return _connection;
         }
 
-        public void CloseConnection()
+        public void Dispose()
         {
-            if (_connection != null && _connection.State == ConnectionState.Open)
+            if (_connection != null)
             {
-                _connection.Close();
+                _connection.Dispose();
             }
         }
     }
