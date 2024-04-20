@@ -18,7 +18,7 @@ namespace iServiceServices.Services
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.Name, user.User.Email),
-                    new Claim(ClaimTypes.Role, user.UserRole.Role)
+                    new Claim(ClaimTypes.Role, user.UserRole.Name)
                 }),
                 Expires = DateTime.UtcNow.AddHours(8),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

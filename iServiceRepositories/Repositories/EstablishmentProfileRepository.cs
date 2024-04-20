@@ -22,7 +22,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<EstablishmentProfile>("SELECT EstablishmentProfileID, UserID, CNPJ, CommercialName, EstablishmentCategoryID, AddressID, Description, CommercialPhone, CommercialEmail, Logo, CreationDate, LastUpdateDate FROM EstablishmentProfile").AsList();
+                return connection.Query<EstablishmentProfile>("SELECT EstablishmentProfileID, UserID, CNPJ, CommercialName, EstablishmentCategoryID, AddressID, Description, CommercialPhone, CommercialEmail, Photo, CreationDate, LastUpdateDate FROM EstablishmentProfile").AsList();
             }
         }
 
@@ -30,7 +30,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<EstablishmentProfile>("SELECT EstablishmentProfileID, UserID, CNPJ, CommercialName, EstablishmentCategoryID, AddressID, Description, CommercialPhone, CommercialEmail, Logo, CreationDate, LastUpdateDate FROM EstablishmentProfile WHERE EstablishmentProfileID = @EstablishmentProfileID", new { EstablishmentProfileID = establishmentProfileId });
+                return connection.QueryFirstOrDefault<EstablishmentProfile>("SELECT EstablishmentProfileID, UserID, CNPJ, CommercialName, EstablishmentCategoryID, AddressID, Description, CommercialPhone, CommercialEmail, Photo, CreationDate, LastUpdateDate FROM EstablishmentProfile WHERE EstablishmentProfileID = @EstablishmentProfileID", new { EstablishmentProfileID = establishmentProfileId });
             }
         }
 
@@ -38,7 +38,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<EstablishmentProfile>("SELECT EstablishmentProfileID, UserID, CNPJ, CommercialName, EstablishmentCategoryID, AddressID, Description, CommercialPhone, CommercialEmail, Logo, CreationDate, LastUpdateDate FROM EstablishmentProfile WHERE UserID = @UserID", new { UserID = userId });
+                return connection.QueryFirstOrDefault<EstablishmentProfile>("SELECT EstablishmentProfileID, UserID, CNPJ, CommercialName, EstablishmentCategoryID, AddressID, Description, CommercialPhone, CommercialEmail, Photo, CreationDate, LastUpdateDate FROM EstablishmentProfile WHERE UserID = @UserID", new { UserID = userId });
             }
         }
 
@@ -46,7 +46,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO EstablishmentProfile (UserID, CNPJ, CommercialName, EstablishmentCategoryID, AddressID, Description, CommercialPhone, CommercialEmail, Logo) VALUES (@UserID, @CNPJ, @CommercialName, @EstablishmentCategoryID, @AddressID, @Description, @CommercialPhone, @CommercialEmail, @Logo); SELECT LAST_INSERT_ID();", establishmentProfileModel);
+                var id = connection.QuerySingle<int>("INSERT INTO EstablishmentProfile (UserID, CNPJ, CommercialName, EstablishmentCategoryID, AddressID, Description, CommercialPhone, CommercialEmail, Photo) VALUES (@UserID, @CNPJ, @CommercialName, @EstablishmentCategoryID, @AddressID, @Description, @CommercialPhone, @CommercialEmail, @Photo); SELECT LAST_INSERT_ID();", establishmentProfileModel);
                 return GetById(id);
             }
         }
@@ -55,7 +55,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE EstablishmentProfile SET UserID = @UserID, CNPJ = @CNPJ, CommercialName = @CommercialName, EstablishmentCategoryID = @EstablishmentCategoryID, AddressID = @AddressID, Description = @Description, CommercialPhone = @CommercialPhone, CommercialEmail = @CommercialEmail, Logo = @Logo, LastUpdateDate = NOW() WHERE EstablishmentProfileID = @EstablishmentProfileID", establishmentProfile);
+                connection.Execute("UPDATE EstablishmentProfile SET UserID = @UserID, CNPJ = @CNPJ, CommercialName = @CommercialName, EstablishmentCategoryID = @EstablishmentCategoryID, AddressID = @AddressID, Description = @Description, CommercialPhone = @CommercialPhone, CommercialEmail = @CommercialEmail, Photo = @Photo, LastUpdateDate = NOW() WHERE EstablishmentProfileID = @EstablishmentProfileID", establishmentProfile);
                 return GetById(establishmentProfile.EstablishmentProfileID);
             }
         }

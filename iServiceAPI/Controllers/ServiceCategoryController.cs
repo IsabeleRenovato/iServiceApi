@@ -7,19 +7,19 @@ namespace iServiceAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class AppointmentController : ControllerBase
+    public class ServiceCategoryController : ControllerBase
     {
-        private readonly AppointmentService _appointmentService;
+        private readonly ServiceCategoryService _serviceCategoryService;
 
-        public AppointmentController(IConfiguration configuration)
+        public ServiceCategoryController(IConfiguration configuration)
         {
-            _appointmentService = new AppointmentService(configuration);
+            _serviceCategoryService = new ServiceCategoryService(configuration);
         }
 
         [HttpGet]
-        public ActionResult<List<Appointment>> Get()
+        public ActionResult<List<ServiceCategory>> Get()
         {
-            var result = _appointmentService.GetAllAppointments();
+            var result = _serviceCategoryService.GetAllServiceCategories();
 
             if (result.IsSuccess)
             {
@@ -29,10 +29,10 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("GetById/{appointmentId}")]
-        public ActionResult<Appointment> GetById(int appointmentId)
+        [HttpGet("{serviceCategoryID}")]
+        public ActionResult<ServiceCategory> GetById(int serviceCategoryID)
         {
-            var result = _appointmentService.GetAppointmentById(appointmentId);
+            var result = _serviceCategoryService.GetServiceCategoryById(serviceCategoryID);
 
             if (result.IsSuccess)
             {
@@ -43,32 +43,32 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Appointment> Post([FromBody] AppointmentModel model)
+        public ActionResult<ServiceCategory> Post([FromBody] ServiceCategoryModel model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _appointmentService.AddAppointment(model);
+            var result = _serviceCategoryService.AddServiceCategory(model);
 
             if (result.IsSuccess)
             {
-                return CreatedAtAction(nameof(GetById), new { appointmentId = result.Value.AppointmentID }, result.Value);
+                return CreatedAtAction(nameof(GetById), new { serviceCategoryID = result.Value.ServiceCategoryID }, result.Value);
             }
 
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpPut("{appointmentId}")]
-        public ActionResult<Appointment> Put(int appointmentId, [FromBody] Appointment appointment)
+        [HttpPut("{serviceCategoryID}")]
+        public ActionResult<ServiceCategory> Put(int serviceCategoryID, [FromBody] ServiceCategory serviceCategory)
         {
-            if (appointmentId != appointment.AppointmentID)
+            if (serviceCategoryID != serviceCategory.ServiceCategoryID)
             {
                 return BadRequest();
             }
 
-            var result = _appointmentService.UpdateAppointment(appointment);
+            var result = _serviceCategoryService.UpdateServiceCategory(serviceCategory);
 
             if (result.IsSuccess)
             {
@@ -78,10 +78,10 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpDelete("{appointmentId}")]
-        public IActionResult Delete(int appointmentId)
+        [HttpDelete("{serviceCategoryID}")]
+        IActionResult Delete(int serviceCategoryID)
         {
-            var result = _appointmentService.DeleteAppointment(appointmentId);
+            var result = _serviceCategoryService.DeleteServiceCategory(serviceCategoryID);
 
             if (result.IsSuccess)
             {
@@ -91,5 +91,4 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
     }
-
 }

@@ -22,15 +22,15 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<Service>("SELECT ServiceId, EstablishmentProfileID, Title, Description, Price, Duration, CreationDate, LastUpdateDate FROM Service").AsList();
+                return connection.Query<Service>("SELECT ServiceID, EstablishmentProfileID, ServiceCategoryID, Name, Description, Price, EstimatedDuration, Photo, CreationDate, LastUpdateDate FROM Service").AsList();
             }
         }
 
-        public Service GetById(int serviceId)
+        public Service GetById(int serviceID)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<Service>("SELECT ServiceId, EstablishmentProfileID, Title, Description, Price, Duration, CreationDate, LastUpdateDate FROM Service WHERE ServiceId = @ServiceId", new { ServiceId = serviceId });
+                return connection.QueryFirstOrDefault<Service>("SELECT ServiceID, EstablishmentProfileID, ServiceCategoryID, Name, Description, Price, EstimatedDuration, Photo, CreationDate, LastUpdateDate FROM Service WHERE ServiceID = @ServiceID", new { ServiceID = serviceID });
             }
         }
 
@@ -38,7 +38,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO Service (EstablishmentProfileID, Title, Description, Price, Duration) VALUES (@EstablishmentProfileID, @Title, @Description, @Price, @Duration); SELECT LAST_INSERT_ID();", model);
+                var id = connection.QuerySingle<int>("INSERT INTO Service (EstablishmentProfileID, ServiceCategoryID, Name, Description, Price, EstimatedDuration, Photo) VALUES (@EstablishmentProfileID, @ServiceCategoryID, @Name, @Description, @Price, @EstimatedDuration, @Photo); SELECT LAST_INSERT_ID();", model);
                 return GetById(id);
             }
         }
@@ -47,16 +47,16 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE Service SET EstablishmentProfileID = @EstablishmentProfileID, Title = @Title, Description = @Description, Price = @Price, Duration = @Duration, LastUpdateDate = NOW() WHERE ServiceId = @ServiceId", service);
-                return GetById(service.ServiceId);
+                connection.Execute("UPDATE Service SET EstablishmentProfileID = @EstablishmentProfileID, ServiceCategoryID = @ServiceCategoryID, Name = @Name, Description = @Description, Price = @Price, EstimatedDuration = @EstimatedDuration, Photo = @Photo, LastUpdateDate = NOW() WHERE ServiceID = @ServiceID", service);
+                return GetById(service.ServiceID);
             }
         }
 
-        public bool Delete(int serviceId)
+        public bool Delete(int serviceID)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM Service WHERE ServiceId = @ServiceId", new { ServiceId = serviceId });
+                int affectedRows = connection.Execute("DELETE FROM Service WHERE ServiceID = @ServiceID", new { ServiceID = serviceID });
                 return affectedRows > 0;
             }
         }
