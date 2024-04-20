@@ -1,6 +1,6 @@
 ﻿namespace iServiceRepositories.Repositories.Models.Request
 {
-    public class UserRoleModel
+    public class AppointmentStatusModel
     {
         public string Name { get; set; }
     }
