@@ -36,7 +36,7 @@ namespace iServiceServices.Services
             {
                 var schedules = new List<string>();
                 var service = new ServiceRepository(_configuration).GetById(serviceId);
-                var schedule = new ScheduleRepository(_configuration).GetByEstablishmentProfileID(service.EstablishmentProfileId);
+                var schedule = new ScheduleRepository(_configuration).GetByEstablishmentProfileId(service.EstablishmentProfileId);
                 var appointments = new AppointmentRepository(_configuration).GetByEstablishmentAndDate(service.EstablishmentProfileId, date);
                 var specialDays = new SpecialDayRepository(_configuration).GetByEstablishmentAndDate(service.EstablishmentProfileId, date);
 

@@ -23,7 +23,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<ClientProfile>("SELECT ClientProfileID, UserID, CPF, DateOfBirth, Phone, AddressID, Photo, CreationDate, LastUpdateDate FROM ClientProfile").AsList();
+                return connection.Query<ClientProfile>("SELECT ClientProfileId, UserId, CPF, DateOfBirth, Phone, AddressId, Photo, CreationDate, LastUpdateDate FROM ClientProfile").AsList();
             }
         }
 
@@ -31,7 +31,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<ClientProfile>("SELECT ClientProfileID, UserID, CPF, DateOfBirth, Phone, AddressID, Photo, CreationDate, LastUpdateDate FROM ClientProfile WHERE ClientProfileID = @ClientProfileID", new { ClientProfileID = clientProfileId });
+                return connection.QueryFirstOrDefault<ClientProfile>("SELECT ClientProfileId, UserId, CPF, DateOfBirth, Phone, AddressId, Photo, CreationDate, LastUpdateDate FROM ClientProfile WHERE ClientProfileId = @ClientProfileId", new { ClientProfileId = clientProfileId });
             }
         }
 
@@ -39,7 +39,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<ClientProfile>("SELECT ClientProfileID, UserID, CPF, DateOfBirth, Phone, AddressID, Photo, CreationDate, LastUpdateDate FROM ClientProfile WHERE UserID = @UserID", new { UserID = userId });
+                return connection.QueryFirstOrDefault<ClientProfile>("SELECT ClientProfileId, UserId, CPF, DateOfBirth, Phone, AddressId, Photo, CreationDate, LastUpdateDate FROM ClientProfile WHERE UserId = @UserId", new { UserId = userId });
             }
         }
 
@@ -47,7 +47,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO ClientProfile (UserID, CPF, DateOfBirth, Phone, AddressID, Photo) VALUES (@UserID, @CPF, @DateOfBirth, @Phone, @AddressID, @Photo); SELECT LAST_INSERT_ID();", clientProfileModel);
+                var id = connection.QuerySingle<int>("INSERT INTO ClientProfile (UserId, CPF, DateOfBirth, Phone, AddressId, Photo) VALUES (@UserId, @CPF, @DateOfBirth, @Phone, @AddressId, @Photo); SELECT LAST_INSERT_Id();", clientProfileModel);
                 return GetById(id);
             }
         }
@@ -56,7 +56,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE ClientProfile SET UserID = @UserID, CPF = @CPF, DateOfBirth = @DateOfBirth, Phone = @Phone, AddressID = @AddressID, Photo = @Photo, LastUpdateDate = NOW() WHERE ClientProfileID = @ClientProfileID", clientProfile);
+                connection.Execute("UPDATE ClientProfile SET UserId = @UserId, CPF = @CPF, DateOfBirth = @DateOfBirth, Phone = @Phone, AddressId = @AddressId, Photo = @Photo, LastUpdateDate = NOW() WHERE ClientProfileId = @ClientProfileId", clientProfile);
                 return GetById(clientProfile.ClientProfileId);
             }
         }
@@ -65,7 +65,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int rowsAffected = connection.Execute("UPDATE ClientProfile SET Photo = @Photo, LastUpdateDate = NOW() WHERE ClientProfileID = @Id", photo);
+                int rowsAffected = connection.Execute("UPDATE ClientProfile SET Photo = @Photo, LastUpdateDate = NOW() WHERE ClientProfileId = @Id", photo);
                 return rowsAffected > 0;
             }
         }
@@ -74,7 +74,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM ClientProfile WHERE ClientProfileID = @ClientProfileID", new { ClientProfileID = clientProfileId });
+                int affectedRows = connection.Execute("DELETE FROM ClientProfile WHERE ClientProfileId = @ClientProfileId", new { ClientProfileId = clientProfileId });
                 return affectedRows > 0;
             }
         }

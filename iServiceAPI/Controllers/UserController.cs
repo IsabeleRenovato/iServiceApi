@@ -105,6 +105,24 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
+        [HttpPut("UpdateUserProfile")]
+        public ActionResult<UserInfo> Put([FromBody] ProfileUpdate user)
+        {
+            if (user?.ClientProfile == null && user?.EstablishmentProfile == null)
+            {
+                return BadRequest();
+            }
+
+            var result = _userService.UpdateUserProfile(user);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
         [HttpDelete("{userId}")]
         public IActionResult Delete(int userId)
         {

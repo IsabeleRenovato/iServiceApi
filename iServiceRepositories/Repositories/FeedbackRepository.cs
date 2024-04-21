@@ -22,7 +22,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<Feedback>("SELECT FeedbackID, AppointmentID, Description, Rating, CreationDate, LastUpdateDate FROM Feedback").AsList();
+                return connection.Query<Feedback>("SELECT FeedbackId, AppointmentId, Description, Rating, CreationDate, LastUpdateDate FROM Feedback").AsList();
             }
         }
 
@@ -30,7 +30,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<Feedback>("SELECT FeedbackID, AppointmentID, Description, Rating, CreationDate, LastUpdateDate FROM Feedback WHERE FeedbackID = @FeedbackID", new { FeedbackID = feedbackId });
+                return connection.QueryFirstOrDefault<Feedback>("SELECT FeedbackId, AppointmentId, Description, Rating, CreationDate, LastUpdateDate FROM Feedback WHERE FeedbackId = @FeedbackId", new { FeedbackId = feedbackId });
             }
         }
 
@@ -38,7 +38,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO Feedback (AppointmentID, Description, Rating) VALUES (@AppointmentID, @Description, @Rating); SELECT LAST_INSERT_ID();", model);
+                var id = connection.QuerySingle<int>("INSERT INTO Feedback (AppointmentId, Description, Rating) VALUES (@AppointmentId, @Description, @Rating); SELECT LAST_INSERT_Id();", model);
                 return GetById(id);
             }
         }
@@ -47,7 +47,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE Feedback SET AppointmentID = @AppointmentID, Description = @Description, Rating = @Rating, LastUpdateDate = NOW() WHERE FeedbackID = @FeedbackID", feedback);
+                connection.Execute("UPDATE Feedback SET AppointmentId = @AppointmentId, Description = @Description, Rating = @Rating, LastUpdateDate = NOW() WHERE FeedbackId = @FeedbackId", feedback);
                 return GetById(feedback.FeedbackId);
             }
         }
@@ -56,7 +56,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM Feedback WHERE FeedbackID = @FeedbackID", new { FeedbackID = feedbackId });
+                int affectedRows = connection.Execute("DELETE FROM Feedback WHERE FeedbackId = @FeedbackId", new { FeedbackId = feedbackId });
                 return affectedRows > 0;
             }
         }
