@@ -9,10 +9,11 @@ namespace iServiceServices.Services
     public class FeedbackService
     {
         private readonly FeedbackRepository _feedbackRepository;
-
+        private readonly AppointmentRepository _appointmentRepository;
         public FeedbackService(IConfiguration configuration)
         {
             _feedbackRepository = new FeedbackRepository(configuration);
+            _appointmentRepository = new AppointmentRepository(configuration);
         }
 
         public Result<List<Feedback>> GetAllFeedbacks()
@@ -47,24 +48,25 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<Feedback> GetFeedbackByEstablishment(int feedbackId)
-        {
-            try
-            {
-                var feedback = _feedbackRepository.GetById(feedbackId);
+        //public async Result<Feedback> GetFeedbackByEstablishment(int establishmentProfileID)
+        //{
+        //    try
+        //    {
+        //        var appointments = await _appointmentRepository
+        //        var feedback = _feedbackRepository.GetById(feedbackId);
 
-                if (feedback == null)
-                {
-                    return Result<Feedback>.Failure("Feedback não encontrado.");
-                }
+        //        if (feedback == null)
+        //        {
+        //            return Result<Feedback>.Failure("Feedback não encontrado.");
+        //        }
 
-                return Result<Feedback>.Success(feedback);
-            }
-            catch (Exception ex)
-            {
-                return Result<Feedback>.Failure($"Falha ao obter o feedback: {ex.Message}");
-            }
-        }
+        //        return Result<Feedback>.Success(feedback);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Result<Feedback>.Failure($"Falha ao obter o feedback: {ex.Message}");
+        //    }
+        //}
 
         public Result<Feedback> AddFeedback(FeedbackModel model)
         {

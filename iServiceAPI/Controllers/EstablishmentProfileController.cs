@@ -1,6 +1,7 @@
 ﻿using iServiceRepositories.Repositories.Models;
 using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services;
+using iServiceServices.Services.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace iServiceAPI.Controllers
@@ -82,6 +83,24 @@ namespace iServiceAPI.Controllers
             }
 
             var result = _establishmentProfileService.UpdateProfile(profile);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpPost("UploadPhoto")]
+        public ActionResult<bool> UploadPhoto([FromBody] ImageModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = _establishmentProfileService.UpdatePhoto(model);
 
             if (result.IsSuccess)
             {
