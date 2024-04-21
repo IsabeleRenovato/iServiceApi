@@ -22,15 +22,15 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<ServiceCategory>("SELECT ServiceCategoryID, Name, CreationDate, LastUpdateDate FROM ServiceCategory").AsList();
+                return connection.Query<ServiceCategory>("SELECT ServiceCategoryId, Name, CreationDate, LastUpdateDate FROM ServiceCategory").AsList();
             }
         }
 
-        public ServiceCategory GetById(int serviceCategoryID)
+        public ServiceCategory GetById(int serviceCategoryId)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<ServiceCategory>("SELECT ServiceCategoryID, Name, CreationDate, LastUpdateDate FROM ServiceCategory WHERE ServiceCategoryID = @ServiceCategoryID", new { ServiceCategoryID = serviceCategoryID });
+                return connection.QueryFirstOrDefault<ServiceCategory>("SELECT ServiceCategoryId, Name, CreationDate, LastUpdateDate FROM ServiceCategory WHERE ServiceCategoryId = @ServiceCategoryId", new { ServiceCategoryId = serviceCategoryId });
             }
         }
 
@@ -38,7 +38,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO ServiceCategory (Name) VALUES (@Name); SELECT LAST_INSERT_ID();", model);
+                var id = connection.QuerySingle<int>("INSERT INTO ServiceCategory (Name) VALUES (@Name); SELECT LAST_INSERT_Id();", model);
                 return GetById(id);
             }
         }
@@ -47,16 +47,16 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE ServiceCategory SET Name = @Name, LastUpdateDate = NOW() WHERE ServiceCategoryID = @ServiceCategoryID", serviceCategory);
+                connection.Execute("UPDATE ServiceCategory SET Name = @Name, LastUpdateDate = NOW() WHERE ServiceCategoryId = @ServiceCategoryId", serviceCategory);
                 return GetById(serviceCategory.ServiceCategoryId);
             }
         }
 
-        public bool Delete(int serviceCategoryID)
+        public bool Delete(int serviceCategoryId)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM ServiceCategory WHERE ServiceCategoryID = @ServiceCategoryID", new { ServiceCategoryID = serviceCategoryID });
+                int affectedRows = connection.Execute("DELETE FROM ServiceCategory WHERE ServiceCategoryId = @ServiceCategoryId", new { ServiceCategoryId = serviceCategoryId });
                 return affectedRows > 0;
             }
         }

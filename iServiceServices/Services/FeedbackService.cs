@@ -48,7 +48,7 @@ namespace iServiceServices.Services
             }
         }
 
-        //public async Result<Feedback> GetFeedbackByEstablishment(int establishmentProfileID)
+        //public async Result<Feedback> GetFeedbackByEstablishment(int establishmentProfileId)
         //{
         //    try
         //    {

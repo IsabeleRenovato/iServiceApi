@@ -22,7 +22,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<User>("SELECT UserID, UserRoleID, Email, Password, Name, CreationDate, LastLogin, LastUpdateDate FROM User").AsList();
+                return connection.Query<User>("SELECT UserId, UserRoleId, Email, Password, Name, CreationDate, LastLogin, LastUpdateDate FROM User").AsList();
             }
         }
 
@@ -30,7 +30,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<User>("SELECT UserID, UserRoleID, Email, Password, Name, CreationDate, LastLogin, LastUpdateDate FROM User WHERE UserID = @UserID", new { UserID = userId });
+                return connection.QueryFirstOrDefault<User>("SELECT UserId, UserRoleId, Email, Password, Name, CreationDate, LastLogin, LastUpdateDate FROM User WHERE UserId = @UserId", new { UserId = userId });
             }
         }
 
@@ -38,7 +38,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<User>("SELECT UserID, UserRoleID, Email, Password, Name, CreationDate, LastLogin, LastUpdateDate FROM User WHERE Email = @Email", new { Email = email });
+                return connection.QueryFirstOrDefault<User>("SELECT UserId, UserRoleId, Email, Password, Name, CreationDate, LastLogin, LastUpdateDate FROM User WHERE Email = @Email", new { Email = email });
             }
         }
 
@@ -46,7 +46,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO User (UserRoleID, Email, Password, Name) VALUES (@UserRoleID, @Email, @Password, @Name); SELECT LAST_INSERT_ID();", userModel);
+                var id = connection.QuerySingle<int>("INSERT INTO User (UserRoleId, Email, Password, Name) VALUES (@UserRoleId, @Email, @Password, @Name); SELECT LAST_INSERT_Id();", userModel);
                 return GetById(id);
             }
         }
@@ -55,7 +55,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE User SET UserRoleID = @UserRoleID, Email = @Email, Password = @Password, Name = @Name, LastUpdateDate = NOW() WHERE UserID = @UserID", user);
+                connection.Execute("UPDATE User SET UserRoleId = @UserRoleId, Email = @Email, Password = @Password, Name = @Name, LastUpdateDate = NOW() WHERE UserId = @UserId", user);
                 return GetById(user.UserId);
             }
         }
@@ -64,7 +64,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM User WHERE UserID = @UserID", new { UserID = userId });
+                int affectedRows = connection.Execute("DELETE FROM User WHERE UserId = @UserId", new { UserId = userId });
                 return affectedRows > 0;
             }
         }

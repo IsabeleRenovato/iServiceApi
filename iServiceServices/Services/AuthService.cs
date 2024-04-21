@@ -29,13 +29,13 @@ namespace iServiceServices.Services
             {
                 var user = new UserRepository(_configuration).Insert(new UserModel
                 {
-                    UserRoleId = model.UserRoleID,
+                    UserRoleId = model.UserRoleId,
                     Email = model.Email,
                     Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
                     Name = model.Name,
                 });
 
-                var userRole = new UserRoleRepository(_configuration).GetById(model.UserRoleID);
+                var userRole = new UserRoleRepository(_configuration).GetById(model.UserRoleId);
 
                 return Result<UserInfo>.Success(new UserInfo
                 {
