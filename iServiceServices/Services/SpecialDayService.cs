@@ -72,9 +72,9 @@ namespace iServiceServices.Services
         {
             try
             {
-                var establishmentProfile = new EstablishmentProfileRepository(_configuration).GetById(model.EstablishmentProfileID);
+                var establishmentProfile = new EstablishmentProfileRepository(_configuration).GetById(model.EstablishmentProfileId);
 
-                if (establishmentProfile?.EstablishmentProfileID > 0 == false)
+                if (establishmentProfile?.EstablishmentProfileId > 0 == false)
                 {
                     return Result<SpecialDay>.Failure($"Estabelecimento não encontrado.");
                 }

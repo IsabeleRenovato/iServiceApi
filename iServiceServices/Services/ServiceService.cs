@@ -36,9 +36,9 @@ namespace iServiceServices.Services
             {
                 var schedules = new List<string>();
                 var service = new ServiceRepository(_configuration).GetById(serviceId);
-                var schedule = new ScheduleRepository(_configuration).GetByEstablishmentProfileID(service.EstablishmentProfileID);
-                var appointments = new AppointmentRepository(_configuration).GetByEstablishmentAndDate(service.EstablishmentProfileID, date);
-                var specialDays = new SpecialDayRepository(_configuration).GetByEstablishmentAndDate(service.EstablishmentProfileID, date);
+                var schedule = new ScheduleRepository(_configuration).GetByEstablishmentProfileID(service.EstablishmentProfileId);
+                var appointments = new AppointmentRepository(_configuration).GetByEstablishmentAndDate(service.EstablishmentProfileId, date);
+                var specialDays = new SpecialDayRepository(_configuration).GetByEstablishmentAndDate(service.EstablishmentProfileId, date);
 
                 var appointmentFinder = new AppointmentFinderService();
                 var availableSlots = appointmentFinder.FindAvailableSlots(schedule, specialDays, service, date, appointments);
@@ -81,13 +81,32 @@ namespace iServiceServices.Services
             }
         }
 
+        public Result<Service> GetByServiceCategoryId(int serviceCategoryId)
+        {
+            try
+            {
+                var service = _serviceRepository.GetByServiceCategoryId(serviceCategoryId);
+
+                if (service == null)
+                {
+                    return Result<Service>.Failure("Serviço não encontrado.");
+                }
+
+                return Result<Service>.Success(service);
+            }
+            catch (Exception ex)
+            {
+                return Result<Service>.Failure($"Falha ao obter o serviço: {ex.Message}");
+            }
+        }
+
         public Result<Service> AddService(ServiceModel model)
         {
             try
             {
-                var establishmentProfile = new EstablishmentProfileRepository(_configuration).GetById(model.EstablishmentProfileID);
+                var establishmentProfile = new EstablishmentProfileRepository(_configuration).GetById(model.EstablishmentProfileId);
 
-                if (establishmentProfile?.EstablishmentProfileID > 0 == false)
+                if (establishmentProfile?.EstablishmentProfileId > 0 == false)
                 {
                     return Result<Service>.Failure($"Estabelecimento não encontrado.");
                 }

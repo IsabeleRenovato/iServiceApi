@@ -81,7 +81,7 @@ namespace iServiceAPI.Controllers
 
             if (result.IsSuccess)
             {
-                return CreatedAtAction(nameof(GetById), new { userId = result.Value.UserID }, result.Value);
+                return CreatedAtAction(nameof(GetById), new { userId = result.Value.UserId }, result.Value);
             }
 
             return BadRequest(new { message = result.ErrorMessage });
@@ -90,7 +90,7 @@ namespace iServiceAPI.Controllers
         [HttpPut("{userId}")]
         public ActionResult<User> Put(int userId, [FromBody] User user)
         {
-            if (userId != user.UserID)
+            if (userId != user.UserId)
             {
                 return BadRequest();
             }

@@ -35,6 +35,14 @@ namespace iServiceRepositories.Repositories
             }
         }
 
+        public Service GetByServiceCategoryId(int serviceCategoryId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                return connection.QueryFirstOrDefault<Service>("SELECT ServiceID, EstablishmentProfileID, ServiceCategoryID, Name, Description, Price, EstimatedDuration, Photo, CreationDate, LastUpdateDate FROM Service WHERE ServiceCategoryID = @ServiceCategoryID", new { ServiceCategoryID = serviceCategoryId });
+            }
+        }
+
         public Service Insert(ServiceModel model)
         {
             using (var connection = _connectionSingleton.GetConnection())
@@ -49,7 +57,7 @@ namespace iServiceRepositories.Repositories
             using (var connection = _connectionSingleton.GetConnection())
             {
                 connection.Execute("UPDATE Service SET EstablishmentProfileID = @EstablishmentProfileID, ServiceCategoryID = @ServiceCategoryID, Name = @Name, Description = @Description, Price = @Price, EstimatedDuration = @EstimatedDuration, Photo = @Photo, LastUpdateDate = NOW() WHERE ServiceID = @ServiceID", service);
-                return GetById(service.ServiceID);
+                return GetById(service.ServiceId);
             }
         }
 

@@ -48,7 +48,7 @@ namespace iServiceRepositories.Repositories
             using (var connection = _connectionSingleton.GetConnection())
             {
                 connection.Execute("UPDATE EstablishmentCategory SET Name = @Name, LastUpdateDate = NOW() WHERE EstablishmentCategoryID = @EstablishmentCategoryID", category);
-                return GetById(category.EstablishmentCategoryID);
+                return GetById(category.EstablishmentCategoryId);
             }
         }
 

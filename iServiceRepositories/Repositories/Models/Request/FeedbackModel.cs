@@ -2,7 +2,7 @@
 {
     public class FeedbackModel
     {
-        public int AppointmentID { get; set; }
+        public int AppointmentId { get; set; }
         public string Description { get; set; }
         public int Rating { get; set; }
     }

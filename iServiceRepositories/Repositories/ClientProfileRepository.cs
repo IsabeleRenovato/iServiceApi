@@ -57,7 +57,7 @@ namespace iServiceRepositories.Repositories
             using (var connection = _connectionSingleton.GetConnection())
             {
                 connection.Execute("UPDATE ClientProfile SET UserID = @UserID, CPF = @CPF, DateOfBirth = @DateOfBirth, Phone = @Phone, AddressID = @AddressID, Photo = @Photo, LastUpdateDate = NOW() WHERE ClientProfileID = @ClientProfileID", clientProfile);
-                return GetById(clientProfile.ClientProfileID);
+                return GetById(clientProfile.ClientProfileId);
             }
         }
 

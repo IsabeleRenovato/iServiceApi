@@ -2,8 +2,8 @@
 {
     public class User
     {
-        public int UserID { get; set; }
-        public int UserRoleID { get; set; }
+        public int UserId { get; set; }
+        public int UserRoleId { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
         public string Name { get; set; }
