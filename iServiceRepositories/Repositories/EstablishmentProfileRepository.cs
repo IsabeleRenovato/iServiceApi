@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using iServiceRepositories.Repositories.Models;
 using iServiceRepositories.Repositories.Models.Request;
+using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
 
 namespace iServiceRepositories.Repositories
@@ -57,6 +58,15 @@ namespace iServiceRepositories.Repositories
             {
                 connection.Execute("UPDATE EstablishmentProfile SET UserID = @UserID, CNPJ = @CNPJ, CommercialName = @CommercialName, EstablishmentCategoryID = @EstablishmentCategoryID, AddressID = @AddressID, Description = @Description, CommercialPhone = @CommercialPhone, CommercialEmail = @CommercialEmail, Photo = @Photo, LastUpdateDate = NOW() WHERE EstablishmentProfileID = @EstablishmentProfileID", establishmentProfile);
                 return GetById(establishmentProfile.EstablishmentProfileID);
+            }
+        }
+
+        public bool UpdatePhoto(ImageModel photo)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                int rowsAffected = connection.Execute("UPDATE EstablishmentProfile SET Photo = @Photo, LastUpdateDate = NOW() WHERE EstablishmentProfileID = @Id", photo);
+                return rowsAffected > 0;
             }
         }
 

@@ -9,10 +9,18 @@ namespace iServiceServices.Services
     public class UserService
     {
         private readonly UserRepository _userRepository;
+        private readonly UserRoleRepository _userRoleRepository;
+        private readonly ClientProfileRepository _clientProfileRepository;
+        private readonly EstablishmentProfileRepository _establishmentProfileRepository;
+        private readonly AddressRepository _addressRepository;
 
         public UserService(IConfiguration configuration)
         {
             _userRepository = new UserRepository(configuration);
+            _userRoleRepository = new UserRoleRepository(configuration);
+            _clientProfileRepository = new ClientProfileRepository(configuration);
+            _establishmentProfileRepository = new EstablishmentProfileRepository(configuration);
+            _addressRepository = new AddressRepository(configuration);
         }
 
         public Result<List<User>> GetAllUsers()
@@ -44,6 +52,35 @@ namespace iServiceServices.Services
             catch (Exception ex)
             {
                 return Result<User>.Failure($"Falha ao obter o usuário: {ex.Message}");
+            }
+        }
+
+        public Result<UserInfo> GetUserInfoById(int userId)
+        {
+            try
+            {
+                var user = _userRepository.GetById(userId) ?? throw new InvalidOperationException("Usuário não encontrado.");
+                var userRole = _userRoleRepository.GetById(user.UserRoleID) ?? throw new InvalidOperationException("Cargo do usuário não encontrado."); 
+                var clientProfile = _clientProfileRepository.GetByUserId(user.UserID);
+                var establishmentProfile = _establishmentProfileRepository.GetByUserId(user.UserID);
+
+                int? addressId = clientProfile?.AddressID > 0 ? clientProfile.AddressID : establishmentProfile?.AddressID;
+                var address = addressId.HasValue ? _addressRepository.GetById(addressId.Value) : throw new InvalidOperationException("Endereço não encontrado."); ;
+
+                var userInfo = new UserInfo
+                {
+                    User = user,
+                    UserRole = userRole,
+                    ClientProfile = clientProfile,
+                    EstablishmentProfile = establishmentProfile,
+                    Address = address
+                };
+
+                return Result<UserInfo>.Success(userInfo);
+            }
+            catch (Exception ex)
+            {
+                return Result<UserInfo>.Failure($"Falha ao obter o usuário: {ex.Message}");
             }
         }
 

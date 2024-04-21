@@ -92,6 +92,19 @@ namespace iServiceServices.Services
             }
         }
 
+        public Result<bool> UpdatePhoto(ImageModel model)
+        {
+            try
+            {
+                var newPhoto = _clientProfileRepository.UpdatePhoto(model);
+                return Result<bool>.Success(newPhoto);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure($"Falha ao inserir o perfil de cliente: {ex.Message}");
+            }
+        }
+
         public Result<bool> DeleteProfile(int profileId)
         {
             try
