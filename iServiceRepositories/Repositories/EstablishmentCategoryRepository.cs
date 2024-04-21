@@ -22,7 +22,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<EstablishmentCategory>("SELECT EstablishmentCategoryID, Name, CreationDate, LastUpdateDate FROM EstablishmentCategory").AsList();
+                return connection.Query<EstablishmentCategory>("SELECT EstablishmentCategoryId, Name, CreationDate, LastUpdateDate FROM EstablishmentCategory").AsList();
             }
         }
 
@@ -30,7 +30,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<EstablishmentCategory>("SELECT EstablishmentCategoryID, Name, CreationDate, LastUpdateDate FROM EstablishmentCategory WHERE EstablishmentCategoryID = @EstablishmentCategoryID", new { EstablishmentCategoryID = establishmentCategoryId });
+                return connection.QueryFirstOrDefault<EstablishmentCategory>("SELECT EstablishmentCategoryId, Name, CreationDate, LastUpdateDate FROM EstablishmentCategory WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { EstablishmentCategoryId = establishmentCategoryId });
             }
         }
 
@@ -38,7 +38,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO EstablishmentCategory (Name) VALUES (@Name); SELECT LAST_INSERT_ID();", model);
+                var id = connection.QuerySingle<int>("INSERT INTO EstablishmentCategory (Name) VALUES (@Name); SELECT LAST_INSERT_Id();", model);
                 return GetById(id);
             }
         }
@@ -47,7 +47,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE EstablishmentCategory SET Name = @Name, LastUpdateDate = NOW() WHERE EstablishmentCategoryID = @EstablishmentCategoryID", category);
+                connection.Execute("UPDATE EstablishmentCategory SET Name = @Name, LastUpdateDate = NOW() WHERE EstablishmentCategoryId = @EstablishmentCategoryId", category);
                 return GetById(category.EstablishmentCategoryId);
             }
         }
@@ -56,7 +56,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM EstablishmentCategory WHERE EstablishmentCategoryID = @EstablishmentCategoryID", new { EstablishmentCategoryID = establishmentCategoryId });
+                int affectedRows = connection.Execute("DELETE FROM EstablishmentCategory WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { EstablishmentCategoryId = establishmentCategoryId });
                 return affectedRows > 0;
             }
         }

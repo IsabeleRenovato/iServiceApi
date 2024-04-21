@@ -22,7 +22,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<SpecialDay>("SELECT SpecialDayId, EstablishmentProfileID, Date, Start, End, BreakStart, BreakEnd, CreationDate, LastUpdateDate FROM SpecialDay").AsList();
+                return connection.Query<SpecialDay>("SELECT SpecialDayId, EstablishmentProfileId, Date, Start, End, BreakStart, BreakEnd, CreationDate, LastUpdateDate FROM SpecialDay").AsList();
             }
         }
 
@@ -30,7 +30,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<SpecialDay>("SELECT SpecialDayId, EstablishmentProfileID, Date, Start, End, BreakStart, BreakEnd, CreationDate, LastUpdateDate FROM SpecialDay WHERE SpecialDayId = @SpecialDayId", new { SpecialDayId = specialDayId });
+                return connection.QueryFirstOrDefault<SpecialDay>("SELECT SpecialDayId, EstablishmentProfileId, Date, Start, End, BreakStart, BreakEnd, CreationDate, LastUpdateDate FROM SpecialDay WHERE SpecialDayId = @SpecialDayId", new { SpecialDayId = specialDayId });
             }
         }
 
@@ -39,9 +39,9 @@ namespace iServiceRepositories.Repositories
             using (var connection = _connectionSingleton.GetConnection())
             {
                 return connection.Query<SpecialDay>(
-                    "SELECT SpecialDayId, EstablishmentProfileID, Date, Start, End, BreakStart, BreakEnd, CreationDate, LastUpdateDate " +
-                    "FROM SpecialDay WHERE EstablishmentProfileID = @EstablishmentProfileID AND CAST(Date AS DATE) = CAST(@Date AS DATE)",
-                    new { EstablishmentProfileID = establishmentProfileId, Date = date }).AsList();
+                    "SELECT SpecialDayId, EstablishmentProfileId, Date, Start, End, BreakStart, BreakEnd, CreationDate, LastUpdateDate " +
+                    "FROM SpecialDay WHERE EstablishmentProfileId = @EstablishmentProfileId AND CAST(Date AS DATE) = CAST(@Date AS DATE)",
+                    new { EstablishmentProfileId = establishmentProfileId, Date = date }).AsList();
             }
         }
 
@@ -49,7 +49,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO SpecialDay (EstablishmentProfileID, Date, Start, End, BreakStart, BreakEnd) VALUES (@EstablishmentProfileID, @Date, @Start, @End, @BreakStart, @BreakEnd); SELECT LAST_INSERT_ID();", model);
+                var id = connection.QuerySingle<int>("INSERT INTO SpecialDay (EstablishmentProfileId, Date, Start, End, BreakStart, BreakEnd) VALUES (@EstablishmentProfileId, @Date, @Start, @End, @BreakStart, @BreakEnd); SELECT LAST_INSERT_Id();", model);
                 return GetById(id);
             }
         }
@@ -58,7 +58,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE SpecialDay SET EstablishmentProfileID = @EstablishmentProfileID, Date = @Date, Start = @Start, End = @End, BreakStart = @BreakStart, BreakEnd = @BreakEnd, LastUpdateDate = NOW() WHERE SpecialDayId = @SpecialDayId", specialDay);
+                connection.Execute("UPDATE SpecialDay SET EstablishmentProfileId = @EstablishmentProfileId, Date = @Date, Start = @Start, End = @End, BreakStart = @BreakStart, BreakEnd = @BreakEnd, LastUpdateDate = NOW() WHERE SpecialDayId = @SpecialDayId", specialDay);
                 return GetById(specialDay.SpecialDayId);
             }
         }

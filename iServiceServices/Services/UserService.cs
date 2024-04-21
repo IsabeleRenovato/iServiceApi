@@ -60,7 +60,7 @@ namespace iServiceServices.Services
             try
             {
                 var user = _userRepository.GetById(userId) ?? throw new InvalidOperationException("Usuário não encontrado.");
-                var userRole = _userRoleRepository.GetById(user.UserRoleId) ?? throw new InvalidOperationException("Cargo do usuário não encontrado."); 
+                var userRole = _userRoleRepository.GetById(user.UserRoleId) ?? throw new InvalidOperationException("Cargo do usuário não encontrado.");
                 var clientProfile = _clientProfileRepository.GetByUserId(user.UserId);
                 var establishmentProfile = _establishmentProfileRepository.GetByUserId(user.UserId);
 
@@ -126,6 +126,82 @@ namespace iServiceServices.Services
             catch (Exception ex)
             {
                 return Result<User>.Failure($"Falha ao atualizar o usuário: {ex.Message}");
+            }
+        }
+
+        public Result<UserInfo> UpdateUserProfile(ProfileUpdate request)
+        {
+            try
+            {
+                var clientProfile = request.ClientProfile;
+                var establishmentProfile = request.EstablishmentProfile;
+
+                var userId = clientProfile?.UserId ?? establishmentProfile?.UserId;
+
+                if (userId > 0 == false)
+                {
+                    return Result<UserInfo>.Failure("Usuário não encontrado.");
+                }
+
+                var user = _userRepository.GetById(userId.GetValueOrDefault());
+
+                if (user == null)
+                {
+                    return Result<UserInfo>.Failure("Usuário não encontrado.");
+                }
+
+                user.Name = request.Name;
+
+                var updatedUser = _userRepository.Update(user);
+
+                if (clientProfile != null)
+                {
+                    var client = _clientProfileRepository.GetById(request.ClientProfile.ClientProfileId);
+                    _clientProfileRepository.Update(new ClientProfile
+                    {
+                        ClientProfileId = request.ClientProfile.ClientProfileId,
+                        UserId = userId.GetValueOrDefault(),
+                        CPF = request.ClientProfile.CPF,
+                        DateOfBirth = request.ClientProfile.DateOfBirth,
+                        Phone = request.ClientProfile.Phone,
+                        AddressId = client.AddressId,
+                        Photo = client.Photo,
+                    });
+                }
+                else if (establishmentProfile != null)
+                {
+                    var establishment = _establishmentProfileRepository.GetById(request.EstablishmentProfile.EstablishmentProfileId);
+                    _establishmentProfileRepository.Update(new EstablishmentProfile
+                    {
+                        EstablishmentProfileId = request.EstablishmentProfile.EstablishmentProfileId,
+                        UserId = userId.GetValueOrDefault(),
+                        CNPJ = request.EstablishmentProfile.CNPJ,
+                        CommercialName = request.EstablishmentProfile?.CommercialName,
+                        EstablishmentCategoryId = request.EstablishmentProfile.EstablishmentCategoryId,
+                        Description = request.EstablishmentProfile.Description,
+                        CommercialPhone = request.EstablishmentProfile.CommercialPhone,
+                        CommercialEmail = request.EstablishmentProfile.CommercialEmail,
+                        AddressId = establishment.AddressId,
+                        Photo = establishment.Photo,
+                    });
+                }
+                else
+                {
+                    return Result<UserInfo>.Failure("Perfil não encontrado.");
+                }
+
+                var result = GetUserInfoById(userId.GetValueOrDefault());
+
+                if (result.IsSuccess) 
+                {
+                    return Result<UserInfo>.Success(result.Value);
+                }
+
+                return Result<UserInfo>.Failure("Ocorreu um erro inesperado.");
+            }
+            catch (Exception ex)
+            {
+                return Result<UserInfo>.Failure($"Falha ao atualizar o usuário: {ex.Message}");
             }
         }
 

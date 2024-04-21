@@ -28,11 +28,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<ServiceCategory> GetServiceCategoryById(int serviceCategoryID)
+        public Result<ServiceCategory> GetServiceCategoryById(int serviceCategoryId)
         {
             try
             {
-                var category = _serviceCategoryRepository.GetById(serviceCategoryID);
+                var category = _serviceCategoryRepository.GetById(serviceCategoryId);
 
                 if (category == null)
                 {
@@ -73,11 +73,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> DeleteServiceCategory(int serviceCategoryID)
+        public Result<bool> DeleteServiceCategory(int serviceCategoryId)
         {
             try
             {
-                bool success = _serviceCategoryRepository.Delete(serviceCategoryID);
+                bool success = _serviceCategoryRepository.Delete(serviceCategoryId);
 
                 if (!success)
                 {

@@ -29,10 +29,10 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("{serviceCategoryID}")]
-        public ActionResult<ServiceCategory> GetById(int serviceCategoryID)
+        [HttpGet("{serviceCategoryId}")]
+        public ActionResult<ServiceCategory> GetById(int serviceCategoryId)
         {
-            var result = _serviceCategoryService.GetServiceCategoryById(serviceCategoryID);
+            var result = _serviceCategoryService.GetServiceCategoryById(serviceCategoryId);
 
             if (result.IsSuccess)
             {
@@ -54,16 +54,16 @@ namespace iServiceAPI.Controllers
 
             if (result.IsSuccess)
             {
-                return CreatedAtAction(nameof(GetById), new { serviceCategoryID = result.Value.ServiceCategoryId }, result.Value);
+                return CreatedAtAction(nameof(GetById), new { serviceCategoryId = result.Value.ServiceCategoryId }, result.Value);
             }
 
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpPut("{serviceCategoryID}")]
-        public ActionResult<ServiceCategory> Put(int serviceCategoryID, [FromBody] ServiceCategory serviceCategory)
+        [HttpPut("{serviceCategoryId}")]
+        public ActionResult<ServiceCategory> Put(int serviceCategoryId, [FromBody] ServiceCategory serviceCategory)
         {
-            if (serviceCategoryID != serviceCategory.ServiceCategoryId)
+            if (serviceCategoryId != serviceCategory.ServiceCategoryId)
             {
                 return BadRequest();
             }
@@ -78,10 +78,10 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpDelete("{serviceCategoryID}")]
-        IActionResult Delete(int serviceCategoryID)
+        [HttpDelete("{serviceCategoryId}")]
+        IActionResult Delete(int serviceCategoryId)
         {
-            var result = _serviceCategoryService.DeleteServiceCategory(serviceCategoryID);
+            var result = _serviceCategoryService.DeleteServiceCategory(serviceCategoryId);
 
             if (result.IsSuccess)
             {

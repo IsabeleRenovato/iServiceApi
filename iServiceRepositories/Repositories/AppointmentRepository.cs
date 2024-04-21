@@ -22,15 +22,15 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<Appointment>("SELECT AppointmentID, ServiceID, ClientProfileID, EstablishmentProfileID, AppointmentStatusID, Start, End, CreationDate, LastUpdateDate FROM Appointment").AsList();
+                return connection.Query<Appointment>("SELECT AppointmentId, ServiceId, ClientProfileId, EstablishmentProfileId, AppointmentStatusId, Start, End, CreationDate, LastUpdateDate FROM Appointment").AsList();
             }
         }
 
-        public Appointment GetById(int appointmentID)
+        public Appointment GetById(int appointmentId)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<Appointment>("SELECT AppointmentID, ServiceID, ClientProfileID, EstablishmentProfileID, AppointmentStatusID, Start, End, CreationDate, LastUpdateDate FROM Appointment WHERE AppointmentID = @AppointmentID", new { AppointmentID = appointmentID });
+                return connection.QueryFirstOrDefault<Appointment>("SELECT AppointmentId, ServiceId, ClientProfileId, EstablishmentProfileId, AppointmentStatusId, Start, End, CreationDate, LastUpdateDate FROM Appointment WHERE AppointmentId = @AppointmentId", new { AppointmentId = appointmentId });
             }
         }
 
@@ -39,9 +39,9 @@ namespace iServiceRepositories.Repositories
             using (var connection = _connectionSingleton.GetConnection())
             {
                 return connection.Query<Appointment>(
-                    "SELECT AppointmentID, ServiceId, EstablishmentProfileID, ClientProfileID, Start, End, CreationDate, LastUpdateDate " +
-                    "FROM Appointment WHERE EstablishmentProfileID = @EstablishmentProfileID AND CAST(Start AS DATE) = CAST(@Start AS DATE)",
-                    new { EstablishmentProfileID = establishmentProfileId, Start = start }).AsList();
+                    "SELECT AppointmentId, ServiceId, EstablishmentProfileId, ClientProfileId, Start, End, CreationDate, LastUpdateDate " +
+                    "FROM Appointment WHERE EstablishmentProfileId = @EstablishmentProfileId AND CAST(Start AS DATE) = CAST(@Start AS DATE)",
+                    new { EstablishmentProfileId = establishmentProfileId, Start = start }).AsList();
             }
         }
 
@@ -49,7 +49,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO Appointment (ServiceID, ClientProfileID, EstablishmentProfileID, AppointmentStatusID, Start, End) VALUES (@ServiceID, @ClientProfileID, @EstablishmentProfileID, @AppointmentStatusID, @Start, @End); SELECT LAST_INSERT_ID();", model);
+                var id = connection.QuerySingle<int>("INSERT INTO Appointment (ServiceId, ClientProfileId, EstablishmentProfileId, AppointmentStatusId, Start, End) VALUES (@ServiceId, @ClientProfileId, @EstablishmentProfileId, @AppointmentStatusId, @Start, @End); SELECT LAST_INSERT_Id();", model);
                 return GetById(id);
             }
         }
@@ -58,16 +58,16 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE Appointment SET ServiceID = @ServiceID, ClientProfileID = @ClientProfileID, EstablishmentProfileID = @EstablishmentProfileID, AppointmentStatusID = @AppointmentStatusID, Start = @Start, End = @End, LastUpdateDate = NOW() WHERE AppointmentID = @AppointmentID", appointment);
+                connection.Execute("UPDATE Appointment SET ServiceId = @ServiceId, ClientProfileId = @ClientProfileId, EstablishmentProfileId = @EstablishmentProfileId, AppointmentStatusId = @AppointmentStatusId, Start = @Start, End = @End, LastUpdateDate = NOW() WHERE AppointmentId = @AppointmentId", appointment);
                 return GetById(appointment.AppointmentId);
             }
         }
 
-        public bool Delete(int appointmentID)
+        public bool Delete(int appointmentId)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM Appointment WHERE AppointmentID = @AppointmentID", new { AppointmentID = appointmentID });
+                int affectedRows = connection.Execute("DELETE FROM Appointment WHERE AppointmentId = @AppointmentId", new { AppointmentId = appointmentId });
                 return affectedRows > 0;
             }
         }

@@ -22,7 +22,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<Address>("SELECT AddressID, Street, Number, AdditionalInfo, City, State, Country, PostalCode, CreationDate, LastUpdateDate FROM Address").AsList();
+                return connection.Query<Address>("SELECT AddressId, Street, Number, AdditionalInfo, City, State, Country, PostalCode, CreationDate, LastUpdateDate FROM Address").AsList();
             }
         }
 
@@ -30,7 +30,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<Address>("SELECT AddressID, Street, Number, AdditionalInfo, City, State, Country, PostalCode, CreationDate, LastUpdateDate FROM Address WHERE AddressID = @AddressID", new { AddressID = addressId });
+                return connection.QueryFirstOrDefault<Address>("SELECT AddressId, Street, Number, AdditionalInfo, City, State, Country, PostalCode, CreationDate, LastUpdateDate FROM Address WHERE AddressId = @AddressId", new { AddressId = addressId });
             }
         }
 
@@ -38,7 +38,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO Address (Street, Number, AdditionalInfo, City, State, Country, PostalCode) VALUES (@Street, @Number, @AdditionalInfo, @City, @State, @Country, @PostalCode); SELECT LAST_INSERT_ID();", addressModel);
+                var id = connection.QuerySingle<int>("INSERT INTO Address (Street, Number, AdditionalInfo, City, State, Country, PostalCode) VALUES (@Street, @Number, @AdditionalInfo, @City, @State, @Country, @PostalCode); SELECT LAST_INSERT_Id();", addressModel);
                 return GetById(id);
             }
         }
@@ -47,7 +47,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE Address SET Street = @Street, Number = @Number, AdditionalInfo = @AdditionalInfo, City = @City, State = @State, Country = @Country, PostalCode = @PostalCode, LastUpdateDate = NOW() WHERE AddressID = @AddressID", address);
+                connection.Execute("UPDATE Address SET Street = @Street, Number = @Number, AdditionalInfo = @AdditionalInfo, City = @City, State = @State, Country = @Country, PostalCode = @PostalCode, LastUpdateDate = NOW() WHERE AddressId = @AddressId", address);
                 return GetById(address.AddressId);
             }
         }
@@ -56,7 +56,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM Address WHERE AddressID = @AddressID", new { AddressID = addressId });
+                int affectedRows = connection.Execute("DELETE FROM Address WHERE AddressId = @AddressId", new { AddressId = addressId });
                 return affectedRows > 0;
             }
         }
