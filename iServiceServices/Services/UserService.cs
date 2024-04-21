@@ -60,11 +60,11 @@ namespace iServiceServices.Services
             try
             {
                 var user = _userRepository.GetById(userId) ?? throw new InvalidOperationException("Usuário não encontrado.");
-                var userRole = _userRoleRepository.GetById(user.UserRoleID) ?? throw new InvalidOperationException("Cargo do usuário não encontrado."); 
-                var clientProfile = _clientProfileRepository.GetByUserId(user.UserID);
-                var establishmentProfile = _establishmentProfileRepository.GetByUserId(user.UserID);
+                var userRole = _userRoleRepository.GetById(user.UserRoleId) ?? throw new InvalidOperationException("Cargo do usuário não encontrado."); 
+                var clientProfile = _clientProfileRepository.GetByUserId(user.UserId);
+                var establishmentProfile = _establishmentProfileRepository.GetByUserId(user.UserId);
 
-                int? addressId = clientProfile?.AddressID > 0 ? clientProfile.AddressID : establishmentProfile?.AddressID;
+                int? addressId = clientProfile?.AddressId > 0 ? clientProfile.AddressId : establishmentProfile?.AddressId;
                 var address = addressId.HasValue ? _addressRepository.GetById(addressId.Value) : throw new InvalidOperationException("Endereço não encontrado."); ;
 
                 var userInfo = new UserInfo

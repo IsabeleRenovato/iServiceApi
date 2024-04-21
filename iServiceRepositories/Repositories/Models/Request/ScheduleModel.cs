@@ -2,7 +2,7 @@
 {
     public class ScheduleModel
     {
-        public int EstablishmentProfileID { get; set; }
+        public int EstablishmentProfileId { get; set; }
         public string Days { get; set; }
         public string Start { get; set; }
         public string End { get; set; }

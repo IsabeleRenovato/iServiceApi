@@ -71,16 +71,16 @@ namespace iServiceServices.Services
         {
             try
             {
-                var clientProfile = new ClientProfileRepository(_configuration).GetById(model.ClientProfileID);
+                var clientProfile = new ClientProfileRepository(_configuration).GetById(model.ClientProfileId);
 
-                if (clientProfile?.ClientProfileID > 0 == false)
+                if (clientProfile?.ClientProfileId > 0 == false)
                 {
                     return Result<Appointment>.Failure($"Cliente não encontrado.");
                 }
 
-                var establishmentProfile = new EstablishmentProfileRepository(_configuration).GetById(model.EstablishmentProfileID);
+                var establishmentProfile = new EstablishmentProfileRepository(_configuration).GetById(model.EstablishmentProfileId);
 
-                if (establishmentProfile?.EstablishmentProfileID > 0 == false)
+                if (establishmentProfile?.EstablishmentProfileId > 0 == false)
                 {
                     return Result<Appointment>.Failure($"Estabelecimento não encontrado.");
                 }

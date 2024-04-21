@@ -54,7 +54,7 @@ namespace iServiceAPI.Controllers
 
             if (result.IsSuccess)
             {
-                return CreatedAtAction(nameof(GetById), new { appointmentStatusId = result.Value.AppointmentStatusID }, result.Value);
+                return CreatedAtAction(nameof(GetById), new { appointmentStatusId = result.Value.AppointmentStatusId }, result.Value);
             }
 
             return BadRequest(new { message = result.ErrorMessage });
@@ -63,7 +63,7 @@ namespace iServiceAPI.Controllers
         [HttpPut("{appointmentStatusId}")]
         public ActionResult<AppointmentStatus> Put(int appointmentStatusId, [FromBody] AppointmentStatus appointmentStatus)
         {
-            if (appointmentStatusId != appointmentStatus.AppointmentStatusID)
+            if (appointmentStatusId != appointmentStatus.AppointmentStatusId)
             {
                 return BadRequest();
             }
