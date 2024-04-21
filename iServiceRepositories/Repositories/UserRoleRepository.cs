@@ -38,7 +38,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO UserRole (Name) VALUES (@Name); SELECT LAST_INSERT_ID();", userRoleModel);
+                var id = connection.QuerySingle<int>("INSERT INTO UserRole (Name) VALUES (@Name); SELECT LAST_INSERT_Id();", userRoleModel);
                 return GetById(id);
             }
         }
