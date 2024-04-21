@@ -68,7 +68,7 @@ namespace iServiceAPI.Controllers
 
             if (result.IsSuccess)
             {
-                return CreatedAtAction(nameof(GetById), new { profileId = result.Value.EstablishmentProfileID }, result.Value);
+                return CreatedAtAction(nameof(GetById), new { profileId = result.Value.EstablishmentProfileId }, result.Value);
             }
 
             return BadRequest(new { message = result.ErrorMessage });
@@ -77,7 +77,7 @@ namespace iServiceAPI.Controllers
         [HttpPut("{profileId}")]
         public ActionResult<EstablishmentProfile> Put(int profileId, [FromBody] EstablishmentProfile profile)
         {
-            if (profileId != profile.EstablishmentProfileID)
+            if (profileId != profile.EstablishmentProfileId)
             {
                 return BadRequest();
             }

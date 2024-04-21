@@ -54,7 +54,7 @@ namespace iServiceAPI.Controllers
 
             if (result.IsSuccess)
             {
-                return CreatedAtAction(nameof(GetById), new { feedbackId = result.Value.FeedbackID }, result.Value);
+                return CreatedAtAction(nameof(GetById), new { feedbackId = result.Value.FeedbackId }, result.Value);
             }
 
             return BadRequest(new { message = result.ErrorMessage });
@@ -63,7 +63,7 @@ namespace iServiceAPI.Controllers
         [HttpPut("{feedbackId}")]
         public ActionResult<Feedback> Put(int feedbackId, [FromBody] Feedback feedback)
         {
-            if (feedbackId != feedback.FeedbackID)
+            if (feedbackId != feedback.FeedbackId)
             {
                 return BadRequest();
             }

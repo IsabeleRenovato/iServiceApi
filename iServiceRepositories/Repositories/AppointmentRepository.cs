@@ -59,7 +59,7 @@ namespace iServiceRepositories.Repositories
             using (var connection = _connectionSingleton.GetConnection())
             {
                 connection.Execute("UPDATE Appointment SET ServiceID = @ServiceID, ClientProfileID = @ClientProfileID, EstablishmentProfileID = @EstablishmentProfileID, AppointmentStatusID = @AppointmentStatusID, Start = @Start, End = @End, LastUpdateDate = NOW() WHERE AppointmentID = @AppointmentID", appointment);
-                return GetById(appointment.AppointmentID);
+                return GetById(appointment.AppointmentId);
             }
         }
 

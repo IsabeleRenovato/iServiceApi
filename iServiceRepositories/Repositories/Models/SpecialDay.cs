@@ -3,7 +3,7 @@
     public class SpecialDay
     {
         public int SpecialDayId { get; set; }
-        public int EstablishmentProfileID { get; set; }
+        public int EstablishmentProfileId { get; set; }
         public DateTime Date { get; set; }
         public string? Start { get; set; }
         public string? End { get; set; }

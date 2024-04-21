@@ -48,7 +48,7 @@ namespace iServiceRepositories.Repositories
             using (var connection = _connectionSingleton.GetConnection())
             {
                 connection.Execute("UPDATE Address SET Street = @Street, Number = @Number, AdditionalInfo = @AdditionalInfo, City = @City, State = @State, Country = @Country, PostalCode = @PostalCode, LastUpdateDate = NOW() WHERE AddressID = @AddressID", address);
-                return GetById(address.AddressID);
+                return GetById(address.AddressId);
             }
         }
 

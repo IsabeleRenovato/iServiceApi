@@ -54,7 +54,7 @@ namespace iServiceAPI.Controllers
 
             if (result.IsSuccess)
             {
-                return CreatedAtAction(nameof(GetById), new { addressId = result.Value.AddressID }, result.Value);
+                return CreatedAtAction(nameof(GetById), new { addressId = result.Value.AddressId }, result.Value);
             }
 
             return BadRequest(new { message = result.ErrorMessage });
@@ -63,7 +63,7 @@ namespace iServiceAPI.Controllers
         [HttpPut("{addressId}")]
         public ActionResult<Address> Put(int addressId, [FromBody] Address address)
         {
-            if (addressId != address.AddressID)
+            if (addressId != address.AddressId)
             {
                 return BadRequest();
             }
