@@ -1,6 +1,7 @@
 ﻿using iServiceRepositories.Repositories.Models;
 using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services;
+using iServiceServices.Services.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace iServiceAPI.Controllers
@@ -33,6 +34,19 @@ namespace iServiceAPI.Controllers
         public ActionResult<User> GetById(int userId)
         {
             var result = _userService.GetUserById(userId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        [HttpGet("GetUserInfoById/{userId}")]
+        public ActionResult<UserInfo> GetUserInfoById(int userId)
+        {
+            var result = _userService.GetUserInfoById(userId);
 
             if (result.IsSuccess)
             {
