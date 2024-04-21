@@ -31,7 +31,7 @@ namespace iServiceAPI.Controllers
 
                 if (result.IsSuccess)
                 {
-                    result.Value.Token = TokenService.GenerateToken((result.Value.User, result.Value.UserRole));
+                    //result.Value.Token = TokenService.GenerateToken((result.Value.User, result.Value.UserRole));
                     return Ok(result.Value);
                 }
                 else

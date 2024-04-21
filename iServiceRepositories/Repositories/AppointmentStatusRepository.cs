@@ -48,7 +48,7 @@ namespace iServiceRepositories.Repositories
             using (var connection = _connectionSingleton.GetConnection())
             {
                 connection.Execute("UPDATE AppointmentStatus SET Name = @Name, LastUpdateDate = NOW() WHERE AppointmentStatusID = @AppointmentStatusID", appointmentStatus);
-                return GetById(appointmentStatus.AppointmentStatusID);
+                return GetById(appointmentStatus.AppointmentStatusId);
             }
         }
 
