@@ -56,6 +56,19 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
+        [HttpGet("GetByServiceCategoryId/{serviceCategoryId}")]
+        public ActionResult<Service> GetByServiceCategoryId(int serviceCategoryId)
+        {
+            var result = _serviceService.GetByServiceCategoryId(serviceCategoryId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
         [HttpPost]
         public ActionResult<Service> Post([FromBody] ServiceModel model)
         {

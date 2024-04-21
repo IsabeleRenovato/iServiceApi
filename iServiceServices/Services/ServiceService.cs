@@ -81,6 +81,25 @@ namespace iServiceServices.Services
             }
         }
 
+        public Result<Service> GetByServiceCategoryId(int serviceCategoryId)
+        {
+            try
+            {
+                var service = _serviceRepository.GetByServiceCategoryId(serviceCategoryId);
+
+                if (service == null)
+                {
+                    return Result<Service>.Failure("Serviço não encontrado.");
+                }
+
+                return Result<Service>.Success(service);
+            }
+            catch (Exception ex)
+            {
+                return Result<Service>.Failure($"Falha ao obter o serviço: {ex.Message}");
+            }
+        }
+
         public Result<Service> AddService(ServiceModel model)
         {
             try
