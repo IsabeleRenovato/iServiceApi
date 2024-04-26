@@ -56,8 +56,21 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
+        [HttpGet("GetByEstablishmentProfileId/{establishmentProfileId}")]
+        public ActionResult<List<Service>> GetByEstablishmentProfileId(int establishmentProfileId)
+        {
+            var result = _serviceService.GetByEstablishmentProfileId(establishmentProfileId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
         [HttpGet("GetByServiceCategoryId/{serviceCategoryId}")]
-        public ActionResult<Service> GetByServiceCategoryId(int serviceCategoryId)
+        public ActionResult<List<Service>> GetByServiceCategoryId(int serviceCategoryId)
         {
             var result = _serviceService.GetByServiceCategoryId(serviceCategoryId);
 

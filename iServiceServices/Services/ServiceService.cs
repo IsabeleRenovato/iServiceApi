@@ -81,7 +81,26 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<Service> GetByServiceCategoryId(int serviceCategoryId)
+        public Result<List<Service>> GetByEstablishmentProfileId(int establishmentProfileId)
+        {
+            try
+            {
+                var service = _serviceRepository.GetByEstablishmentProfileId(establishmentProfileId);
+
+                if (service == null)
+                {
+                    return Result<List<Service>>.Failure("Serviço não encontrado.");
+                }
+
+                return Result<List<Service>>.Success(service);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<Service>>.Failure($"Falha ao obter o serviço: {ex.Message}");
+            }
+        }
+
+        public Result<List<Service>> GetByServiceCategoryId(int serviceCategoryId)
         {
             try
             {
@@ -89,14 +108,14 @@ namespace iServiceServices.Services
 
                 if (service == null)
                 {
-                    return Result<Service>.Failure("Serviço não encontrado.");
+                    return Result<List<Service>>.Failure("Serviço não encontrado.");
                 }
 
-                return Result<Service>.Success(service);
+                return Result<List<Service>>.Success(service);
             }
             catch (Exception ex)
             {
-                return Result<Service>.Failure($"Falha ao obter o serviço: {ex.Message}");
+                return Result<List<Service>>.Failure($"Falha ao obter o serviço: {ex.Message}");
             }
         }
 
