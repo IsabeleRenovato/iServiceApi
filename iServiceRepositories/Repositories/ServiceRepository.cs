@@ -35,11 +35,20 @@ namespace iServiceRepositories.Repositories
             }
         }
 
-        public Service GetByServiceCategoryId(int serviceCategoryId)
+
+        public List<Service> GetByEstablishmentProfileId(int establishmentProfileId)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<Service>("SELECT ServiceId, EstablishmentProfileId, ServiceCategoryId, Name, Description, Price, EstimatedDuration, Photo, CreationDate, LastUpdateDate FROM Service WHERE ServiceCategoryId = @ServiceCategoryId", new { ServiceCategoryId = serviceCategoryId });
+                return connection.Query<Service>("SELECT ServiceId, EstablishmentProfileId, ServiceCategoryId, Name, Description, Price, EstimatedDuration, Photo, CreationDate, LastUpdateDate FROM Service WHERE EstablishmentProfileId = @EstablishmentProfileId", new { EstablishmentProfileId = establishmentProfileId }).AsList();
+            }
+        }
+
+        public List<Service> GetByServiceCategoryId(int serviceCategoryId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                return connection.Query<Service>("SELECT ServiceId, EstablishmentProfileId, ServiceCategoryId, Name, Description, Price, EstimatedDuration, Photo, CreationDate, LastUpdateDate FROM Service WHERE ServiceCategoryId = @ServiceCategoryId", new { ServiceCategoryId = serviceCategoryId }).AsList();
             }
         }
 
