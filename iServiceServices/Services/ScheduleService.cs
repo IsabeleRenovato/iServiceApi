@@ -49,6 +49,25 @@ namespace iServiceServices.Services
             }
         }
 
+        public Result<Schedule> GetByEstablishmentProfileId(int establishmentProfileId)
+        {
+            try
+            {
+                var schedule = _scheduleRepository.GetByEstablishmentProfileId(establishmentProfileId);
+
+                if (schedule == null)
+                {
+                    return Result<Schedule>.Failure("Agenda não encontrada.");
+                }
+
+                return Result<Schedule>.Success(schedule);
+            }
+            catch (Exception ex)
+            {
+                return Result<Schedule>.Failure($"Falha ao obter a agenda: {ex.Message}");
+            }
+        }
+
         public Result<Schedule> AddSchedule(ScheduleModel model)
         {
             try
