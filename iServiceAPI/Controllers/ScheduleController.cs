@@ -42,6 +42,19 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
+        [HttpGet("GetByEstablishmentProfileId/{establishmentProfileId}")]
+        public ActionResult<Schedule> GetByEstablishmentProfileId(int establishmentProfileId)
+        {
+            var result = _scheduleService.GetByEstablishmentProfileId(establishmentProfileId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
         [HttpPost]
         public ActionResult<Schedule> Post([FromBody] ScheduleModel model)
         {
