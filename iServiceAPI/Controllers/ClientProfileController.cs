@@ -93,7 +93,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost("UploadPhoto")]
-        public ActionResult<bool> UploadPhoto([FromBody] ImageModel model)
+        public ActionResult<bool> UploadPhoto([FromForm] ImageModel model)
         {
             if (!ModelState.IsValid)
             {

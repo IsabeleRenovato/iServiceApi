@@ -83,7 +83,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Service> Post([FromBody] ServiceModel model)
+        public ActionResult<Service> Post([FromForm] ServiceModel model)
         {
             if (!ModelState.IsValid)
             {
