@@ -47,6 +47,19 @@ namespace iServiceServices.Services
             }
         }
 
+        public Result<List<EstablishmentProfile>> GetByEstablishmentCategoryId(int establishmentCategoryId)
+        {
+            try
+            {
+                var profiles = _establishmentProfileRepository.GetByEstablishmentCategoryId(establishmentCategoryId);
+                return Result<List<EstablishmentProfile>>.Success(profiles);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<EstablishmentProfile>>.Failure($"Falha ao obter os perfis de estabelecimento: {ex.Message}");
+            }
+        }
+
         public Result<EstablishmentProfile> GetProfileByUserId(int userId)
         {
             try
@@ -96,6 +109,15 @@ namespace iServiceServices.Services
         {
             try
             {
+                byte[] fileBytes;
+                using (var ms = new MemoryStream())
+                {
+                    model.Image.CopyTo(ms);
+                    fileBytes = ms.ToArray();
+                }
+
+                model.Photo = fileBytes;
+
                 var newPhoto = _establishmentProfileRepository.UpdatePhoto(model);
                 return Result<bool>.Success(newPhoto);
             }

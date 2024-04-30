@@ -35,6 +35,14 @@ namespace iServiceRepositories.Repositories
             }
         }
 
+        public List<EstablishmentProfile> GetByEstablishmentCategoryId(int establishmentCategoryId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                return connection.Query<EstablishmentProfile>("SELECT EstablishmentProfileId, UserId, CNPJ, CommercialName, EstablishmentCategoryId, AddressId, Description, CommercialPhone, CommercialEmail, Photo, CreationDate, LastUpdateDate FROM EstablishmentProfile WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { EstablishmentCategoryId = establishmentCategoryId }).AsList();
+            }
+        }
+
         public EstablishmentProfile GetByUserId(int userId)
         {
             using (var connection = _connectionSingleton.GetConnection())
