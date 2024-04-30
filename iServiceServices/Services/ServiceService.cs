@@ -123,6 +123,15 @@ namespace iServiceServices.Services
         {
             try
             {
+                byte[] fileBytes;
+                using (var ms = new MemoryStream())
+                {
+                    model.Image.CopyTo(ms);
+                    fileBytes = ms.ToArray();
+                }
+
+                model.Photo = fileBytes;
+
                 var establishmentProfile = new EstablishmentProfileRepository(_configuration).GetById(model.EstablishmentProfileId);
 
                 if (establishmentProfile?.EstablishmentProfileId > 0 == false)

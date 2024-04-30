@@ -96,6 +96,15 @@ namespace iServiceServices.Services
         {
             try
             {
+                byte[] fileBytes;
+                using (var ms = new MemoryStream())
+                {
+                    model.Image.CopyTo(ms);
+                    fileBytes = ms.ToArray();
+                }
+
+                model.Photo = fileBytes;
+
                 var newPhoto = _clientProfileRepository.UpdatePhoto(model);
                 return Result<bool>.Success(newPhoto);
             }
