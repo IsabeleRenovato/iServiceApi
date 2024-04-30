@@ -43,6 +43,19 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
+        [HttpGet("GetByEstablishmentCategoryId/{establishmentCategoryId}")]
+        public ActionResult<List<EstablishmentProfile>> GetByEstablishmentCategoryId(int establishmentCategoryId)
+        {
+            var result = _establishmentProfileService.GetByEstablishmentCategoryId(establishmentCategoryId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
         [HttpGet("GetByUserId/{userId}")]
         public ActionResult<EstablishmentProfile> GetByUserId(int userId)
         {
@@ -93,7 +106,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost("UploadPhoto")]
-        public ActionResult<bool> UploadPhoto([FromBody] ImageModel model)
+        public ActionResult<bool> UploadPhoto([FromForm] ImageModel model)
         {
             if (!ModelState.IsValid)
             {
