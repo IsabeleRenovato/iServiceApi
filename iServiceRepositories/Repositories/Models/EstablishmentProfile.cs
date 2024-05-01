@@ -11,8 +11,8 @@
         public string Description { get; set; }
         public string CommercialPhone { get; set; }
         public string CommercialEmail { get; set; }
-        public byte[]? Photo { get; set; }
-        public DateTime CreationDate { get; set; }
+        public string? Photo { get; set; }
+        public DateTime? CreationDate { get; set; }
         public DateTime? LastUpdateDate { get; set; }
     }
 }

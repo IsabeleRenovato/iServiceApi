@@ -56,7 +56,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO Service (EstablishmentProfileId, ServiceCategoryId, Name, Description, Price, EstimatedDuration, Photo) VALUES (@EstablishmentProfileId, @ServiceCategoryId, @Name, @Description, @Price, @EstimatedDuration, @Photo); SELECT LAST_INSERT_Id();", model);
+                var id = connection.QuerySingle<int>("INSERT INTO Service (EstablishmentProfileId, ServiceCategoryId, Name, Description, Price, EstimatedDuration) VALUES (@EstablishmentProfileId, @ServiceCategoryId, @Name, @Description, @Price, @EstimatedDuration); SELECT LAST_INSERT_Id();", model);
                 return GetById(id);
             }
         }
@@ -70,11 +70,11 @@ namespace iServiceRepositories.Repositories
             }
         }
 
-        public bool UpdatePhoto(ImageModel photo)
+        public bool UpdatePhoto(int id, string path)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int rowsAffected = connection.Execute("UPDATE Service SET Photo = @Photo, LastUpdateDate = NOW() WHERE ServiceId = @Id", photo);
+                int rowsAffected = connection.Execute("UPDATE Service SET Photo = @Photo, LastUpdateDate = NOW() WHERE ServiceId = @Id", new { Id = id, Photo = path });
                 return rowsAffected > 0;
             }
         }

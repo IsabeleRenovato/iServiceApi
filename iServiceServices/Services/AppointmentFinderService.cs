@@ -15,19 +15,19 @@ namespace iServiceServices.Services
             if (!schedule.Days.Contains(dayOfWeek.ToString())) return new List<TimeSpan>();
 
             // Converte horários de string para TimeSpan
-            var start = ParseTime(specialDay != null ? specialDay.Start : schedule.Start);
-            var end = ParseTime(specialDay != null ? specialDay.End : schedule.End);
-            var breakStart = string.IsNullOrEmpty(specialDay?.BreakStart) ? (TimeSpan?)null : ParseTime(specialDay.BreakStart);
-            var breakEnd = string.IsNullOrEmpty(specialDay?.BreakEnd) ? (TimeSpan?)null : ParseTime(specialDay.BreakEnd);
+            var start = specialDay != null ? ParseTime(specialDay.Start) : ParseTime(schedule?.Start);
+            var end = specialDay != null ? ParseTime(specialDay.End) : ParseTime(schedule?.End);
+            var breakStart = specialDay != null ? ParseTime(specialDay.BreakStart) : ParseTime(schedule?.BreakStart);
+            var breakEnd = specialDay != null ? ParseTime(specialDay.BreakEnd) : ParseTime(schedule?.BreakEnd);
 
-            TimeSpan currentTime = start;
+            TimeSpan currentTime = start.GetValueOrDefault();
             while (currentTime.Add(TimeSpan.FromMinutes(service.EstimatedDuration)) <= end)
             {
                 var potentialEndTime = currentTime.Add(TimeSpan.FromMinutes(service.EstimatedDuration));
 
                 if (breakStart.HasValue && breakEnd.HasValue && currentTime < breakEnd && potentialEndTime > breakStart)
                 {
-                    currentTime = breakEnd.Value > currentTime ? breakEnd.Value : currentTime.Add(TimeSpan.FromMinutes(30));
+                    currentTime = breakEnd.Value > currentTime ? breakEnd.Value : currentTime.Add(TimeSpan.FromMinutes(15));
                     continue;
                 }
 
@@ -40,14 +40,21 @@ namespace iServiceServices.Services
                     availableSlots.Add(currentTime);
                 }
 
-                currentTime = currentTime.Add(TimeSpan.FromMinutes(30));
+                currentTime = currentTime.Add(TimeSpan.FromMinutes(15));
             }
 
             return availableSlots;
         }
-        private TimeSpan ParseTime(string time)
+        TimeSpan? ParseTime(string timeString)
         {
-            return TimeSpan.Parse(time);
+            if (string.IsNullOrEmpty(timeString))
+                return null;
+
+            TimeSpan parsedTime;
+            if (TimeSpan.TryParse(timeString, out parsedTime))
+                return parsedTime;
+
+            return null;
         }
     }
 }
