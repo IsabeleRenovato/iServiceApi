@@ -123,15 +123,6 @@ namespace iServiceServices.Services
         {
             try
             {
-                byte[] fileBytes;
-                using (var ms = new MemoryStream())
-                {
-                    model.Image.CopyTo(ms);
-                    fileBytes = ms.ToArray();
-                }
-
-                model.Photo = fileBytes;
-
                 var establishmentProfile = new EstablishmentProfileRepository(_configuration).GetById(model.EstablishmentProfileId);
 
                 if (establishmentProfile?.EstablishmentProfileId > 0 == false)
@@ -140,6 +131,13 @@ namespace iServiceServices.Services
                 }
 
                 var newService = _serviceRepository.Insert(model);
+
+                var path = new FtpServices().UploadFile(model.File, "service", $"service{newService.ServiceId}.png");
+
+                _serviceRepository.UpdatePhoto(newService.ServiceId, path);
+
+                newService.Photo = path;
+
                 return Result<Service>.Success(newService);
             }
             catch (Exception ex)
@@ -152,6 +150,10 @@ namespace iServiceServices.Services
         {
             try
             {
+                if (service.File != null)
+                {
+                    service.Photo = new FtpServices().UploadFile(service.File, "service", $"service{service.ServiceId}.png");
+                }
                 var updatedService = _serviceRepository.Update(service);
                 return Result<Service>.Success(updatedService);
             }
