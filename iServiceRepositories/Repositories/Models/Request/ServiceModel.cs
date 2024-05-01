@@ -10,7 +10,6 @@ namespace iServiceRepositories.Repositories.Models.Request
         public string Description { get; set; }
         public decimal Price { get; set; }
         public double EstimatedDuration { get; set; }
-        public IFormFile Image { get; set; }
-        public byte[]? Photo { get; set; }
+        public IFormFile File { get; set; }
     }
 }
