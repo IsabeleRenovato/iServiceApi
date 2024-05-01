@@ -46,7 +46,7 @@ namespace iServiceServices.Services
                 {
                     foreach (var slot in availableSlots)
                     {
-                        schedules.Add(slot.ToString());
+                        schedules.Add(slot.ToString("hh\\:mm"));
                     }
                 }
                 else
@@ -132,7 +132,12 @@ namespace iServiceServices.Services
 
                 var newService = _serviceRepository.Insert(model);
 
-                var path = new FtpServices().UploadFile(model.File, "service", $"service{newService.ServiceId}.png");
+                var path = "";
+
+                if (model.File != null)
+                {
+                    path = new FtpServices().UploadFile(model.File, "service", $"service{newService.ServiceId}.png");
+                }
 
                 _serviceRepository.UpdatePhoto(newService.ServiceId, path);
 
