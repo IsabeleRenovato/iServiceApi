@@ -105,25 +105,27 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> UpdatePhoto(ImageModel model)
+        public Result<string> UpdatePhoto(ImageModel model)
         {
             try
             {
-                byte[] fileBytes;
-                using (var ms = new MemoryStream())
+                var path = "";
+                if (model.File != null)
                 {
-                    model.Image.CopyTo(ms);
-                    fileBytes = ms.ToArray();
+                    path = new FtpServices().UploadFile(model.File, "profile", $"profile{model.Id}.png");
                 }
 
-                model.Photo = fileBytes;
+                if (string.IsNullOrEmpty(path))
+                {
+                    return Result<string>.Failure($"Falha ao inserir o perfil de cliente.");
+                }
 
-                var newPhoto = _establishmentProfileRepository.UpdatePhoto(model);
-                return Result<bool>.Success(newPhoto);
+                var newPhoto = _establishmentProfileRepository.UpdatePhoto(model.Id, path);
+                return Result<string>.Success(path);
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure($"Falha ao inserir o perfil de cliente: {ex.Message}");
+                return Result<string>.Failure($"Falha ao inserir o perfil de cliente: {ex.Message}");
             }
         }
 

@@ -61,11 +61,11 @@ namespace iServiceRepositories.Repositories
             }
         }
 
-        public bool UpdatePhoto(ImageModel photo)
+        public bool UpdatePhoto(int id, string path)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int rowsAffected = connection.Execute("UPDATE ClientProfile SET Photo = @Photo, LastUpdateDate = NOW() WHERE ClientProfileId = @Id", photo);
+                int rowsAffected = connection.Execute("UPDATE ClientProfile SET Photo = @Photo, LastUpdateDate = NOW() WHERE UserId = @Id", new { Id = id, Photo = path });
                 return rowsAffected > 0;
             }
         }

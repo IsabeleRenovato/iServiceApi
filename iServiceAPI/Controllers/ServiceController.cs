@@ -101,7 +101,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{serviceId}")]
-        public ActionResult<Service> Put(int serviceId, [FromBody] Service service)
+        public ActionResult<Service> Put(int serviceId, [FromForm] Service service)
         {
             if (serviceId != service.ServiceId)
             {
