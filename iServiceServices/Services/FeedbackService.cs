@@ -48,25 +48,19 @@ namespace iServiceServices.Services
             }
         }
 
-        //public async Result<Feedback> GetFeedbackByEstablishment(int establishmentProfileId)
-        //{
-        //    try
-        //    {
-        //        var appointments = await _appointmentRepository
-        //        var feedback = _feedbackRepository.GetById(feedbackId);
+        public Result<List<Feedback>> GetByEstablishmentProfileId(int establishmentProfileId)
+        {
+            try
+            {
+                var feedbacks = _feedbackRepository.GetByEstablishmentProfileId(establishmentProfileId);
 
-        //        if (feedback == null)
-        //        {
-        //            return Result<Feedback>.Failure("Feedback não encontrado.");
-        //        }
-
-        //        return Result<Feedback>.Success(feedback);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Result<Feedback>.Failure($"Falha ao obter o feedback: {ex.Message}");
-        //    }
-        //}
+                return Result<List<Feedback>>.Success(feedbacks);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<Feedback>>.Failure($"Falha ao obter os feedbacks: {ex.Message}");
+            }
+        }
 
         public Result<Feedback> AddFeedback(FeedbackModel model)
         {
@@ -113,5 +107,4 @@ namespace iServiceServices.Services
             }
         }
     }
-
 }
