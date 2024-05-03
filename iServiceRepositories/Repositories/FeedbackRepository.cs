@@ -34,6 +34,14 @@ namespace iServiceRepositories.Repositories
             }
         }
 
+        public List<Feedback> GetByEstablishmentProfileId(int establishmentProfileId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                return connection.Query<Feedback>("SELECT F.FeedbackId, F.AppointmentId, F.Description, F.Rating, F.CreationDate, F.LastUpdateDate  FROM Feedback F INNER JOIN Appointment A ON F.AppointmentId = A.AppointmentId WHERE A.EstablishmentProfileId = @EstablishmentProfileId", new { EstablishmentProfileId = establishmentProfileId }).AsList();
+            }
+        }
+
         public Feedback Insert(FeedbackModel model)
         {
             using (var connection = _connectionSingleton.GetConnection())
