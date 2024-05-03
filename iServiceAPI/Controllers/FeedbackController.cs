@@ -42,6 +42,19 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
+        [HttpGet("GetByEstablishmentProfileId/{establishmentProfileId}")]
+        public ActionResult<List<Feedback>> Get(int establishmentProfileId)
+        {
+            var result = _feedbackService.GetByEstablishmentProfileId(establishmentProfileId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
         [HttpPost]
         public ActionResult<Feedback> Post([FromBody] FeedbackModel model)
         {
