@@ -1,7 +1,5 @@
 ﻿using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services;
-using iServiceServices.Services.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace iServiceAPI.Controllers
@@ -30,7 +28,7 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("GetById/{userId}")]
+        [HttpGet("{userId}")]
         public ActionResult<User> GetById(int userId)
         {
             var result = _userService.GetUserById(userId);
@@ -43,34 +41,8 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("GetUserInfoById/{userId}")]
-        public ActionResult<UserInfo> GetUserInfoById(int userId)
-        {
-            var result = _userService.GetUserInfoById(userId);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return NotFound(new { message = result.ErrorMessage });
-        }
-
-        [HttpGet("GetByEmail/{email}")]
-        public ActionResult<User> GetByEmail(string email)
-        {
-            var result = _userService.GetUserByEmail(email);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return NotFound(new { message = result.ErrorMessage });
-        }
-
         [HttpPost]
-        public ActionResult<User> Post([FromBody] UserModel userModel)
+        public ActionResult<User> Post([FromBody] UserInsert userModel)
         {
             if (!ModelState.IsValid)
             {
@@ -88,7 +60,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{userId}")]
-        public ActionResult<User> Put(int userId, [FromBody] User user)
+        public ActionResult<User> Put(int userId, [FromBody] UserUpdate user)
         {
             if (userId != user.UserId)
             {
@@ -96,24 +68,6 @@ namespace iServiceAPI.Controllers
             }
 
             var result = _userService.UpdateUser(user);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return BadRequest(new { message = result.ErrorMessage });
-        }
-
-        [HttpPut("UpdateUserProfile")]
-        public ActionResult<UserInfo> Put([FromBody] ProfileUpdate user)
-        {
-            if (user?.ClientProfile == null && user?.EstablishmentProfile == null)
-            {
-                return BadRequest();
-            }
-
-            var result = _userService.UpdateUserProfile(user);
 
             if (result.IsSuccess)
             {
@@ -136,4 +90,5 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
     }
+
 }

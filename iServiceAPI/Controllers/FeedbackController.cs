@@ -1,5 +1,4 @@
-﻿using iServiceRepositories.Repositories.Models.Request;
-using iServiceRepositories.Repositories.Models;
+﻿using iServiceRepositories.Repositories.Models;
 using iServiceServices.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,28 +41,15 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("GetByEstablishmentProfileId/{establishmentProfileId}")]
-        public ActionResult<List<Feedback>> Get(int establishmentProfileId)
-        {
-            var result = _feedbackService.GetByEstablishmentProfileId(establishmentProfileId);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return BadRequest(new { message = result.ErrorMessage });
-        }
-
         [HttpPost]
-        public ActionResult<Feedback> Post([FromBody] FeedbackModel model)
+        public ActionResult<Feedback> Post([FromBody] FeedbackInsert feedbackModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _feedbackService.AddFeedback(model);
+            var result = _feedbackService.AddFeedback(feedbackModel);
 
             if (result.IsSuccess)
             {
@@ -74,7 +60,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{feedbackId}")]
-        public ActionResult<Feedback> Put(int feedbackId, [FromBody] Feedback feedback)
+        public ActionResult<Feedback> Put(int feedbackId, [FromBody] FeedbackUpdate feedback)
         {
             if (feedbackId != feedback.FeedbackId)
             {
@@ -91,17 +77,30 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpDelete("{feedbackId}")]
-        public IActionResult Delete(int feedbackId)
+        [HttpPut("{feedbackId}/SetActive")]
+        public ActionResult<bool> SetActive(int feedbackId, [FromBody] bool isActive)
         {
-            var result = _feedbackService.DeleteFeedback(feedbackId);
+            var result = _feedbackService.SetActiveStatus(feedbackId, isActive);
 
             if (result.IsSuccess)
             {
-                return NoContent();
+                return Ok(result.Value);
             }
 
-            return NotFound(new { message = result.ErrorMessage });
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpDelete("{feedbackId}/SetDeleted")]
+        public ActionResult<bool> SetDeleted(int feedbackId, [FromBody] bool isDeleted)
+        {
+            var result = _feedbackService.SetDeletedStatus(feedbackId, isDeleted);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
         }
     }
 }

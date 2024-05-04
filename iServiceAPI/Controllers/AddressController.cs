@@ -1,5 +1,4 @@
 ﻿using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +28,7 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("GetById/{addressId}")]
+        [HttpGet("{addressId}")]
         public ActionResult<Address> GetById(int addressId)
         {
             var result = _addressService.GetAddressById(addressId);
@@ -43,7 +42,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Address> Post([FromBody] AddressModel addressModel)
+        public ActionResult<Address> Post([FromBody] AddressInsert addressModel)
         {
             if (!ModelState.IsValid)
             {
@@ -61,7 +60,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{addressId}")]
-        public ActionResult<Address> Put(int addressId, [FromBody] Address address)
+        public ActionResult<Address> Put(int addressId, [FromBody] AddressUpdate address)
         {
             if (addressId != address.AddressId)
             {
@@ -78,17 +77,30 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpDelete("{addressId}")]
-        public IActionResult Delete(int addressId)
+        [HttpPut("{addressId}/SetActive")]
+        public ActionResult<bool> SetActive(int addressId, [FromBody] bool isActive)
         {
-            var result = _addressService.DeleteAddress(addressId);
+            var result = _addressService.SetActiveStatus(addressId, isActive);
 
             if (result.IsSuccess)
             {
-                return NoContent();
+                return Ok(result.Value);
             }
 
-            return NotFound(new { message = result.ErrorMessage });
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpDelete("{addressId}/SetDeleted")]
+        public ActionResult<bool> SetDeleted(int addressId, [FromBody] bool isDeleted)
+        {
+            var result = _addressService.SetDeletedStatus(addressId, isDeleted);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
         }
     }
 }

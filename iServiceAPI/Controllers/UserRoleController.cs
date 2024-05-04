@@ -1,5 +1,4 @@
 ﻿using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,7 +42,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<UserRole> Post([FromBody] UserRoleModel userRoleModel)
+        public ActionResult<UserRole> Post([FromBody] UserRoleInsert userRoleModel)
         {
             if (!ModelState.IsValid)
             {
@@ -61,7 +60,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public ActionResult<UserRole> Put(int id, [FromBody] UserRole userRole)
+        public ActionResult<UserRole> Put(int id, [FromBody] UserRoleUpdate userRole)
         {
             if (id != userRole.UserRoleId)
             {
@@ -78,17 +77,30 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        [HttpPut("{id}/SetActive")]
+        public ActionResult<bool> SetActive(int id, [FromBody] bool isActive)
         {
-            var result = _userRoleService.DeleteUserRole(id);
+            var result = _userRoleService.SetActiveStatus(id, isActive);
 
             if (result.IsSuccess)
             {
-                return NoContent();
+                return Ok(result.Value);
             }
 
-            return NotFound(new { message = result.ErrorMessage });
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpDelete("{id}/SetDeleted")]
+        public ActionResult<bool> SetDeleted(int id, [FromBody] bool isDeleted)
+        {
+            var result = _userRoleService.SetDeletedStatus(id, isDeleted);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
         }
     }
 }

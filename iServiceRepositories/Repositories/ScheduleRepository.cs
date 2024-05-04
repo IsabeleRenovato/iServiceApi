@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
 
 namespace iServiceRepositories.Repositories
@@ -22,7 +21,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<Schedule>("SELECT ScheduleId, EstablishmentProfileId, Days, Start, End, BreakStart, BreakEnd, CreationDate, LastUpdateDate FROM Schedule").AsList();
+                return connection.Query<Schedule>("SELECT ScheduleId, EstablishmentProfileId, Days, Start, End, BreakStart, BreakEnd, Active, Deleted, CreationDate, LastUpdateDate FROM Schedule").AsList();
             }
         }
 
@@ -30,42 +29,41 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<Schedule>("SELECT ScheduleId, EstablishmentProfileId, Days, Start, End, BreakStart, BreakEnd, CreationDate, LastUpdateDate FROM Schedule WHERE ScheduleId = @ScheduleId", new { ScheduleId = scheduleId });
+                return connection.QueryFirstOrDefault<Schedule>("SELECT ScheduleId, EstablishmentProfileId, Days, Start, End, BreakStart, BreakEnd, Active, Deleted, CreationDate, LastUpdateDate FROM Schedule WHERE ScheduleId = @ScheduleId", new { ScheduleId = scheduleId });
             }
         }
 
-        public Schedule GetByEstablishmentProfileId(int establishmentProfileId)
+        public Schedule Insert(ScheduleInsert scheduleModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<Schedule>("SELECT ScheduleId, EstablishmentProfileId, Days, Start, End, BreakStart, BreakEnd, CreationDate, LastUpdateDate FROM Schedule WHERE EstablishmentProfileId = @EstablishmentProfileId", new { EstablishmentProfileId = establishmentProfileId });
-            }
-        }
-
-        public Schedule Insert(ScheduleModel model)
-        {
-            using (var connection = _connectionSingleton.GetConnection())
-            {
-                var id = connection.QuerySingle<int>("INSERT INTO Schedule (EstablishmentProfileId, Days, Start, End, BreakStart, BreakEnd) VALUES (@EstablishmentProfileId, @Days, @Start, @End, @BreakStart, @BreakEnd); SELECT LAST_INSERT_Id();", model);
+                var id = connection.QuerySingle<int>("INSERT INTO Schedule (EstablishmentProfileId, Days, Start, End, BreakStart, BreakEnd) VALUES (@EstablishmentProfileId, @Days, @Start, @End, @BreakStart, @BreakEnd); SELECT LAST_INSERT_Id();", scheduleModel);
                 return GetById(id);
             }
         }
 
-        public Schedule Update(Schedule schedule)
+        public Schedule Update(ScheduleUpdate scheduleUpdateModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE Schedule SET EstablishmentProfileId = @EstablishmentProfileId, Days = @Days, Start = @Start, End = @End, BreakStart = @BreakStart, BreakEnd = @BreakEnd, LastUpdateDate = NOW() WHERE ScheduleId = @ScheduleId", schedule);
-                return GetById(schedule.ScheduleId);
+                connection.Execute("UPDATE Schedule SET EstablishmentProfileId = @EstablishmentProfileId, Days = @Days, Start = @Start, End = @End, BreakStart = @BreakStart, BreakEnd = @BreakEnd, LastUpdateDate = NOW() WHERE ScheduleId = @ScheduleId", scheduleUpdateModel);
+                return GetById(scheduleUpdateModel.ScheduleId);
             }
         }
 
-        public bool Delete(int scheduleId)
+        public void SetActiveStatus(int scheduleId, bool isActive)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM Schedule WHERE ScheduleId = @ScheduleId", new { ScheduleId = scheduleId });
-                return affectedRows > 0;
+                connection.Execute("UPDATE Schedule SET Active = @IsActive WHERE ScheduleId = @ScheduleId", new { IsActive = isActive, ScheduleId = scheduleId });
+            }
+        }
+
+        public void SetDeletedStatus(int scheduleId, bool isDeleted)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                connection.Execute("UPDATE Schedule SET Deleted = @IsDeleted WHERE ScheduleId = @ScheduleId", new { IsDeleted = isDeleted, ScheduleId = scheduleId });
             }
         }
     }

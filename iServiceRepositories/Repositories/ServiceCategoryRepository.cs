@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
 
 namespace iServiceRepositories.Repositories
@@ -22,7 +21,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<ServiceCategory>("SELECT ServiceCategoryId, Name, CreationDate, LastUpdateDate FROM ServiceCategory").AsList();
+                return connection.Query<ServiceCategory>("SELECT ServiceCategoryId, UserProfileId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM ServiceCategory").AsList();
             }
         }
 
@@ -30,34 +29,49 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<ServiceCategory>("SELECT ServiceCategoryId, Name, CreationDate, LastUpdateDate FROM ServiceCategory WHERE ServiceCategoryId = @ServiceCategoryId", new { ServiceCategoryId = serviceCategoryId });
+                return connection.QueryFirstOrDefault<ServiceCategory>("SELECT ServiceCategoryId, UserProfileId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM ServiceCategory WHERE ServiceCategoryId = @ServiceCategoryId", new { ServiceCategoryId = serviceCategoryId });
             }
         }
 
-        public ServiceCategory Insert(ServiceCategoryModel model)
+        public ServiceCategory GetByFilter(int userProfileId, int serviceCategoryId)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO ServiceCategory (Name) VALUES (@Name); SELECT LAST_INSERT_Id();", model);
+                return connection.QueryFirstOrDefault<ServiceCategory>("SELECT ServiceCategoryId, UserProfileId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM ServiceCategory WHERE ServiceCategoryId = @ServiceCategoryId AND UserProfileId = @UserProfileId", new { ServiceCategoryId = serviceCategoryId, UserProfileId = userProfileId });
+            }
+        }
+
+        public ServiceCategory Insert(ServiceCategoryInsert serviceCategoryModel)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                var id = connection.QuerySingle<int>("INSERT INTO ServiceCategory (UserProfileId, Name) VALUES (@UserProfileId, @Name); SELECT LAST_INSERT_Id();", serviceCategoryModel);
                 return GetById(id);
             }
         }
 
-        public ServiceCategory Update(ServiceCategory serviceCategory)
+        public ServiceCategory Update(ServiceCategoryUpdate serviceCategoryUpdateModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE ServiceCategory SET Name = @Name, LastUpdateDate = NOW() WHERE ServiceCategoryId = @ServiceCategoryId", serviceCategory);
-                return GetById(serviceCategory.ServiceCategoryId);
+                connection.Execute("UPDATE ServiceCategory SET Name = @Name, LastUpdateDate = NOW() WHERE ServiceCategoryId = @ServiceCategoryId", serviceCategoryUpdateModel);
+                return GetById(serviceCategoryUpdateModel.ServiceCategoryId);
             }
         }
 
-        public bool Delete(int serviceCategoryId)
+        public void SetActiveStatus(int serviceCategoryId, bool isActive)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM ServiceCategory WHERE ServiceCategoryId = @ServiceCategoryId", new { ServiceCategoryId = serviceCategoryId });
-                return affectedRows > 0;
+                connection.Execute("UPDATE ServiceCategory SET Active = @IsActive WHERE ServiceCategoryId = @ServiceCategoryId", new { IsActive = isActive, ServiceCategoryId = serviceCategoryId });
+            }
+        }
+
+        public void SetDeletedStatus(int serviceCategoryId, bool isDeleted)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                connection.Execute("UPDATE ServiceCategory SET Deleted = @IsDeleted WHERE ServiceCategoryId = @ServiceCategoryId", new { IsDeleted = isDeleted, ServiceCategoryId = serviceCategoryId });
             }
         }
     }

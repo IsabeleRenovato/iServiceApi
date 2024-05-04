@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
 
 namespace iServiceRepositories.Repositories
@@ -42,7 +41,16 @@ namespace iServiceRepositories.Repositories
             }
         }
 
-        public User Insert(UserModel userModel)
+        public bool CheckUser(string email)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                int count = connection.QueryFirstOrDefault<int>("SELECT COUNT(*) FROM User WHERE Email = @Email", new { Email = email });
+                return count > 0;
+            }
+        }
+
+        public User Insert(UserInsert userModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
@@ -51,12 +59,12 @@ namespace iServiceRepositories.Repositories
             }
         }
 
-        public User Update(User user)
+        public User Update(UserUpdate userUpdateModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE User SET UserRoleId = @UserRoleId, Email = @Email, Password = @Password, Name = @Name, LastUpdateDate = NOW() WHERE UserId = @UserId", user);
-                return GetById(user.UserId);
+                connection.Execute("UPDATE User SET UserRoleId = @UserRoleId, Email = @Email, Password = @Password, Name = @Name, LastLogin = @LastLogin, LastUpdateDate = NOW() WHERE UserId = @UserId", userUpdateModel);
+                return GetById(userUpdateModel.UserId);
             }
         }
 
@@ -64,7 +72,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM User WHERE UserId = @UserId", new { UserId = userId });
+                var affectedRows = connection.Execute("DELETE FROM User WHERE UserId = @UserId", new { UserId = userId });
                 return affectedRows > 0;
             }
         }

@@ -1,10 +1,9 @@
-﻿using iServiceRepositories.Repositories.Models;
-
-namespace iServiceServices.Services
+﻿namespace iServiceServices.Services
 {
+    /*
     public class AppointmentFinderService
     {
-        public List<TimeSpan> FindAvailableSlots(Schedule schedule, List<SpecialDay> specialDays, Service service, DateTime date, List<Appointment> existingAppointments)
+        public List<TimeSpan> FindAvailableSlots(Schedule schedule, List<SpecialSchedule> specialDays, Service service, DateTime date, List<Appointment> existingAppointments)
         {
             List<TimeSpan> availableSlots = new List<TimeSpan>();
             // Lógica adaptada para usar strings convertidas para TimeSpan
@@ -57,4 +56,5 @@ namespace iServiceServices.Services
             return null;
         }
     }
+    */
 }

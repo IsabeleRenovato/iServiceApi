@@ -1,8 +1,6 @@
 ﻿using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services;
 using Microsoft.AspNetCore.Mvc;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace iServiceAPI.Controllers
 {
@@ -30,20 +28,7 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("GetAvailableTimes/{serviceId}/{date}")]
-        public ActionResult<List<string>> GetAvailableTimes(int serviceId, DateTime date)
-        {
-            var result = _serviceService.GetAvailableTimes(serviceId, date);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return BadRequest(new { message = result.ErrorMessage });
-        }
-
-        [HttpGet("GetById/{serviceId}")]
+        [HttpGet("{serviceId}")]
         public ActionResult<Service> GetById(int serviceId)
         {
             var result = _serviceService.GetServiceById(serviceId);
@@ -56,41 +41,15 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("GetByEstablishmentProfileId/{establishmentProfileId}")]
-        public ActionResult<List<Service>> GetByEstablishmentProfileId(int establishmentProfileId)
-        {
-            var result = _serviceService.GetByEstablishmentProfileId(establishmentProfileId);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return NotFound(new { message = result.ErrorMessage });
-        }
-
-        [HttpGet("GetByServiceCategoryId/{serviceCategoryId}")]
-        public ActionResult<List<Service>> GetByServiceCategoryId(int serviceCategoryId)
-        {
-            var result = _serviceService.GetByServiceCategoryId(serviceCategoryId);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return NotFound(new { message = result.ErrorMessage });
-        }
-
         [HttpPost]
-        public ActionResult<Service> Post([FromForm] ServiceModel model)
+        public ActionResult<Service> Post([FromForm] ServiceInsert serviceModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _serviceService.AddService(model);
+            var result = _serviceService.AddService(serviceModel);
 
             if (result.IsSuccess)
             {
@@ -101,7 +60,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{serviceId}")]
-        public ActionResult<Service> Put(int serviceId, [FromForm] Service service)
+        public ActionResult<Service> Put(int serviceId, [FromBody] ServiceUpdate service)
         {
             if (serviceId != service.ServiceId)
             {
@@ -118,17 +77,30 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpDelete("{serviceId}")]
-        public IActionResult Delete(int serviceId)
+        [HttpPut("{serviceId}/SetActive")]
+        public ActionResult<bool> SetActive(int serviceId, [FromBody] bool isActive)
         {
-            var result = _serviceService.DeleteService(serviceId);
+            var result = _serviceService.SetActiveStatus(serviceId, isActive);
 
             if (result.IsSuccess)
             {
-                return NoContent();
+                return Ok(result.Value);
             }
 
-            return NotFound(new { message = result.ErrorMessage });
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpDelete("{serviceId}/SetDeleted")]
+        public ActionResult<bool> SetDeleted(int serviceId, [FromBody] bool isDeleted)
+        {
+            var result = _serviceService.SetDeletedStatus(serviceId, isDeleted);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
         }
     }
 }

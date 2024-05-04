@@ -1,6 +1,5 @@
 ﻿using iServiceRepositories.Repositories;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
 
@@ -42,7 +41,7 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<UserRole> AddUserRole(UserRoleModel userRoleModel)
+        public Result<UserRole> AddUserRole(UserRoleInsert userRoleModel)
         {
             try
             {
@@ -55,7 +54,7 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<UserRole> UpdateUserRole(UserRole userRole)
+        public Result<UserRole> UpdateUserRole(UserRoleUpdate userRole)
         {
             try
             {
@@ -68,17 +67,29 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> DeleteUserRole(int id)
+        public Result<bool> SetActiveStatus(int id, bool isActive)
         {
             try
             {
-                var success = _userRoleRepository.Delete(id);
-                if (!success) return Result<bool>.Failure("Perfil de usuário não encontrado ou erro ao deletar.");
-                return Result<bool>.Success(success);
+                _userRoleRepository.SetActiveStatus(id, isActive);
+                return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure($"Erro ao deletar o perfil de usuário: {ex.Message}");
+                return Result<bool>.Failure($"Falha ao definir o status ativo do serviço: {ex.Message}");
+            }
+        }
+
+        public Result<bool> SetDeletedStatus(int id, bool isDeleted)
+        {
+            try
+            {
+                _userRoleRepository.SetDeletedStatus(id, isDeleted);
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure($"Falha ao definir o status excluído do serviço: {ex.Message}");
             }
         }
     }

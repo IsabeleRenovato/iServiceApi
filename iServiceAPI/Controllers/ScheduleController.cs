@@ -1,5 +1,4 @@
 ﻿using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +28,7 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("GetById/{scheduleId}")]
+        [HttpGet("{scheduleId}")]
         public ActionResult<Schedule> GetById(int scheduleId)
         {
             var result = _scheduleService.GetScheduleById(scheduleId);
@@ -42,28 +41,15 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("GetByEstablishmentProfileId/{establishmentProfileId}")]
-        public ActionResult<Schedule> GetByEstablishmentProfileId(int establishmentProfileId)
-        {
-            var result = _scheduleService.GetByEstablishmentProfileId(establishmentProfileId);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return NotFound(new { message = result.ErrorMessage });
-        }
-
         [HttpPost]
-        public ActionResult<Schedule> Post([FromBody] ScheduleModel model)
+        public ActionResult<Schedule> Post([FromBody] ScheduleInsert scheduleModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _scheduleService.AddSchedule(model);
+            var result = _scheduleService.AddSchedule(scheduleModel);
 
             if (result.IsSuccess)
             {
@@ -74,7 +60,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{scheduleId}")]
-        public ActionResult<Schedule> Put(int scheduleId, [FromBody] Schedule schedule)
+        public ActionResult<Schedule> Put(int scheduleId, [FromBody] ScheduleUpdate schedule)
         {
             if (scheduleId != schedule.ScheduleId)
             {
@@ -91,17 +77,30 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpDelete("{scheduleId}")]
-        public IActionResult Delete(int scheduleId)
+        [HttpPut("{scheduleId}/SetActive")]
+        public ActionResult<bool> SetActive(int scheduleId, [FromBody] bool isActive)
         {
-            var result = _scheduleService.DeleteSchedule(scheduleId);
+            var result = _scheduleService.SetActiveStatus(scheduleId, isActive);
 
             if (result.IsSuccess)
             {
-                return NoContent();
+                return Ok(result.Value);
             }
 
-            return NotFound(new { message = result.ErrorMessage });
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpDelete("{scheduleId}/SetDeleted")]
+        public ActionResult<bool> SetDeleted(int scheduleId, [FromBody] bool isDeleted)
+        {
+            var result = _scheduleService.SetDeletedStatus(scheduleId, isDeleted);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
         }
     }
 }
