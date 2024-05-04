@@ -1,6 +1,5 @@
 ﻿using iServiceRepositories.Repositories;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
 
@@ -8,12 +7,10 @@ namespace iServiceServices.Services
 {
     public class ScheduleService
     {
-        private readonly IConfiguration _configuration;
         private readonly ScheduleRepository _scheduleRepository;
 
         public ScheduleService(IConfiguration configuration)
         {
-            _configuration = configuration;
             _scheduleRepository = new ScheduleRepository(configuration);
         }
 
@@ -26,7 +23,7 @@ namespace iServiceServices.Services
             }
             catch (Exception ex)
             {
-                return Result<List<Schedule>>.Failure($"Falha ao obter as agendas: {ex.Message}");
+                return Result<List<Schedule>>.Failure($"Falha ao obter os horários: {ex.Message}");
             }
         }
 
@@ -38,57 +35,31 @@ namespace iServiceServices.Services
 
                 if (schedule == null)
                 {
-                    return Result<Schedule>.Failure("Agenda não encontrada.");
+                    return Result<Schedule>.Failure("Horário não encontrado.");
                 }
 
                 return Result<Schedule>.Success(schedule);
             }
             catch (Exception ex)
             {
-                return Result<Schedule>.Failure($"Falha ao obter a agenda: {ex.Message}");
+                return Result<Schedule>.Failure($"Falha ao obter o horário: {ex.Message}");
             }
         }
 
-        public Result<Schedule> GetByEstablishmentProfileId(int establishmentProfileId)
+        public Result<Schedule> AddSchedule(ScheduleInsert scheduleModel)
         {
             try
             {
-                var schedule = _scheduleRepository.GetByEstablishmentProfileId(establishmentProfileId);
-
-                if (schedule == null)
-                {
-                    return Result<Schedule>.Failure("Agenda não encontrada.");
-                }
-
-                return Result<Schedule>.Success(schedule);
-            }
-            catch (Exception ex)
-            {
-                return Result<Schedule>.Failure($"Falha ao obter a agenda: {ex.Message}");
-            }
-        }
-
-        public Result<Schedule> AddSchedule(ScheduleModel model)
-        {
-            try
-            {
-                var establishmentProfile = new EstablishmentProfileRepository(_configuration).GetById(model.EstablishmentProfileId);
-
-                if (establishmentProfile?.EstablishmentProfileId > 0 == false)
-                {
-                    return Result<Schedule>.Failure($"Estabelecimento não encontrado.");
-                }
-
-                var newSchedule = _scheduleRepository.Insert(model);
+                var newSchedule = _scheduleRepository.Insert(scheduleModel);
                 return Result<Schedule>.Success(newSchedule);
             }
             catch (Exception ex)
             {
-                return Result<Schedule>.Failure($"Falha ao inserir a agenda: {ex.Message}");
+                return Result<Schedule>.Failure($"Falha ao inserir o horário: {ex.Message}");
             }
         }
 
-        public Result<Schedule> UpdateSchedule(Schedule schedule)
+        public Result<Schedule> UpdateSchedule(ScheduleUpdate schedule)
         {
             try
             {
@@ -97,26 +68,33 @@ namespace iServiceServices.Services
             }
             catch (Exception ex)
             {
-                return Result<Schedule>.Failure($"Falha ao atualizar a agenda: {ex.Message}");
+                return Result<Schedule>.Failure($"Falha ao atualizar o horário: {ex.Message}");
             }
         }
 
-        public Result<bool> DeleteSchedule(int scheduleId)
+        public Result<bool> SetActiveStatus(int scheduleId, bool isActive)
         {
             try
             {
-                bool success = _scheduleRepository.Delete(scheduleId);
-
-                if (!success)
-                {
-                    return Result<bool>.Failure("Falha ao deletar a agenda ou agenda não encontrada.");
-                }
-
+                _scheduleRepository.SetActiveStatus(scheduleId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure($"Falha ao deletar a agenda: {ex.Message}");
+                return Result<bool>.Failure($"Falha ao definir o status ativo do horário: {ex.Message}");
+            }
+        }
+
+        public Result<bool> SetDeletedStatus(int scheduleId, bool isDeleted)
+        {
+            try
+            {
+                _scheduleRepository.SetDeletedStatus(scheduleId, isDeleted);
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure($"Falha ao definir o status excluído do horário: {ex.Message}");
             }
         }
     }

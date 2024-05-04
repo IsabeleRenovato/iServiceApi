@@ -16,7 +16,6 @@ namespace iServiceAPI.Controllers
         {
             _configuration = configuration;
         }
-
         [HttpPost("login")]
         public async Task<ActionResult<UserInfo>> LoginAsync([FromBody] Login model)
         {
@@ -44,7 +43,6 @@ namespace iServiceAPI.Controllers
                 return StatusCode(500, "Ocorreu um erro inesperado.");
             }
         }
-
         [HttpPost("preregister")]
         public async Task<ActionResult<UserInfo>> PreRegisterAsync([FromBody] PreRegister model)
         {
@@ -71,7 +69,6 @@ namespace iServiceAPI.Controllers
                 return StatusCode(500, "Ocorreu um erro inesperado.");
             }
         }
-
         [HttpPost("register")]
         public async Task<ActionResult<UserInfo>> RegisterAsync([FromBody] Register model)
         {

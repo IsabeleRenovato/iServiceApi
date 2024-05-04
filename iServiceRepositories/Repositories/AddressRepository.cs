@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
 
 namespace iServiceRepositories.Repositories
@@ -22,7 +21,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<Address>("SELECT AddressId, Street, Number, AdditionalInfo, City, State, Country, PostalCode, CreationDate, LastUpdateDate FROM Address").AsList();
+                return connection.Query<Address>("SELECT AddressId, Street, Number, Neighborhood, AdditionalInfo, City, State, Country, PostalCode, Active, Deleted, CreationDate, LastUpdateDate FROM Address").AsList();
             }
         }
 
@@ -30,34 +29,41 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<Address>("SELECT AddressId, Street, Number, AdditionalInfo, City, State, Country, PostalCode, CreationDate, LastUpdateDate FROM Address WHERE AddressId = @AddressId", new { AddressId = addressId });
+                return connection.QueryFirstOrDefault<Address>("SELECT AddressId, Street, Number, Neighborhood, AdditionalInfo, City, State, Country, PostalCode, Active, Deleted, CreationDate, LastUpdateDate FROM Address WHERE AddressId = @AddressId", new { AddressId = addressId });
             }
         }
 
-        public Address Insert(AddressModel addressModel)
+        public Address Insert(AddressInsert addressModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO Address (Street, Number, AdditionalInfo, City, State, Country, PostalCode) VALUES (@Street, @Number, @AdditionalInfo, @City, @State, @Country, @PostalCode); SELECT LAST_INSERT_Id();", addressModel);
+                var id = connection.QuerySingle<int>("INSERT INTO Address (Street, Number, Neighborhood, AdditionalInfo, City, State, Country, PostalCode) VALUES (@Street, @Number, @Neighborhood, @AdditionalInfo, @City, @State, @Country, @PostalCode); SELECT LAST_INSERT_Id();", addressModel);
                 return GetById(id);
             }
         }
 
-        public Address Update(Address address)
+        public Address Update(AddressUpdate addressUpdateModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE Address SET Street = @Street, Number = @Number, AdditionalInfo = @AdditionalInfo, City = @City, State = @State, Country = @Country, PostalCode = @PostalCode, LastUpdateDate = NOW() WHERE AddressId = @AddressId", address);
-                return GetById(address.AddressId);
+                connection.Execute("UPDATE Address SET Street = @Street, Number = @Number, Neighborhood = @Neighborhood, AdditionalInfo = @AdditionalInfo, City = @City, State = @State, Country = @Country, PostalCode = @PostalCode, LastUpdateDate = NOW() WHERE AddressId = @AddressId", addressUpdateModel);
+                return GetById(addressUpdateModel.AddressId);
             }
         }
 
-        public bool Delete(int addressId)
+        public void SetActiveStatus(int addressId, bool isActive)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM Address WHERE AddressId = @AddressId", new { AddressId = addressId });
-                return affectedRows > 0;
+                connection.Execute("UPDATE Address SET Active = @IsActive WHERE AddressId = @AddressId", new { IsActive = isActive, AddressId = addressId });
+            }
+        }
+
+        public void SetDeletedStatus(int addressId, bool isDeleted)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                connection.Execute("UPDATE Address SET Deleted = @IsDeleted WHERE AddressId = @AddressId", new { IsDeleted = isDeleted, AddressId = addressId });
             }
         }
     }

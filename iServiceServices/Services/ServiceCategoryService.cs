@@ -1,6 +1,5 @@
 ﻿using iServiceRepositories.Repositories;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
 
@@ -19,27 +18,27 @@ namespace iServiceServices.Services
         {
             try
             {
-                var categories = _serviceCategoryRepository.Get();
-                return Result<List<ServiceCategory>>.Success(categories);
+                var serviceCategories = _serviceCategoryRepository.Get();
+                return Result<List<ServiceCategory>>.Success(serviceCategories);
             }
             catch (Exception ex)
             {
-                return Result<List<ServiceCategory>>.Failure($"Falha ao obter as categorias de serviços: {ex.Message}");
+                return Result<List<ServiceCategory>>.Failure($"Falha ao obter as categorias de serviço: {ex.Message}");
             }
         }
 
-        public Result<ServiceCategory> GetServiceCategoryById(int serviceCategoryId)
+        public Result<ServiceCategory> GetServiceCategoryById(int categoryId)
         {
             try
             {
-                var category = _serviceCategoryRepository.GetById(serviceCategoryId);
+                var serviceCategory = _serviceCategoryRepository.GetById(categoryId);
 
-                if (category == null)
+                if (serviceCategory == null)
                 {
                     return Result<ServiceCategory>.Failure("Categoria de serviço não encontrada.");
                 }
 
-                return Result<ServiceCategory>.Success(category);
+                return Result<ServiceCategory>.Success(serviceCategory);
             }
             catch (Exception ex)
             {
@@ -47,24 +46,24 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<ServiceCategory> AddServiceCategory(ServiceCategoryModel model)
+        public Result<ServiceCategory> AddServiceCategory(ServiceCategoryInsert categoryModel)
         {
             try
             {
-                var newCategory = _serviceCategoryRepository.Insert(model);
+                var newCategory = _serviceCategoryRepository.Insert(categoryModel);
                 return Result<ServiceCategory>.Success(newCategory);
             }
             catch (Exception ex)
             {
-                return Result<ServiceCategory>.Failure($"Falha ao criar a categoria de serviço: {ex.Message}");
+                return Result<ServiceCategory>.Failure($"Falha ao inserir a categoria de serviço: {ex.Message}");
             }
         }
 
-        public Result<ServiceCategory> UpdateServiceCategory(ServiceCategory serviceCategory)
+        public Result<ServiceCategory> UpdateServiceCategory(ServiceCategoryUpdate category)
         {
             try
             {
-                var updatedCategory = _serviceCategoryRepository.Update(serviceCategory);
+                var updatedCategory = _serviceCategoryRepository.Update(category);
                 return Result<ServiceCategory>.Success(updatedCategory);
             }
             catch (Exception ex)
@@ -73,22 +72,29 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> DeleteServiceCategory(int serviceCategoryId)
+        public Result<bool> SetActiveStatus(int categoryId, bool isActive)
         {
             try
             {
-                bool success = _serviceCategoryRepository.Delete(serviceCategoryId);
-
-                if (!success)
-                {
-                    return Result<bool>.Failure("Falha ao deletar a categoria de serviço ou categoria não encontrada.");
-                }
-
+                _serviceCategoryRepository.SetActiveStatus(categoryId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure($"Falha ao deletar a categoria de serviço: {ex.Message}");
+                return Result<bool>.Failure($"Falha ao definir o status ativo da categoria de serviço: {ex.Message}");
+            }
+        }
+
+        public Result<bool> SetDeletedStatus(int categoryId, bool isDeleted)
+        {
+            try
+            {
+                _serviceCategoryRepository.SetDeletedStatus(categoryId, isDeleted);
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure($"Falha ao definir o status excluído da categoria de serviço: {ex.Message}");
             }
         }
     }

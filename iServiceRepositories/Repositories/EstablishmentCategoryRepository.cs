@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
 
 namespace iServiceRepositories.Repositories
@@ -22,7 +21,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<EstablishmentCategory>("SELECT EstablishmentCategoryId, Name, CreationDate, LastUpdateDate FROM EstablishmentCategory").AsList();
+                return connection.Query<EstablishmentCategory>("SELECT EstablishmentCategoryId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM EstablishmentCategory").AsList();
             }
         }
 
@@ -30,34 +29,41 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<EstablishmentCategory>("SELECT EstablishmentCategoryId, Name, CreationDate, LastUpdateDate FROM EstablishmentCategory WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { EstablishmentCategoryId = establishmentCategoryId });
+                return connection.QueryFirstOrDefault<EstablishmentCategory>("SELECT EstablishmentCategoryId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM EstablishmentCategory WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { EstablishmentCategoryId = establishmentCategoryId });
             }
         }
 
-        public EstablishmentCategory Insert(EstablishmentCategoryModel model)
+        public EstablishmentCategory Insert(EstablishmentCategoryInsert establishmentCategoryModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO EstablishmentCategory (Name) VALUES (@Name); SELECT LAST_INSERT_Id();", model);
+                var id = connection.QuerySingle<int>("INSERT INTO EstablishmentCategory (Name) VALUES (@Name); SELECT LAST_INSERT_Id();", establishmentCategoryModel);
                 return GetById(id);
             }
         }
 
-        public EstablishmentCategory Update(EstablishmentCategory category)
+        public EstablishmentCategory Update(EstablishmentCategoryUpdate establishmentCategoryUpdateModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE EstablishmentCategory SET Name = @Name, LastUpdateDate = NOW() WHERE EstablishmentCategoryId = @EstablishmentCategoryId", category);
-                return GetById(category.EstablishmentCategoryId);
+                connection.Execute("UPDATE EstablishmentCategory SET Name = @Name, LastUpdateDate = NOW() WHERE EstablishmentCategoryId = @EstablishmentCategoryId", establishmentCategoryUpdateModel);
+                return GetById(establishmentCategoryUpdateModel.EstablishmentCategoryId);
             }
         }
 
-        public bool Delete(int establishmentCategoryId)
+        public void SetActiveStatus(int establishmentCategoryId, bool isActive)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM EstablishmentCategory WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { EstablishmentCategoryId = establishmentCategoryId });
-                return affectedRows > 0;
+                connection.Execute("UPDATE EstablishmentCategory SET Active = @IsActive WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { IsActive = isActive, EstablishmentCategoryId = establishmentCategoryId });
+            }
+        }
+
+        public void SetDeletedStatus(int establishmentCategoryId, bool isDeleted)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                connection.Execute("UPDATE EstablishmentCategory SET Deleted = @IsDeleted WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { IsDeleted = isDeleted, EstablishmentCategoryId = establishmentCategoryId });
             }
         }
     }

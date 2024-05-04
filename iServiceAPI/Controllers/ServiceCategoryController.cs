@@ -1,5 +1,4 @@
 ﻿using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,10 +28,10 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("{serviceCategoryId}")]
-        public ActionResult<ServiceCategory> GetById(int serviceCategoryId)
+        [HttpGet("{categoryId}")]
+        public ActionResult<ServiceCategory> GetById(int categoryId)
         {
-            var result = _serviceCategoryService.GetServiceCategoryById(serviceCategoryId);
+            var result = _serviceCategoryService.GetServiceCategoryById(categoryId);
 
             if (result.IsSuccess)
             {
@@ -43,32 +42,32 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<ServiceCategory> Post([FromBody] ServiceCategoryModel model)
+        public ActionResult<ServiceCategory> Post([FromBody] ServiceCategoryInsert categoryModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _serviceCategoryService.AddServiceCategory(model);
+            var result = _serviceCategoryService.AddServiceCategory(categoryModel);
 
             if (result.IsSuccess)
             {
-                return CreatedAtAction(nameof(GetById), new { serviceCategoryId = result.Value.ServiceCategoryId }, result.Value);
+                return CreatedAtAction(nameof(GetById), new { categoryId = result.Value.ServiceCategoryId }, result.Value);
             }
 
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpPut("{serviceCategoryId}")]
-        public ActionResult<ServiceCategory> Put(int serviceCategoryId, [FromBody] ServiceCategory serviceCategory)
+        [HttpPut("{categoryId}")]
+        public ActionResult<ServiceCategory> Put(int categoryId, [FromBody] ServiceCategoryUpdate category)
         {
-            if (serviceCategoryId != serviceCategory.ServiceCategoryId)
+            if (categoryId != category.ServiceCategoryId)
             {
                 return BadRequest();
             }
 
-            var result = _serviceCategoryService.UpdateServiceCategory(serviceCategory);
+            var result = _serviceCategoryService.UpdateServiceCategory(category);
 
             if (result.IsSuccess)
             {
@@ -78,17 +77,30 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpDelete("{serviceCategoryId}")]
-        IActionResult Delete(int serviceCategoryId)
+        [HttpPut("{categoryId}/SetActive")]
+        public ActionResult<bool> SetActive(int categoryId, [FromBody] bool isActive)
         {
-            var result = _serviceCategoryService.DeleteServiceCategory(serviceCategoryId);
+            var result = _serviceCategoryService.SetActiveStatus(categoryId, isActive);
 
             if (result.IsSuccess)
             {
-                return NoContent();
+                return Ok(result.Value);
             }
 
-            return NotFound(new { message = result.ErrorMessage });
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpDelete("{categoryId}/SetDeleted")]
+        public ActionResult<bool> SetDeleted(int categoryId, [FromBody] bool isDeleted)
+        {
+            var result = _serviceCategoryService.SetDeletedStatus(categoryId, isDeleted);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
         }
     }
 }

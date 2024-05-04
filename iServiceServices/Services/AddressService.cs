@@ -1,6 +1,5 @@
 ﻿using iServiceRepositories.Repositories;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
 
@@ -47,7 +46,7 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<Address> AddAddress(AddressModel addressModel)
+        public Result<Address> AddAddress(AddressInsert addressModel)
         {
             try
             {
@@ -60,7 +59,7 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<Address> UpdateAddress(Address address)
+        public Result<Address> UpdateAddress(AddressUpdate address)
         {
             try
             {
@@ -73,22 +72,29 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> DeleteAddress(int addressId)
+        public Result<bool> SetActiveStatus(int addressId, bool isActive)
         {
             try
             {
-                bool success = _addressRepository.Delete(addressId);
-
-                if (!success)
-                {
-                    return Result<bool>.Failure("Falha ao deletar o endereço ou endereço não encontrado.");
-                }
-
+                _addressRepository.SetActiveStatus(addressId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure($"Falha ao deletar o endereço: {ex.Message}");
+                return Result<bool>.Failure($"Falha ao definir o status ativo do endereço: {ex.Message}");
+            }
+        }
+
+        public Result<bool> SetDeletedStatus(int addressId, bool isDeleted)
+        {
+            try
+            {
+                _addressRepository.SetDeletedStatus(addressId, isDeleted);
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure($"Falha ao definir o status excluído do endereço: {ex.Message}");
             }
         }
     }

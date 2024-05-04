@@ -1,6 +1,5 @@
 ﻿using iServiceRepositories.Repositories;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
 
@@ -8,12 +7,10 @@ namespace iServiceServices.Services
 {
     public class AppointmentService
     {
-        private readonly IConfiguration _configuration;
         private readonly AppointmentRepository _appointmentRepository;
 
         public AppointmentService(IConfiguration configuration)
         {
-            _configuration = configuration;
             _appointmentRepository = new AppointmentRepository(configuration);
         }
 
@@ -48,53 +45,21 @@ namespace iServiceServices.Services
                 return Result<Appointment>.Failure($"Falha ao obter o agendamento: {ex.Message}");
             }
         }
-        
-        public Result<List<Appointment>> GetByEstablishmentAndDate(int establishmentProfileId, DateTime startDateTime)
+
+        public Result<Appointment> AddAppointment(AppointmentInsert appointmentModel)
         {
             try
             {
-                var appointments = _appointmentRepository.GetByEstablishmentAndDate(establishmentProfileId, startDateTime);
-
-                if (appointments == null)
-                {
-                    return Result<List<Appointment>>.Failure("Agendamento não encontrado.");
-                }
-
-                return Result<List<Appointment>>.Success(appointments);
-            }
-            catch (Exception ex)
-            {
-                return Result<List<Appointment>>.Failure($"Falha ao obter o agendamento: {ex.Message}");
-            }
-        }
-        public Result<Appointment> AddAppointment(AppointmentModel model)
-        {
-            try
-            {
-                var clientProfile = new ClientProfileRepository(_configuration).GetById(model.ClientProfileId);
-
-                if (clientProfile?.ClientProfileId > 0 == false)
-                {
-                    return Result<Appointment>.Failure($"Cliente não encontrado.");
-                }
-
-                var establishmentProfile = new EstablishmentProfileRepository(_configuration).GetById(model.EstablishmentProfileId);
-
-                if (establishmentProfile?.EstablishmentProfileId > 0 == false)
-                {
-                    return Result<Appointment>.Failure($"Estabelecimento não encontrado.");
-                }
-
-                var newAppointment = _appointmentRepository.Insert(model);
+                var newAppointment = _appointmentRepository.Insert(appointmentModel);
                 return Result<Appointment>.Success(newAppointment);
             }
             catch (Exception ex)
             {
-                return Result<Appointment>.Failure($"Falha ao criar o agendamento: {ex.Message}");
+                return Result<Appointment>.Failure($"Falha ao inserir o agendamento: {ex.Message}");
             }
         }
 
-        public Result<Appointment> UpdateAppointment(Appointment appointment)
+        public Result<Appointment> UpdateAppointment(AppointmentUpdate appointment)
         {
             try
             {
@@ -107,24 +72,30 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> DeleteAppointment(int appointmentId)
+        public Result<bool> SetActiveStatus(int appointmentId, bool isActive)
         {
             try
             {
-                bool success = _appointmentRepository.Delete(appointmentId);
-
-                if (!success)
-                {
-                    return Result<bool>.Failure("Falha ao deletar o agendamento ou agendamento não encontrado.");
-                }
-
+                _appointmentRepository.SetActiveStatus(appointmentId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure($"Falha ao deletar o agendamento: {ex.Message}");
+                return Result<bool>.Failure($"Falha ao definir o status ativo do agendamento: {ex.Message}");
+            }
+        }
+
+        public Result<bool> SetDeletedStatus(int appointmentId, bool isDeleted)
+        {
+            try
+            {
+                _appointmentRepository.SetDeletedStatus(appointmentId, isDeleted);
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure($"Falha ao definir o status excluído do agendamento: {ex.Message}");
             }
         }
     }
-
 }

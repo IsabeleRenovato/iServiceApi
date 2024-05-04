@@ -1,6 +1,5 @@
 ﻿using iServiceRepositories.Repositories;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
 
@@ -9,11 +8,10 @@ namespace iServiceServices.Services
     public class FeedbackService
     {
         private readonly FeedbackRepository _feedbackRepository;
-        private readonly AppointmentRepository _appointmentRepository;
+
         public FeedbackService(IConfiguration configuration)
         {
             _feedbackRepository = new FeedbackRepository(configuration);
-            _appointmentRepository = new AppointmentRepository(configuration);
         }
 
         public Result<List<Feedback>> GetAllFeedbacks()
@@ -48,34 +46,20 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<List<Feedback>> GetByEstablishmentProfileId(int establishmentProfileId)
+        public Result<Feedback> AddFeedback(FeedbackInsert feedbackModel)
         {
             try
             {
-                var feedbacks = _feedbackRepository.GetByEstablishmentProfileId(establishmentProfileId);
-
-                return Result<List<Feedback>>.Success(feedbacks);
-            }
-            catch (Exception ex)
-            {
-                return Result<List<Feedback>>.Failure($"Falha ao obter os feedbacks: {ex.Message}");
-            }
-        }
-
-        public Result<Feedback> AddFeedback(FeedbackModel model)
-        {
-            try
-            {
-                var newFeedback = _feedbackRepository.Insert(model);
+                var newFeedback = _feedbackRepository.Insert(feedbackModel);
                 return Result<Feedback>.Success(newFeedback);
             }
             catch (Exception ex)
             {
-                return Result<Feedback>.Failure($"Falha ao criar o feedback: {ex.Message}");
+                return Result<Feedback>.Failure($"Falha ao inserir o feedback: {ex.Message}");
             }
         }
 
-        public Result<Feedback> UpdateFeedback(Feedback feedback)
+        public Result<Feedback> UpdateFeedback(FeedbackUpdate feedback)
         {
             try
             {
@@ -88,22 +72,29 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> DeleteFeedback(int feedbackId)
+        public Result<bool> SetActiveStatus(int feedbackId, bool isActive)
         {
             try
             {
-                bool success = _feedbackRepository.Delete(feedbackId);
-
-                if (!success)
-                {
-                    return Result<bool>.Failure("Falha ao deletar o feedback ou feedback não encontrado.");
-                }
-
+                _feedbackRepository.SetActiveStatus(feedbackId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure($"Falha ao deletar o feedback: {ex.Message}");
+                return Result<bool>.Failure($"Falha ao definir o status ativo do feedback: {ex.Message}");
+            }
+        }
+
+        public Result<bool> SetDeletedStatus(int feedbackId, bool isDeleted)
+        {
+            try
+            {
+                _feedbackRepository.SetDeletedStatus(feedbackId, isDeleted);
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure($"Falha ao definir o status excluído do feedback: {ex.Message}");
             }
         }
     }

@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
 
 namespace iServiceRepositories.Repositories
@@ -22,7 +21,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<Feedback>("SELECT FeedbackId, AppointmentId, Description, Rating, CreationDate, LastUpdateDate FROM Feedback").AsList();
+                return connection.Query<Feedback>("SELECT FeedbackId, AppointmentId, Description, Rating, Active, Deleted, CreationDate, LastUpdateDate FROM Feedback").AsList();
             }
         }
 
@@ -30,44 +29,42 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<Feedback>("SELECT FeedbackId, AppointmentId, Description, Rating, CreationDate, LastUpdateDate FROM Feedback WHERE FeedbackId = @FeedbackId", new { FeedbackId = feedbackId });
+                return connection.QueryFirstOrDefault<Feedback>("SELECT FeedbackId, AppointmentId, Description, Rating, Active, Deleted, CreationDate, LastUpdateDate FROM Feedback WHERE FeedbackId = @FeedbackId", new { FeedbackId = feedbackId });
             }
         }
 
-        public List<Feedback> GetByEstablishmentProfileId(int establishmentProfileId)
+        public Feedback Insert(FeedbackInsert feedbackModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<Feedback>("SELECT F.FeedbackId, F.AppointmentId, F.Description, F.Rating, F.CreationDate, F.LastUpdateDate  FROM Feedback F INNER JOIN Appointment A ON F.AppointmentId = A.AppointmentId WHERE A.EstablishmentProfileId = @EstablishmentProfileId", new { EstablishmentProfileId = establishmentProfileId }).AsList();
-            }
-        }
-
-        public Feedback Insert(FeedbackModel model)
-        {
-            using (var connection = _connectionSingleton.GetConnection())
-            {
-                var id = connection.QuerySingle<int>("INSERT INTO Feedback (AppointmentId, Description, Rating) VALUES (@AppointmentId, @Description, @Rating); SELECT LAST_INSERT_Id();", model);
+                var id = connection.QuerySingle<int>("INSERT INTO Feedback (AppointmentId, Description, Rating) VALUES (@AppointmentId, @Description, @Rating); SELECT LAST_INSERT_Id();", feedbackModel);
                 return GetById(id);
             }
         }
 
-        public Feedback Update(Feedback feedback)
+        public Feedback Update(FeedbackUpdate feedbackUpdateModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE Feedback SET AppointmentId = @AppointmentId, Description = @Description, Rating = @Rating, LastUpdateDate = NOW() WHERE FeedbackId = @FeedbackId", feedback);
-                return GetById(feedback.FeedbackId);
+                connection.Execute("UPDATE Feedback SET AppointmentId = @AppointmentId, Description = @Description, Rating = @Rating, LastUpdateDate = NOW() WHERE FeedbackId = @FeedbackId", feedbackUpdateModel);
+                return GetById(feedbackUpdateModel.FeedbackId);
             }
         }
 
-        public bool Delete(int feedbackId)
+        public void SetActiveStatus(int feedbackId, bool isActive)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM Feedback WHERE FeedbackId = @FeedbackId", new { FeedbackId = feedbackId });
-                return affectedRows > 0;
+                connection.Execute("UPDATE Feedback SET Active = @IsActive WHERE FeedbackId = @FeedbackId", new { IsActive = isActive, FeedbackId = feedbackId });
+            }
+        }
+
+        public void SetDeletedStatus(int feedbackId, bool isDeleted)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                connection.Execute("UPDATE Feedback SET Deleted = @IsDeleted WHERE FeedbackId = @FeedbackId", new { IsDeleted = isDeleted, FeedbackId = feedbackId });
             }
         }
     }
-
 }

@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
 
 namespace iServiceRepositories.Repositories
@@ -22,7 +21,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<UserRole>("SELECT UserRoleId, Name, CreationDate, LastUpdateDate FROM UserRole").AsList();
+                return connection.Query<UserRole>("SELECT UserRoleId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM UserRole").AsList();
             }
         }
 
@@ -30,11 +29,11 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<UserRole>("SELECT UserRoleId, Name, CreationDate, LastUpdateDate FROM UserRole WHERE UserRoleId = @UserRoleId", new { UserRoleId = userRoleId });
+                return connection.QueryFirstOrDefault<UserRole>("SELECT UserRoleId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM UserRole WHERE UserRoleId = @UserRoleId", new { UserRoleId = userRoleId });
             }
         }
 
-        public UserRole Insert(UserRoleModel userRoleModel)
+        public UserRole Insert(UserRoleInsert userRoleModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
@@ -43,21 +42,28 @@ namespace iServiceRepositories.Repositories
             }
         }
 
-        public UserRole Update(UserRole userRole)
+        public UserRole Update(UserRoleUpdate userRoleUpdateModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE UserRole SET Name = @Name, LastUpdateDate = NOW() WHERE UserRoleId = @UserRoleId", userRole);
-                return GetById(userRole.UserRoleId);
+                connection.Execute("UPDATE UserRole SET Name = @Name, LastUpdateDate = NOW() WHERE UserRoleId = @UserRoleId", userRoleUpdateModel);
+                return GetById(userRoleUpdateModel.UserRoleId);
             }
         }
 
-        public bool Delete(int userRoleId)
+        public void SetActiveStatus(int userRoleId, bool isActive)
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                int affectedRows = connection.Execute("DELETE FROM UserRole WHERE UserRoleId = @UserRoleId", new { UserRoleId = userRoleId });
-                return affectedRows > 0;
+                connection.Execute("UPDATE UserRole SET Active = @IsActive WHERE UserRoleId = @UserRoleId", new { IsActive = isActive, UserRoleId = userRoleId });
+            }
+        }
+
+        public void SetDeletedStatus(int userRoleId, bool isDeleted)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                connection.Execute("UPDATE UserRole SET Deleted = @IsDeleted WHERE UserRoleId = @UserRoleId", new { IsDeleted = isDeleted, UserRoleId = userRoleId });
             }
         }
     }

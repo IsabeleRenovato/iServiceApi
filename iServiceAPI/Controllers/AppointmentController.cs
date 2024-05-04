@@ -1,5 +1,4 @@
 ﻿using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +28,7 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("GetById/{appointmentId}")]
+        [HttpGet("{appointmentId}")]
         public ActionResult<Appointment> GetById(int appointmentId)
         {
             var result = _appointmentService.GetAppointmentById(appointmentId);
@@ -43,14 +42,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Appointment> Post([FromBody] AppointmentModel model)
+        public ActionResult<Appointment> Post([FromBody] AppointmentInsert appointmentModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _appointmentService.AddAppointment(model);
+            var result = _appointmentService.AddAppointment(appointmentModel);
 
             if (result.IsSuccess)
             {
@@ -61,7 +60,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{appointmentId}")]
-        public ActionResult<Appointment> Put(int appointmentId, [FromBody] Appointment appointment)
+        public ActionResult<Appointment> Put(int appointmentId, [FromBody] AppointmentUpdate appointment)
         {
             if (appointmentId != appointment.AppointmentId)
             {
@@ -78,18 +77,30 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpDelete("{appointmentId}")]
-        public IActionResult Delete(int appointmentId)
+        [HttpPut("{appointmentId}/SetActive")]
+        public ActionResult<bool> SetActive(int appointmentId, [FromBody] bool isActive)
         {
-            var result = _appointmentService.DeleteAppointment(appointmentId);
+            var result = _appointmentService.SetActiveStatus(appointmentId, isActive);
 
             if (result.IsSuccess)
             {
-                return NoContent();
+                return Ok(result.Value);
             }
 
-            return NotFound(new { message = result.ErrorMessage });
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpDelete("{appointmentId}/SetDeleted")]
+        public ActionResult<bool> SetDeleted(int appointmentId, [FromBody] bool isDeleted)
+        {
+            var result = _appointmentService.SetDeletedStatus(appointmentId, isDeleted);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
         }
     }
-
 }
