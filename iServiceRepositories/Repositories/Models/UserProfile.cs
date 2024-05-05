@@ -16,6 +16,7 @@
         public string? ProfileImage { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime LastUpdateDate { get; set; }
+        public Rating? Rating { get; set; }
     }
     public class UserProfileInsert
     {

@@ -21,7 +21,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<ServiceCategory>("SELECT ServiceCategoryId, UserProfileId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM ServiceCategory").AsList();
+                return connection.Query<ServiceCategory>("SELECT ServiceCategoryId, UserProfileId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM ServiceCategory WHERE Deleted = 0").AsList();
             }
         }
 
@@ -29,7 +29,15 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<ServiceCategory>("SELECT ServiceCategoryId, UserProfileId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM ServiceCategory WHERE ServiceCategoryId = @ServiceCategoryId", new { ServiceCategoryId = serviceCategoryId });
+                return connection.QueryFirstOrDefault<ServiceCategory>("SELECT ServiceCategoryId, UserProfileId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM ServiceCategory WHERE ServiceCategoryId = @ServiceCategoryId AND Deleted = 0", new { ServiceCategoryId = serviceCategoryId });
+            }
+        }
+
+        public List<ServiceCategory> GetByUserProfileId(int userProfileId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                return connection.Query<ServiceCategory>("SELECT ServiceCategoryId, UserProfileId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM ServiceCategory WHERE UserProfileId = @UserProfileId AND Deleted = 0", new { UserProfileId = userProfileId }).AsList();
             }
         }
 

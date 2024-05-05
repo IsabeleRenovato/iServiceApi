@@ -60,9 +60,24 @@ namespace iServiceServices.Services
             {
                 var typeDocument = new UtilService().ValidadorDeDocumento(model.UserProfile.Document);
 
-                if (typeDocument && model.Address == null)
+                if (typeDocument)
                 {
-                    return Result<UserInfo>.Failure("Por favor informe o endereço.");
+                    if (model.Address == null)
+                    {
+                        return Result<UserInfo>.Failure("Por favor informe o endereço.");
+                    }
+
+                    if (model.UserProfile.EstablishmentCategoryId > 0 == false)
+                    {
+                        return Result<UserInfo>.Failure("Por favor informe a categoria do estabelecimento.");
+                    }
+
+                    var establishmentCategory = new EstablishmentCategoryRepository(_configuration).GetById(model.UserProfile.EstablishmentCategoryId.GetValueOrDefault());
+
+                    if (establishmentCategory?.EstablishmentCategoryId > 0 == false)
+                    {
+                        return Result<UserInfo>.Failure("Categoria não encontrada.");
+                    }
                 }
             }
             catch (Exception e)
@@ -82,16 +97,6 @@ namespace iServiceServices.Services
             if (userRole?.UserRoleId > 0 == false)
             {
                 return Result<UserInfo>.Failure("Falha ao buscar os dados do usuário.");
-            }
-
-            if (model?.UserProfile?.EstablishmentCategoryId > 0)
-            {
-                var establishmentCategory = new EstablishmentCategoryRepository(_configuration).GetById(model.UserProfile.EstablishmentCategoryId.GetValueOrDefault());
-
-                if (establishmentCategory?.EstablishmentCategoryId > 0 == false)
-                {
-                    return Result<UserInfo>.Failure("Categoria não encontrada.");
-                }
             }
 
             try
@@ -143,6 +148,7 @@ namespace iServiceServices.Services
                 return Result<UserInfo>.Success(new UserInfo
                 {
                     User = user,
+                    UserRole = userRole,
                     UserProfile = userProfile,
                     Address = address
                 });
@@ -152,15 +158,6 @@ namespace iServiceServices.Services
                 return Result<UserInfo>.Failure("Falha no registro do usuário.");
             }
         }
-        public static string HashPassword(string password)
-        {
-            return BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
-        }
-        public static bool VerifyPassword(string password, string correctHash)
-        {
-            return BCrypt.Net.BCrypt.Verify(password, correctHash);
-        }
-
         public Result<UserInfo> Login(Login model)
         {
             try
@@ -205,6 +202,15 @@ namespace iServiceServices.Services
             {
                 return Result<UserInfo>.Failure($"Falha ao realizar o login do usuário: {ex.Message}");
             }
+        }
+
+        public static string HashPassword(string password)
+        {
+            return BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
+        }
+        public static bool VerifyPassword(string password, string correctHash)
+        {
+            return BCrypt.Net.BCrypt.Verify(password, correctHash);
         }
     }
 }

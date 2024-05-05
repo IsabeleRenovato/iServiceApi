@@ -46,6 +46,25 @@ namespace iServiceServices.Services
             }
         }
 
+        public Result<List<ServiceCategory>> GetByUserProfileId(int userProfileId)
+        {
+            try
+            {
+                var serviceCategory = _serviceCategoryRepository.GetByUserProfileId(userProfileId);
+
+                if (serviceCategory == null)
+                {
+                    return Result<List<ServiceCategory>>.Failure("Categoria de serviço não encontrada.");
+                }
+
+                return Result<List<ServiceCategory>>.Success(serviceCategory);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<ServiceCategory>>.Failure($"Falha ao obter a categoria de serviço: {ex.Message}");
+            }
+        }
+
         public Result<ServiceCategory> AddServiceCategory(ServiceCategoryInsert categoryModel)
         {
             try

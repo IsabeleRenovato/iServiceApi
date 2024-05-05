@@ -21,7 +21,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<EstablishmentCategory>("SELECT EstablishmentCategoryId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM EstablishmentCategory").AsList();
+                return connection.Query<EstablishmentCategory>("SELECT EstablishmentCategoryId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM EstablishmentCategory WHERE Active = 1 AND Deleted = 0").AsList();
             }
         }
 
@@ -29,7 +29,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<EstablishmentCategory>("SELECT EstablishmentCategoryId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM EstablishmentCategory WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { EstablishmentCategoryId = establishmentCategoryId });
+                return connection.QueryFirstOrDefault<EstablishmentCategory>("SELECT EstablishmentCategoryId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM EstablishmentCategory WHERE EstablishmentCategoryId = @EstablishmentCategoryId AND Active = 1 AND Deleted = 0", new { EstablishmentCategoryId = establishmentCategoryId });
             }
         }
 

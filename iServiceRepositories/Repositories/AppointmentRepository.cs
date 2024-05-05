@@ -21,7 +21,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<Appointment>("SELECT AppointmentId, ServiceId, ClientProfileId, EstablishmentProfileId, AppointmentStatusId, Start, End, Active, Deleted, CreationDate, LastUpdateDate FROM Appointment").AsList();
+                return connection.Query<Appointment>("SELECT AppointmentId, ServiceId, ClientUserProfileId, EstablishmentUserProfileId, AppointmentStatusId, Start, End, Active, Deleted, CreationDate, LastUpdateDate FROM Appointment").AsList();
             }
         }
 
@@ -29,7 +29,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<Appointment>("SELECT AppointmentId, ServiceId, ClientProfileId, EstablishmentProfileId, AppointmentStatusId, Start, End, Active, Deleted, CreationDate, LastUpdateDate FROM Appointment WHERE AppointmentId = @AppointmentId", new { AppointmentId = appointmentId });
+                return connection.QueryFirstOrDefault<Appointment>("SELECT AppointmentId, ServiceId, ClientUserProfileId, EstablishmentUserProfileId, AppointmentStatusId, Start, End, Active, Deleted, CreationDate, LastUpdateDate FROM Appointment WHERE AppointmentId = @AppointmentId", new { AppointmentId = appointmentId });
             }
         }
 
@@ -37,7 +37,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO Appointment (ServiceId, ClientProfileId, EstablishmentProfileId, AppointmentStatusId, Start, End) VALUES (@ServiceId, @ClientProfileId, @EstablishmentProfileId, @AppointmentStatusId, @Start, @End); SELECT LAST_INSERT_Id();", appointmentModel);
+                var id = connection.QuerySingle<int>("INSERT INTO Appointment (ServiceId, ClientUserProfileId, EstablishmentUserProfileId, AppointmentStatusId, Start, End) VALUES (@ServiceId, @ClientUserProfileId, @EstablishmentUserProfileId, @AppointmentStatusId, @Start, @End); SELECT LAST_INSERT_Id();", appointmentModel);
                 return GetById(id);
             }
         }
@@ -46,7 +46,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE Appointment SET ServiceId = @ServiceId, ClientProfileId = @ClientProfileId, EstablishmentProfileId = @EstablishmentProfileId, AppointmentStatusId = @AppointmentStatusId, Start = @Start, End = @End, LastUpdateDate = NOW() WHERE AppointmentId = @AppointmentId", appointmentUpdateModel);
+                connection.Execute("UPDATE Appointment SET AppointmentStatusId = @AppointmentStatusId, Start = @Start, End = @End, LastUpdateDate = NOW() WHERE AppointmentId = @AppointmentId", appointmentUpdateModel);
                 return GetById(appointmentUpdateModel.AppointmentId);
             }
         }

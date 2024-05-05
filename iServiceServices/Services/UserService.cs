@@ -2,16 +2,26 @@
 using iServiceRepositories.Repositories.Models;
 using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
+using MySqlX.XDevAPI.Common;
+using System.Configuration;
 
 namespace iServiceServices.Services
 {
     public class UserService
     {
         private readonly UserRepository _userRepository;
+        private readonly UserRoleRepository _userRoleRepository;
+        private readonly UserProfileRepository _userProfileRepository;
+        private readonly AddressRepository _addressRepository;
+        private readonly EstablishmentCategoryRepository _establishmentCategoryRepository;
 
         public UserService(IConfiguration configuration)
         {
             _userRepository = new UserRepository(configuration);
+            _userRoleRepository = new UserRoleRepository(configuration);
+            _userProfileRepository = new UserProfileRepository(configuration);
+            _addressRepository = new AddressRepository(configuration);
+            _establishmentCategoryRepository = new EstablishmentCategoryRepository(configuration);
         }
 
         public Result<List<User>> GetAllUsers()

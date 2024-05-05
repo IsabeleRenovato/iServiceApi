@@ -33,6 +33,14 @@ namespace iServiceRepositories.Repositories
             }
         }
 
+        public List<Service> GetServiceByUserProfileId(int userProfileId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                return connection.Query<Service>("SELECT ServiceId, UserProfileId, ServiceCategoryId, Name, Description, Price, EstimatedDuration, ServiceImage, Active, Deleted, CreationDate, LastUpdateDate FROM Service WHERE UserProfileId = @UserProfileId AND Deleted = 0", new { UserProfileId = userProfileId }).AsList();
+            }
+        }
+
         public Service Insert(ServiceInsert serviceModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
@@ -46,7 +54,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE Service SET UserProfileId = @UserProfileId, ServiceCategoryId = @ServiceCategoryId, Name = @Name, Description = @Description, Price = @Price, EstimatedDuration = @EstimatedDuration, ServiceImage = @ServiceImage, LastUpdateDate = NOW() WHERE ServiceId = @ServiceId", serviceUpdateModel);
+                connection.Execute("UPDATE Service SET ServiceCategoryId = @ServiceCategoryId, Name = @Name, Description = @Description, Price = @Price, EstimatedDuration = @EstimatedDuration, ServiceImage = @ServiceImage, LastUpdateDate = NOW() WHERE ServiceId = @ServiceId", serviceUpdateModel);
                 return GetById(serviceUpdateModel.ServiceId);
             }
         }

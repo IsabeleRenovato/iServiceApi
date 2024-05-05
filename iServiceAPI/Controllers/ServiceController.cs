@@ -41,6 +41,19 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
+        [HttpGet("GetServiceByUserProfileId/{userProfileId}")]
+        public ActionResult<List<Service>> GetServiceByUserProfileId(int userProfileId)
+        {
+            var result = _serviceService.GetServiceByUserProfileId(userProfileId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
         [HttpPost]
         public ActionResult<Service> Post([FromForm] ServiceInsert serviceModel)
         {

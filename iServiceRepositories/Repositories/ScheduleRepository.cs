@@ -21,7 +21,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<Schedule>("SELECT ScheduleId, EstablishmentProfileId, Days, Start, End, BreakStart, BreakEnd, Active, Deleted, CreationDate, LastUpdateDate FROM Schedule").AsList();
+                return connection.Query<Schedule>("SELECT ScheduleId, UserProfileId, Days, Start, End, BreakStart, BreakEnd, Active, Deleted, CreationDate, LastUpdateDate FROM Schedule").AsList();
             }
         }
 
@@ -29,7 +29,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<Schedule>("SELECT ScheduleId, EstablishmentProfileId, Days, Start, End, BreakStart, BreakEnd, Active, Deleted, CreationDate, LastUpdateDate FROM Schedule WHERE ScheduleId = @ScheduleId", new { ScheduleId = scheduleId });
+                return connection.QueryFirstOrDefault<Schedule>("SELECT ScheduleId, UserProfileId, Days, Start, End, BreakStart, BreakEnd, Active, Deleted, CreationDate, LastUpdateDate FROM Schedule WHERE ScheduleId = @ScheduleId", new { ScheduleId = scheduleId });
             }
         }
 
@@ -37,7 +37,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO Schedule (EstablishmentProfileId, Days, Start, End, BreakStart, BreakEnd) VALUES (@EstablishmentProfileId, @Days, @Start, @End, @BreakStart, @BreakEnd); SELECT LAST_INSERT_Id();", scheduleModel);
+                var id = connection.QuerySingle<int>("INSERT INTO Schedule (UserProfileId, Days, Start, End, BreakStart, BreakEnd) VALUES (@UserProfileId, @Days, @Start, @End, @BreakStart, @BreakEnd); SELECT LAST_INSERT_Id();", scheduleModel);
                 return GetById(id);
             }
         }
@@ -46,7 +46,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE Schedule SET EstablishmentProfileId = @EstablishmentProfileId, Days = @Days, Start = @Start, End = @End, BreakStart = @BreakStart, BreakEnd = @BreakEnd, LastUpdateDate = NOW() WHERE ScheduleId = @ScheduleId", scheduleUpdateModel);
+                connection.Execute("UPDATE Schedule SET Days = @Days, Start = @Start, End = @End, BreakStart = @BreakStart, BreakEnd = @BreakEnd, LastUpdateDate = NOW() WHERE ScheduleId = @ScheduleId", scheduleUpdateModel);
                 return GetById(scheduleUpdateModel.ScheduleId);
             }
         }
