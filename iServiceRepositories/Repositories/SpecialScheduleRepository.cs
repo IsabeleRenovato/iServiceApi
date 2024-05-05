@@ -21,7 +21,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.Query<SpecialSchedule>("SELECT SpecialDayId, EstablishmentProfileId, Date, Start, End, BreakStart, BreakEnd, Active, Deleted, CreationDate, LastUpdateDate FROM SpecialSchedule").AsList();
+                return connection.Query<SpecialSchedule>("SELECT SpecialScheduleId, UserProfileId, Date, Start, End, BreakStart, BreakEnd, Active, Deleted, CreationDate, LastUpdateDate FROM SpecialSchedule").AsList();
             }
         }
 
@@ -29,7 +29,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                return connection.QueryFirstOrDefault<SpecialSchedule>("SELECT SpecialDayId, EstablishmentProfileId, Date, Start, End, BreakStart, BreakEnd, Active, Deleted, CreationDate, LastUpdateDate FROM SpecialSchedule WHERE SpecialDayId = @SpecialScheduleId", new { SpecialScheduleId = specialScheduleId });
+                return connection.QueryFirstOrDefault<SpecialSchedule>("SELECT SpecialScheduleId, UserProfileId, Date, Start, End, BreakStart, BreakEnd, Active, Deleted, CreationDate, LastUpdateDate FROM SpecialSchedule WHERE SpecialScheduleId = @SpecialScheduleId", new { SpecialScheduleId = specialScheduleId });
             }
         }
 
@@ -37,7 +37,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO SpecialSchedule (EstablishmentProfileId, Date, Start, End, BreakStart, BreakEnd) VALUES (@EstablishmentProfileId, @Date, @Start, @End, @BreakStart, @BreakEnd); SELECT LAST_INSERT_Id();", specialScheduleModel);
+                var id = connection.QuerySingle<int>("INSERT INTO SpecialSchedule (UserProfileId, Date, Start, End, BreakStart, BreakEnd) VALUES (@UserProfileId, @Date, @Start, @End, @BreakStart, @BreakEnd); SELECT LAST_INSERT_Id();", specialScheduleModel);
                 return GetById(id);
             }
         }
@@ -46,7 +46,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE SpecialSchedule SET EstablishmentProfileId = @EstablishmentProfileId, Date = @Date, Start = @Start, End = @End, BreakStart = @BreakStart, BreakEnd = @BreakEnd, LastUpdateDate = NOW() WHERE SpecialDayId = @SpecialScheduleId", specialScheduleUpdateModel);
+                connection.Execute("UPDATE SpecialSchedule SET Date = @Date, Start = @Start, End = @End, BreakStart = @BreakStart, BreakEnd = @BreakEnd, LastUpdateDate = NOW() WHERE SpecialScheduleId = @SpecialScheduleId", specialScheduleUpdateModel);
                 return GetById(specialScheduleUpdateModel.SpecialScheduleId);
             }
         }
@@ -55,7 +55,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE SpecialSchedule SET Active = @IsActive WHERE SpecialDayId = @SpecialScheduleId", new { IsActive = isActive, SpecialScheduleId = specialScheduleId });
+                connection.Execute("UPDATE SpecialSchedule SET Active = @IsActive WHERE SpecialScheduleId = @SpecialScheduleId", new { IsActive = isActive, SpecialScheduleId = specialScheduleId });
             }
         }
 
@@ -63,7 +63,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE SpecialSchedule SET Deleted = @IsDeleted WHERE SpecialDayId = @SpecialScheduleId", new { IsDeleted = isDeleted, SpecialScheduleId = specialScheduleId });
+                connection.Execute("UPDATE SpecialSchedule SET Deleted = @IsDeleted WHERE SpecialScheduleId = @SpecialScheduleId", new { IsDeleted = isDeleted, SpecialScheduleId = specialScheduleId });
             }
         }
     }

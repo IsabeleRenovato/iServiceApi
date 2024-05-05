@@ -3,12 +3,12 @@
     public class SpecialSchedule
     {
         public int SpecialScheduleId { get; set; }
-        public int EstablishmentUserId { get; set; }
+        public int EstablishmentUserProfileId { get; set; }
         public DateTime Date { get; set; }
-        public TimeSpan? Start { get; set; }
-        public TimeSpan? End { get; set; }
-        public TimeSpan? BreakStart { get; set; }
-        public TimeSpan? BreakEnd { get; set; }
+        public string Start { get; set; }
+        public string End { get; set; }
+        public string? BreakStart { get; set; }
+        public string? BreakEnd { get; set; }
         public bool Active { get; set; }
         public bool Deleted { get; set; }
         public DateTime CreationDate { get; set; }
@@ -16,20 +16,20 @@
     }
     public class SpecialScheduleInsert
     {
-        public int EstablishmentUserId { get; set; }
+        public int EstablishmentUserProfileId { get; set; }
         public DateTime Date { get; set; }
-        public TimeSpan? Start { get; set; }
-        public TimeSpan? End { get; set; }
-        public TimeSpan? BreakStart { get; set; }
-        public TimeSpan? BreakEnd { get; set; }
+        public string Start { get; set; }
+        public string End { get; set; }
+        public string? BreakStart { get; set; }
+        public string? BreakEnd { get; set; }
     }
     public class SpecialScheduleUpdate
     {
         public int SpecialScheduleId { get; set; }
         public DateTime Date { get; set; }
-        public TimeSpan? Start { get; set; }
-        public TimeSpan? End { get; set; }
-        public TimeSpan? BreakStart { get; set; }
-        public TimeSpan? BreakEnd { get; set; }
+        public string Start { get; set; }
+        public string End { get; set; }
+        public string? BreakStart { get; set; }
+        public string? BreakEnd { get; set; }
     }
 }

@@ -10,10 +10,12 @@ namespace iServiceServices.Services
     public class UserProfileService
     {
         private readonly UserProfileRepository _userProfileRepository;
+        private readonly FeedbackRepository _feedbackRepository;
 
         public UserProfileService(IConfiguration configuration)
         {
             _userProfileRepository = new UserProfileRepository(configuration);
+            _feedbackRepository = new FeedbackRepository(configuration);
         }
 
         public Result<List<UserProfile>> GetAllUserProfiles()
@@ -38,6 +40,17 @@ namespace iServiceServices.Services
                 if (userProfile == null)
                 {
                     return Result<UserProfile>.Failure("Perfil de usuário não encontrado.");
+                }
+
+                var feedbacks = _feedbackRepository.GetFeedbackByUserProfileId(userProfileId);
+
+                if (feedbacks?.Count > 0)
+                {
+                    userProfile.Rating = new Rating
+                    {
+                        Value = feedbacks.Sum(f => f.Rating) / feedbacks.Count,
+                        Total = feedbacks.Count
+                    };
                 }
 
                 return Result<UserProfile>.Success(userProfile);

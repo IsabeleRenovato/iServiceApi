@@ -1,14 +1,15 @@
-﻿namespace iServiceServices.Services
+﻿using iServiceRepositories.Repositories.Models;
+
+namespace iServiceServices.Services
 {
-    /*
     public class AppointmentFinderService
     {
-        public List<TimeSpan> FindAvailableSlots(Schedule schedule, List<SpecialSchedule> specialDays, Service service, DateTime date, List<Appointment> existingAppointments)
+        public List<TimeSpan> FindAvailableSlots(Schedule schedule, List<SpecialSchedule> specialSchedules, Service service, DateTime date, List<Appointment> existingAppointments)
         {
             List<TimeSpan> availableSlots = new List<TimeSpan>();
             // Lógica adaptada para usar strings convertidas para TimeSpan
             var dayOfWeek = (int)date.DayOfWeek;
-            var specialDay = specialDays.FirstOrDefault(sd => sd.Date.Date == date.Date);
+            var specialDay = specialSchedules.FirstOrDefault(sd => sd.Date.Date == date.Date);
 
             // Verifica se o dia é um dia de funcionamento normal
             if (!schedule.Days.Contains(dayOfWeek.ToString())) return new List<TimeSpan>();
@@ -56,5 +57,4 @@
             return null;
         }
     }
-    */
 }

@@ -34,10 +34,19 @@ namespace iServiceServices.Services
             {
                 var service = _serviceRepository.GetById(serviceId);
 
-                if (service == null)
+                if (service?.ServiceId > 0 == false)
                 {
                     return Result<Service>.Failure("Serviço não encontrado.");
                 }
+
+                var serviceCategory = _serviceCategoryRepository.GetById(service.ServiceCategoryId);
+
+                if (serviceCategory?.ServiceCategoryId > 0 == false)
+                {
+                    return Result<Service>.Failure("Serviço não encontrado.");
+                }
+
+                service.ServiceCategory = serviceCategory;
 
                 return Result<Service>.Success(service);
             }
@@ -47,34 +56,65 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<Service> AddService(ServiceInsert serviceModel)
+        public Result<List<Service>> GetServiceByUserProfileId(int userProfileId)
         {
             try
             {
-                var serviceCategory = _serviceCategoryRepository.GetByFilter(serviceModel.UserProfileId, serviceModel.ServiceCategoryId);
+                var services = _serviceRepository.GetServiceByUserProfileId(userProfileId);
+
+                if (services?.Count > 0 == false)
+                {
+                    return Result<List<Service>>.Failure("Serviços não encontrados.");
+                }
+
+                foreach (var service in services)
+                {
+                    var serviceCategory = _serviceCategoryRepository.GetById(service.ServiceCategoryId);
+
+                    if (serviceCategory?.ServiceCategoryId > 0 == false)
+                    {
+                        return Result<List<Service>>.Failure("Serviço não encontrado.");
+                    }
+
+                    service.ServiceCategory = serviceCategory;
+                }
+
+                return Result<List<Service>>.Success(services);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<Service>>.Failure($"Falha ao obter o serviço: {ex.Message}");
+            }
+        }
+
+        public Result<Service> AddService(ServiceInsert request)
+        {
+            try
+            {
+                var serviceCategory = _serviceCategoryRepository.GetByFilter(request.UserProfileId, request.ServiceCategoryId);
 
                 if (serviceCategory?.ServiceCategoryId > 0 == false)
                 {
                     return Result<Service>.Failure($"Falha ao buscar a categoria.");
                 }
 
-                var newService = _serviceRepository.Insert(serviceModel);
+                var newService = _serviceRepository.Insert(request);
 
                 if (newService?.ServiceId > 0 == false)
                 {
                     return Result<Service>.Failure("Falha ao inserir o serviço.");
                 }
 
-                if (serviceModel.File != null)
+                if (request.File != null)
                 {
-                    serviceModel.ServiceImage = UpdateServiceImage(new ImageModel
+                    newService.ServiceImage = UpdateServiceImage(new ImageModel
                     {
                         Id = newService.ServiceId,
-                        File = serviceModel.File,
+                        File = request.File,
                     }).Value;
                 }
 
-                return Result<Service>.Failure("Falha ao inserir o serviço.");
+                return Result<Service>.Success(newService);
             }
             catch (Exception ex)
             {
@@ -82,11 +122,33 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<Service> UpdateService(ServiceUpdate service)
+        public Result<Service> UpdateService(ServiceUpdate request)
         {
             try
             {
-                var updatedService = _serviceRepository.Update(service);
+                var service = _serviceRepository.GetById(request.ServiceId);
+
+                if (service?.ServiceId > 0 == false)
+                {
+                    return Result<Service>.Failure("Serviço não encontrado.");
+                }
+
+                var serviceCategory = _serviceCategoryRepository.GetById(request.ServiceCategoryId);
+
+                if (serviceCategory?.ServiceCategoryId > 0 == false)
+                {
+                    return Result<Service>.Failure("Categoria não encontrado.");
+                }
+
+                if (request.File != null)
+                {
+                    request.ServiceImage = UpdateServiceImage(new ImageModel
+                    {
+                        Id = request.ServiceId,
+                        File = request.File,
+                    }).Value;
+                }
+                var updatedService = _serviceRepository.Update(request);
                 return Result<Service>.Success(updatedService);
             }
             catch (Exception ex)
@@ -99,9 +161,9 @@ namespace iServiceServices.Services
         {
             try
             {
-                var userProfile = _serviceRepository.GetById(model.Id);
+                var service = _serviceRepository.GetById(model.Id);
 
-                if (userProfile?.ServiceId > 0 == false)
+                if (service?.ServiceId > 0 == false)
                 {
                     return Result<string>.Failure("Serviço não encontrado.");
                 }

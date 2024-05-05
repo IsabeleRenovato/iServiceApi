@@ -16,6 +16,7 @@ namespace iServiceRepositories.Repositories.Models
         public bool Deleted { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime LastUpdateDate { get; set; }
+        public ServiceCategory ServiceCategory { get; set; }
     }
     public class ServiceInsert
     {

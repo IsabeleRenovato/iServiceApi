@@ -33,6 +33,14 @@ namespace iServiceRepositories.Repositories
             }
         }
 
+        public List<Feedback> GetFeedbackByUserProfileId(int userProfileId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                return connection.Query<Feedback>("SELECT F.FeedbackId, F.AppointmentId, F.Description, F.Rating, F.Active, F.Deleted, F.CreationDate, F.LastUpdateDate FROM Feedback F INNER JOIN Appointment A ON A.AppointmentId = F.AppointmentId WHERE A.EstablishmentUserProfileId = @EstablishmentUserProfileId", new { EstablishmentUserProfileId = userProfileId }).AsList();
+            }
+        }
+
         public Feedback Insert(FeedbackInsert feedbackModel)
         {
             using (var connection = _connectionSingleton.GetConnection())
@@ -46,7 +54,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = _connectionSingleton.GetConnection())
             {
-                connection.Execute("UPDATE Feedback SET AppointmentId = @AppointmentId, Description = @Description, Rating = @Rating, LastUpdateDate = NOW() WHERE FeedbackId = @FeedbackId", feedbackUpdateModel);
+                connection.Execute("UPDATE Feedback SET Description = @Description, Rating = @Rating, LastUpdateDate = NOW() WHERE FeedbackId = @FeedbackId", feedbackUpdateModel);
                 return GetById(feedbackUpdateModel.FeedbackId);
             }
         }

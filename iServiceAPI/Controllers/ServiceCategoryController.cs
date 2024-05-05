@@ -41,6 +41,19 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
+        [HttpGet("GetByUserProfileId/{userProfileId}")]
+        public ActionResult<List<ServiceCategory>> GetByUserProfileId(int userProfileId)
+        {
+            var result = _serviceCategoryService.GetByUserProfileId(userProfileId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
         [HttpPost]
         public ActionResult<ServiceCategory> Post([FromBody] ServiceCategoryInsert categoryModel)
         {

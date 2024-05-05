@@ -25,6 +25,22 @@ namespace iServiceRepositories.Repositories
             }
         }
 
+        public List<User> GetUserByUserRoleId(int userRoleId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                return connection.Query<User>("SELECT UserId, UserRoleId, Email, Password, Name, CreationDate, LastLogin, LastUpdateDate FROM User WHERE UserRoleId = @UserRoleId", new { UserRoleId = userRoleId }).AsList();
+            }
+        }
+
+        public List<User> GetUserByEstablishmentCategoryId(int establishmentCategoryId)
+        {
+            using (var connection = _connectionSingleton.GetConnection())
+            {
+                return connection.Query<User>("SELECT U.UserId, U.UserRoleId, U.Email, U.Password, U.Name, U.CreationDate, U.LastLogin, U.LastUpdateDate FROM User U RIGHT JOIN UserProfile UP ON UP.UserId = U.UserId WHERE U.UserRoleId = 2 AND UP.EstablishmentCategoryId = @EstablishmentCategoryId", new { EstablishmentCategoryId = establishmentCategoryId }).AsList();
+            }
+        }
+
         public User GetById(int userId)
         {
             using (var connection = _connectionSingleton.GetConnection())
