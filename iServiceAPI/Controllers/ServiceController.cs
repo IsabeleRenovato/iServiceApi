@@ -16,9 +16,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Service>> Get()
+        public async Task<ActionResult<List<Service>>> Get()
         {
-            var result = _serviceService.GetAllServices();
+            var result = await _serviceService.GetAllServices();
 
             if (result.IsSuccess)
             {
@@ -29,9 +29,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("{serviceId}")]
-        public ActionResult<Service> GetById(int serviceId)
+        public async Task<ActionResult<Service>> GetById(int serviceId)
         {
-            var result = _serviceService.GetServiceById(serviceId);
+            var result = await _serviceService.GetServiceById(serviceId);
 
             if (result.IsSuccess)
             {
@@ -42,9 +42,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("GetServiceByUserProfileId/{userProfileId}")]
-        public ActionResult<List<Service>> GetServiceByUserProfileId(int userProfileId)
+        public async Task<ActionResult<List<Service>>> GetServiceByUserProfileId(int userProfileId)
         {
-            var result = _serviceService.GetServiceByUserProfileId(userProfileId);
+            var result = await _serviceService.GetServiceByUserProfileId(userProfileId);
 
             if (result.IsSuccess)
             {
@@ -55,14 +55,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Service> Post([FromForm] ServiceInsert serviceModel)
+        public async Task<ActionResult<Service>> Post([FromForm] Service serviceModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _serviceService.AddService(serviceModel);
+            var result = await _serviceService.AddService(serviceModel);
 
             if (result.IsSuccess)
             {
@@ -73,14 +73,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{serviceId}")]
-        public ActionResult<Service> Put(int serviceId, [FromBody] ServiceUpdate service)
+        public async Task<ActionResult<Service>> Put(int serviceId, [FromBody] Service service)
         {
             if (serviceId != service.ServiceId)
             {
                 return BadRequest();
             }
 
-            var result = _serviceService.UpdateService(service);
+            var result = await _serviceService.UpdateService(service);
 
             if (result.IsSuccess)
             {
@@ -91,9 +91,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{serviceId}/SetActive")]
-        public ActionResult<bool> SetActive(int serviceId, [FromBody] bool isActive)
+        public async Task<ActionResult<bool>> SetActive(int serviceId, [FromBody] bool isActive)
         {
-            var result = _serviceService.SetActiveStatus(serviceId, isActive);
+            var result = await _serviceService.SetActiveStatus(serviceId, isActive);
 
             if (result.IsSuccess)
             {
@@ -104,9 +104,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpDelete("{serviceId}/SetDeleted")]
-        public ActionResult<bool> SetDeleted(int serviceId, [FromBody] bool isDeleted)
+        public async Task<ActionResult<bool>> SetDeleted(int serviceId, [FromBody] bool isDeleted)
         {
-            var result = _serviceService.SetDeletedStatus(serviceId, isDeleted);
+            var result = await _serviceService.SetDeletedStatus(serviceId, isDeleted);
 
             if (result.IsSuccess)
             {

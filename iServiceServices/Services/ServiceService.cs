@@ -15,11 +15,11 @@ namespace iServiceServices.Services
             _serviceCategoryRepository = new ServiceCategoryRepository(configuration);
         }
 
-        public Result<List<Service>> GetAllServices()
+        public async Task<Result<List<Service>>> GetAllServices()
         {
             try
             {
-                var services = _serviceRepository.Get();
+                var services = await _serviceRepository.GetAsync();
                 return Result<List<Service>>.Success(services);
             }
             catch (Exception ex)
@@ -28,18 +28,18 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<Service> GetServiceById(int serviceId)
+        public async Task<Result<Service>> GetServiceById(int serviceId)
         {
             try
             {
-                var service = _serviceRepository.GetById(serviceId);
+                var service = await _serviceRepository.GetByIdAsync(serviceId);
 
                 if (service?.ServiceId > 0 == false)
                 {
                     return Result<Service>.Failure("Serviço não encontrado.");
                 }
 
-                var serviceCategory = _serviceCategoryRepository.GetById(service.ServiceCategoryId);
+                var serviceCategory = await _serviceCategoryRepository.GetByIdAsync(service.ServiceCategoryId);
 
                 if (serviceCategory?.ServiceCategoryId > 0 == false)
                 {
@@ -56,20 +56,20 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<List<Service>> GetServiceByUserProfileId(int userProfileId)
+        public async Task<Result<List<Service>>> GetServiceByUserProfileId(int userProfileId)
         {
             try
             {
-                var services = _serviceRepository.GetServiceByUserProfileId(userProfileId);
+                var services = await _serviceRepository.GetServiceByUserProfileIdAsync(userProfileId);
 
                 if (services?.Count > 0 == false)
                 {
-                    return Result<List<Service>>.Failure("Serviços não encontrados.");
+                    return Result<List<Service>>.Success(new List<Service>());
                 }
 
                 foreach (var service in services)
                 {
-                    var serviceCategory = _serviceCategoryRepository.GetById(service.ServiceCategoryId);
+                    var serviceCategory = await _serviceCategoryRepository.GetByIdAsync(service.ServiceCategoryId);
 
                     if (serviceCategory?.ServiceCategoryId > 0 == false)
                     {
@@ -87,18 +87,18 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<Service> AddService(ServiceInsert request)
+        public async Task<Result<Service>> AddService(Service request)
         {
             try
             {
-                var serviceCategory = _serviceCategoryRepository.GetByFilter(request.UserProfileId, request.ServiceCategoryId);
+                var serviceCategory = await _serviceCategoryRepository.GetByFilterAsync(request.UserProfileId, request.ServiceCategoryId);
 
                 if (serviceCategory?.ServiceCategoryId > 0 == false)
                 {
                     return Result<Service>.Failure($"Falha ao buscar a categoria.");
                 }
 
-                var newService = _serviceRepository.Insert(request);
+                var newService = await _serviceRepository.InsertAsync(request);
 
                 if (newService?.ServiceId > 0 == false)
                 {
@@ -107,11 +107,12 @@ namespace iServiceServices.Services
 
                 if (request.File != null)
                 {
-                    newService.ServiceImage = UpdateServiceImage(new ImageModel
+                    var image = await UpdateServiceImage(new ImageModel
                     {
                         Id = newService.ServiceId,
                         File = request.File,
-                    }).Value;
+                    });
+                    newService.ServiceImage = image.Value;
                 }
 
                 return Result<Service>.Success(newService);
@@ -122,18 +123,18 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<Service> UpdateService(ServiceUpdate request)
+        public async Task<Result<Service>> UpdateService(Service request)
         {
             try
             {
-                var service = _serviceRepository.GetById(request.ServiceId);
+                var service = await _serviceRepository.GetByIdAsync(request.ServiceId);
 
                 if (service?.ServiceId > 0 == false)
                 {
                     return Result<Service>.Failure("Serviço não encontrado.");
                 }
 
-                var serviceCategory = _serviceCategoryRepository.GetById(request.ServiceCategoryId);
+                var serviceCategory = await _serviceCategoryRepository.GetByIdAsync(request.ServiceCategoryId);
 
                 if (serviceCategory?.ServiceCategoryId > 0 == false)
                 {
@@ -142,13 +143,14 @@ namespace iServiceServices.Services
 
                 if (request.File != null)
                 {
-                    request.ServiceImage = UpdateServiceImage(new ImageModel
+                    var image = await UpdateServiceImage(new ImageModel
                     {
                         Id = request.ServiceId,
-                        File = request.File,
-                    }).Value;
+                        File = request.File
+                    });
+                    request.ServiceImage = image.Value;
                 }
-                var updatedService = _serviceRepository.Update(request);
+                var updatedService = await _serviceRepository.UpdateAsync(request);
                 return Result<Service>.Success(updatedService);
             }
             catch (Exception ex)
@@ -157,11 +159,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<string> UpdateServiceImage(ImageModel model)
+        public async Task<Result<string>> UpdateServiceImage(ImageModel model)
         {
             try
             {
-                var service = _serviceRepository.GetById(model.Id);
+                var service = await _serviceRepository.GetByIdAsync(model.Id);
 
                 if (service?.ServiceId > 0 == false)
                 {
@@ -173,14 +175,14 @@ namespace iServiceServices.Services
                     return Result<string>.Failure("Falha ao ler o arquivo.");
                 }
 
-                var path = new FtpServices().UploadFile(model.File, "profile", $"profile{model.Id}.png");
+                var path = await new FtpServices().UploadFileAsync(model.File, "profile", $"profile{model.Id}.png");
 
                 if (string.IsNullOrEmpty(path))
                 {
                     return Result<string>.Failure($"Falha ao subir o arquivo de imagem.");
                 }
 
-                if (_serviceRepository.UpdateServiceImage(model.Id, path))
+                if (await _serviceRepository.UpdateServiceImageAsync(model.Id, path))
                 {
                     return Result<string>.Success(path);
                 }
@@ -193,11 +195,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> SetActiveStatus(int serviceId, bool isActive)
+        public async Task<Result<bool>> SetActiveStatus(int serviceId, bool isActive)
         {
             try
             {
-                _serviceRepository.SetActiveStatus(serviceId, isActive);
+                await _serviceRepository.SetActiveStatusAsync(serviceId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
@@ -206,11 +208,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> SetDeletedStatus(int serviceId, bool isDeleted)
+        public async Task<Result<bool>> SetDeletedStatus(int serviceId, bool isDeleted)
         {
             try
             {
-                _serviceRepository.SetDeletedStatus(serviceId, isDeleted);
+                await _serviceRepository.SetDeletedStatusAsync(serviceId, isDeleted);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)

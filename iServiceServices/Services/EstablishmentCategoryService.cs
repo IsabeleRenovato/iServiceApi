@@ -14,11 +14,11 @@ namespace iServiceServices.Services
             _establishmentCategoryRepository = new EstablishmentCategoryRepository(configuration);
         }
 
-        public Result<List<EstablishmentCategory>> GetAllEstablishmentCategories()
+        public async Task<Result<List<EstablishmentCategory>>> GetAllEstablishmentCategories()
         {
             try
             {
-                var establishmentCategories = _establishmentCategoryRepository.Get();
+                var establishmentCategories = await _establishmentCategoryRepository.GetAsync();
                 return Result<List<EstablishmentCategory>>.Success(establishmentCategories);
             }
             catch (Exception ex)
@@ -27,11 +27,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<EstablishmentCategory> GetEstablishmentCategoryById(int categoryId)
+        public async Task<Result<EstablishmentCategory>> GetEstablishmentCategoryById(int categoryId)
         {
             try
             {
-                var establishmentCategory = _establishmentCategoryRepository.GetById(categoryId);
+                var establishmentCategory = await _establishmentCategoryRepository.GetByIdAsync(categoryId);
 
                 if (establishmentCategory == null)
                 {
@@ -46,11 +46,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<EstablishmentCategory> AddEstablishmentCategory(EstablishmentCategoryInsert categoryModel)
+        public async Task<Result<EstablishmentCategory>> AddEstablishmentCategory(EstablishmentCategory categoryModel)
         {
             try
             {
-                var newCategory = _establishmentCategoryRepository.Insert(categoryModel);
+                var newCategory = await _establishmentCategoryRepository.InsertAsync(categoryModel);
                 return Result<EstablishmentCategory>.Success(newCategory);
             }
             catch (Exception ex)
@@ -59,11 +59,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<EstablishmentCategory> UpdateEstablishmentCategory(EstablishmentCategoryUpdate category)
+        public async Task<Result<EstablishmentCategory>> UpdateEstablishmentCategory(EstablishmentCategory category)
         {
             try
             {
-                var updatedCategory = _establishmentCategoryRepository.Update(category);
+                var updatedCategory = await _establishmentCategoryRepository.UpdateAsync(category);
                 return Result<EstablishmentCategory>.Success(updatedCategory);
             }
             catch (Exception ex)
@@ -72,11 +72,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> SetActiveStatus(int categoryId, bool isActive)
+        public async Task<Result<bool>> SetActiveStatus(int categoryId, bool isActive)
         {
             try
             {
-                _establishmentCategoryRepository.SetActiveStatus(categoryId, isActive);
+                await _establishmentCategoryRepository.SetActiveStatusAsync(categoryId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
@@ -85,11 +85,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> SetDeletedStatus(int categoryId, bool isDeleted)
+        public async Task<Result<bool>> SetDeletedStatus(int categoryId, bool isDeleted)
         {
             try
             {
-                _establishmentCategoryRepository.SetDeletedStatus(categoryId, isDeleted);
+                await _establishmentCategoryRepository.SetDeletedStatusAsync(categoryId, isDeleted);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)

@@ -16,9 +16,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<SpecialSchedule>> Get()
+        public async Task<ActionResult<List<SpecialSchedule>>> Get()
         {
-            var result = _specialScheduleService.GetAllSpecialSchedules();
+            var result = await _specialScheduleService.GetAllSpecialSchedules();
 
             if (result.IsSuccess)
             {
@@ -29,9 +29,22 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("{specialScheduleId}")]
-        public ActionResult<SpecialSchedule> GetById(int specialScheduleId)
+        public async Task<ActionResult<SpecialSchedule>> GetById(int specialScheduleId)
         {
-            var result = _specialScheduleService.GetSpecialScheduleById(specialScheduleId);
+            var result = await _specialScheduleService.GetSpecialScheduleById(specialScheduleId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        [HttpGet("GetByUserProfileId/{userProfileId}")]
+        public async Task<ActionResult<List<SpecialSchedule>>> GetByUserProfileId(int userProfileId)
+        {
+            var result = await _specialScheduleService.GetByUserProfileId(userProfileId);
 
             if (result.IsSuccess)
             {
@@ -42,14 +55,32 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<SpecialSchedule> Post([FromBody] SpecialScheduleInsert scheduleModel)
+        public async Task<ActionResult<SpecialSchedule>> Post([FromBody] SpecialSchedule scheduleModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _specialScheduleService.AddSpecialSchedule(scheduleModel);
+            var result = await _specialScheduleService.AddSpecialSchedule(scheduleModel);
+
+            if (result.IsSuccess)
+            {
+                return CreatedAtAction(nameof(GetById), new { specialScheduleId = result.Value.SpecialScheduleId }, result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpPost("Save")]
+        public async Task<ActionResult<SpecialSchedule>> Save([FromBody] SpecialSchedule scheduleModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await _specialScheduleService.Save(scheduleModel);
 
             if (result.IsSuccess)
             {
@@ -60,14 +91,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{specialScheduleId}")]
-        public ActionResult<SpecialSchedule> Put(int specialScheduleId, [FromBody] SpecialScheduleUpdate schedule)
+        public async Task<ActionResult<SpecialSchedule>> Put(int specialScheduleId, [FromBody] SpecialSchedule schedule)
         {
             if (specialScheduleId != schedule.SpecialScheduleId)
             {
                 return BadRequest();
             }
 
-            var result = _specialScheduleService.UpdateSpecialSchedule(schedule);
+            var result = await _specialScheduleService.UpdateSpecialSchedule(schedule);
 
             if (result.IsSuccess)
             {
@@ -78,9 +109,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{specialScheduleId}/SetActive")]
-        public ActionResult<bool> SetActive(int specialScheduleId, [FromBody] bool isActive)
+        public async Task<ActionResult<bool>> SetActive(int specialScheduleId, [FromBody] bool isActive)
         {
-            var result = _specialScheduleService.SetActiveStatus(specialScheduleId, isActive);
+            var result = await _specialScheduleService.SetActiveStatus(specialScheduleId, isActive);
 
             if (result.IsSuccess)
             {
@@ -91,9 +122,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpDelete("{specialScheduleId}/SetDeleted")]
-        public ActionResult<bool> SetDeleted(int specialScheduleId, [FromBody] bool isDeleted)
+        public async Task<ActionResult<bool>> SetDeleted(int specialScheduleId, [FromBody] bool isDeleted)
         {
-            var result = _specialScheduleService.SetDeletedStatus(specialScheduleId, isDeleted);
+            var result = await _specialScheduleService.SetDeletedStatus(specialScheduleId, isDeleted);
 
             if (result.IsSuccess)
             {

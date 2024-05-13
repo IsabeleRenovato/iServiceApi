@@ -16,9 +16,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<UserRole>> Get()
+        public async Task<ActionResult<List<UserRole>>> Get()
         {
-            var result = _userRoleService.GetAllUserRoles();
+            var result = await _userRoleService.GetAllUserRoles();
 
             if (result.IsSuccess)
             {
@@ -29,9 +29,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("GetById/{id}")]
-        public ActionResult<UserRole> GetById(int id)
+        public async Task<ActionResult<UserRole>> GetById(int id)
         {
-            var result = _userRoleService.GetUserRoleById(id);
+            var result = await _userRoleService.GetUserRoleById(id);
 
             if (result.IsSuccess)
             {
@@ -42,14 +42,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<UserRole> Post([FromBody] UserRoleInsert userRoleModel)
+        public async Task<ActionResult<UserRole>> Post([FromBody] UserRole userRoleModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _userRoleService.AddUserRole(userRoleModel);
+            var result = await _userRoleService.AddUserRole(userRoleModel);
 
             if (result.IsSuccess)
             {
@@ -60,14 +60,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public ActionResult<UserRole> Put(int id, [FromBody] UserRoleUpdate userRole)
+        public async Task<ActionResult<UserRole>> Put(int id, [FromBody] UserRole userRole)
         {
             if (id != userRole.UserRoleId)
             {
                 return BadRequest();
             }
 
-            var result = _userRoleService.UpdateUserRole(userRole);
+            var result = await _userRoleService.UpdateUserRole(userRole);
 
             if (result.IsSuccess)
             {
@@ -78,9 +78,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{id}/SetActive")]
-        public ActionResult<bool> SetActive(int id, [FromBody] bool isActive)
+        public async Task<ActionResult<bool>> SetActive(int id, [FromBody] bool isActive)
         {
-            var result = _userRoleService.SetActiveStatus(id, isActive);
+            var result = await _userRoleService.SetActiveStatus(id, isActive);
 
             if (result.IsSuccess)
             {
@@ -91,9 +91,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpDelete("{id}/SetDeleted")]
-        public ActionResult<bool> SetDeleted(int id, [FromBody] bool isDeleted)
+        public async Task<ActionResult<bool>> SetDeleted(int id, [FromBody] bool isDeleted)
         {
-            var result = _userRoleService.SetDeletedStatus(id, isDeleted);
+            var result = await _userRoleService.SetDeletedStatus(id, isDeleted);
 
             if (result.IsSuccess)
             {

@@ -16,9 +16,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<EstablishmentCategory>> Get()
+        public async Task<ActionResult<List<EstablishmentCategory>>> Get()
         {
-            var result = _establishmentCategoryService.GetAllEstablishmentCategories();
+            var result = await _establishmentCategoryService.GetAllEstablishmentCategories();
 
             if (result.IsSuccess)
             {
@@ -29,9 +29,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("{categoryId}")]
-        public ActionResult<EstablishmentCategory> GetById(int categoryId)
+        public async Task<ActionResult<EstablishmentCategory>> GetById(int categoryId)
         {
-            var result = _establishmentCategoryService.GetEstablishmentCategoryById(categoryId);
+            var result = await _establishmentCategoryService.GetEstablishmentCategoryById(categoryId);
 
             if (result.IsSuccess)
             {
@@ -42,14 +42,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<EstablishmentCategory> Post([FromBody] EstablishmentCategoryInsert categoryModel)
+        public async Task<ActionResult<EstablishmentCategory>> Post([FromBody] EstablishmentCategory categoryModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _establishmentCategoryService.AddEstablishmentCategory(categoryModel);
+            var result = await _establishmentCategoryService.AddEstablishmentCategory(categoryModel);
 
             if (result.IsSuccess)
             {
@@ -60,14 +60,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{categoryId}")]
-        public ActionResult<EstablishmentCategory> Put(int categoryId, [FromBody] EstablishmentCategoryUpdate category)
+        public async Task<ActionResult<EstablishmentCategory>> Put(int categoryId, [FromBody] EstablishmentCategory category)
         {
             if (categoryId != category.EstablishmentCategoryId)
             {
                 return BadRequest();
             }
 
-            var result = _establishmentCategoryService.UpdateEstablishmentCategory(category);
+            var result = await _establishmentCategoryService.UpdateEstablishmentCategory(category);
 
             if (result.IsSuccess)
             {
@@ -78,9 +78,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{categoryId}/SetActive")]
-        public ActionResult<bool> SetActive(int categoryId, [FromBody] bool isActive)
+        public async Task<ActionResult<bool>> SetActive(int categoryId, [FromBody] bool isActive)
         {
-            var result = _establishmentCategoryService.SetActiveStatus(categoryId, isActive);
+            var result = await _establishmentCategoryService.SetActiveStatus(categoryId, isActive);
 
             if (result.IsSuccess)
             {
@@ -91,9 +91,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpDelete("{categoryId}/SetDeleted")]
-        public ActionResult<bool> SetDeleted(int categoryId, [FromBody] bool isDeleted)
+        public async Task<ActionResult<bool>> SetDeleted(int categoryId, [FromBody] bool isDeleted)
         {
-            var result = _establishmentCategoryService.SetDeletedStatus(categoryId, isDeleted);
+            var result = await _establishmentCategoryService.SetDeletedStatus(categoryId, isDeleted);
 
             if (result.IsSuccess)
             {

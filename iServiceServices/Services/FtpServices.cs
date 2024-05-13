@@ -11,11 +11,11 @@ namespace iServiceServices.Services
         private string ftpUsername = "root_ftp";
         private string ftpPassword = "27_53]KK{Gy(";
 
-        public string UploadFile(IFormFile file, string remoteDir, string remoteFileName)
+        public async Task<string> UploadFileAsync(IFormFile file, string remoteDir, string remoteFileName)
         {
             using (var imageStream = new MemoryStream())
             {
-                file.CopyTo(imageStream);
+                await file.CopyToAsync(imageStream);
                 Image image = Image.FromStream(imageStream);
                 MemoryStream pngStream = new MemoryStream();
                 image.Save(pngStream, ImageFormat.Png);
@@ -29,12 +29,12 @@ namespace iServiceServices.Services
                 request.UseBinary = true;
                 request.KeepAlive = false;
 
-                using (Stream reqStream = request.GetRequestStream())
+                using (Stream reqStream = await request.GetRequestStreamAsync())
                 {
-                    pngStream.CopyTo(reqStream);
+                    await pngStream.CopyToAsync(reqStream);
                 }
 
-                using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                using (FtpWebResponse response = (FtpWebResponse)await request.GetResponseAsync())
                 {
                     return $"http://srv452480.hstgr.cloud/images/{remoteDir}/{remoteFileName}";
                 }

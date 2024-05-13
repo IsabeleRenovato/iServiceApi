@@ -17,69 +17,118 @@ namespace iServiceRepositories.Repositories
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public List<ServiceCategory> Get()
+        public async Task<List<ServiceCategory>> GetAsync()
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.Query<ServiceCategory>("SELECT ServiceCategoryId, UserProfileId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM ServiceCategory WHERE Deleted = 0").AsList();
+                var queryResult = await connection.QueryAsync<ServiceCategory>("SELECT * FROM ServiceCategory WHERE Deleted = 0");
+                return queryResult.AsList();
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public ServiceCategory GetById(int serviceCategoryId)
+        public async Task<ServiceCategory> GetByIdAsync(int serviceCategoryId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.QueryFirstOrDefault<ServiceCategory>("SELECT ServiceCategoryId, UserProfileId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM ServiceCategory WHERE ServiceCategoryId = @ServiceCategoryId AND Deleted = 0", new { ServiceCategoryId = serviceCategoryId });
+                return await connection.QueryFirstOrDefaultAsync<ServiceCategory>(
+                    "SELECT * FROM ServiceCategory WHERE ServiceCategoryId = @ServiceCategoryId AND Deleted = 0", new { ServiceCategoryId = serviceCategoryId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public List<ServiceCategory> GetByUserProfileId(int userProfileId)
+        public async Task<List<ServiceCategory>> GetByUserProfileIdAsync(int userProfileId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.Query<ServiceCategory>("SELECT ServiceCategoryId, UserProfileId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM ServiceCategory WHERE UserProfileId = @UserProfileId AND Deleted = 0", new { UserProfileId = userProfileId }).AsList();
+                var queryResult = await connection.QueryAsync<ServiceCategory>(
+                    "SELECT * FROM ServiceCategory WHERE UserProfileId = @UserProfileId AND Deleted = 0", new { UserProfileId = userProfileId });
+                return queryResult.AsList();
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public ServiceCategory GetByFilter(int userProfileId, int serviceCategoryId)
+        public async Task<ServiceCategory> GetByFilterAsync(int userProfileId, int serviceCategoryId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.QueryFirstOrDefault<ServiceCategory>("SELECT ServiceCategoryId, UserProfileId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM ServiceCategory WHERE ServiceCategoryId = @ServiceCategoryId AND UserProfileId = @UserProfileId", new { ServiceCategoryId = serviceCategoryId, UserProfileId = userProfileId });
+                return await connection.QueryFirstOrDefaultAsync<ServiceCategory>(
+                    "SELECT * FROM ServiceCategory WHERE ServiceCategoryId = @ServiceCategoryId AND UserProfileId = @UserProfileId", new { ServiceCategoryId = serviceCategoryId, UserProfileId = userProfileId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public ServiceCategory Insert(ServiceCategoryInsert serviceCategoryModel)
+        public async Task<ServiceCategory> InsertAsync(ServiceCategory serviceCategoryModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                var id = connection.QuerySingle<int>("INSERT INTO ServiceCategory (UserProfileId, Name) VALUES (@UserProfileId, @Name); SELECT LAST_INSERT_Id();", serviceCategoryModel);
-                return GetById(id);
+                var id = await connection.QuerySingleAsync<int>(
+                    "INSERT INTO ServiceCategory (UserProfileId, Name) VALUES (@UserProfileId, @Name); SELECT LAST_INSERT_Id();", serviceCategoryModel);
+                return await GetByIdAsync(id);
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public ServiceCategory Update(ServiceCategoryUpdate serviceCategoryUpdateModel)
+        public async Task<ServiceCategory> UpdateAsync(ServiceCategory serviceCategoryUpdateModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE ServiceCategory SET Name = @Name, LastUpdateDate = NOW() WHERE ServiceCategoryId = @ServiceCategoryId", serviceCategoryUpdateModel);
-                return GetById(serviceCategoryUpdateModel.ServiceCategoryId);
+                await connection.ExecuteAsync(
+                    "UPDATE ServiceCategory SET Name = @Name, LastUpdateDate = NOW() WHERE ServiceCategoryId = @ServiceCategoryId", serviceCategoryUpdateModel);
+                return await GetByIdAsync(serviceCategoryUpdateModel.ServiceCategoryId);
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public void SetActiveStatus(int serviceCategoryId, bool isActive)
+        public async Task SetActiveStatusAsync(int serviceCategoryId, bool isActive)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE ServiceCategory SET Active = @IsActive WHERE ServiceCategoryId = @ServiceCategoryId", new { IsActive = isActive, ServiceCategoryId = serviceCategoryId });
+                await connection.ExecuteAsync(
+                    "UPDATE ServiceCategory SET Active = @IsActive WHERE ServiceCategoryId = @ServiceCategoryId", new { IsActive = isActive, ServiceCategoryId = serviceCategoryId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public void SetDeletedStatus(int serviceCategoryId, bool isDeleted)
+        public async Task SetDeletedStatusAsync(int serviceCategoryId, bool isDeleted)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE ServiceCategory SET Deleted = @IsDeleted WHERE ServiceCategoryId = @ServiceCategoryId", new { IsDeleted = isDeleted, ServiceCategoryId = serviceCategoryId });
+                await connection.ExecuteAsync(
+                    "UPDATE ServiceCategory SET Deleted = @IsDeleted WHERE ServiceCategoryId = @ServiceCategoryId", new { IsDeleted = isDeleted, ServiceCategoryId = serviceCategoryId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
     }

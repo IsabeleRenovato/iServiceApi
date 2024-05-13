@@ -17,9 +17,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("GetUserInfoByUserId/{userId}")]
-        public ActionResult<User> GetUserInfoByUserId(int userId)
+        public async Task<ActionResult<User>> GetUserInfoByUserId(int userId)
         {
-            var result = _userInfoService.GetUserInfoByUserId(userId);
+            var result = await _userInfoService.GetUserInfoByUserId(userId);
 
             if (result.IsSuccess)
             {
@@ -30,9 +30,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("GetUserInfoByUserRoleId/{userRoleId}")]
-        public ActionResult<List<UserInfo>> GetUserInfoByUserRoleId(int userRoleId)
+        public async Task<ActionResult<List<UserInfo>>> GetUserInfoByUserRoleId(int userRoleId)
         {
-            var result = _userInfoService.GetUserInfoByUserRoleId(userRoleId);
+            var result = await _userInfoService.GetUserInfoByUserRoleId(userRoleId);
 
             if (result.IsSuccess)
             {
@@ -43,9 +43,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("GetUserInfoByEstablishmentCategoryId/{establishmentCategoryId}")]
-        public ActionResult<List<UserInfo>> GetUserInfoByUserRoleIdAndEstablishmentCategoryId(int establishmentCategoryId)
+        public async Task<ActionResult<List<UserInfo>>> GetUserInfoByUserRoleIdAndEstablishmentCategoryId(int establishmentCategoryId)
         {
-            var result = _userInfoService.GetUserInfoByEstablishmentCategoryId(establishmentCategoryId);
+            var result = await _userInfoService.GetUserInfoByEstablishmentCategoryId(establishmentCategoryId);
 
             if (result.IsSuccess)
             {

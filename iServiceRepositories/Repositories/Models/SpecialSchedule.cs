@@ -14,22 +14,4 @@
         public DateTime CreationDate { get; set; }
         public DateTime LastUpdateDate { get; set; }
     }
-    public class SpecialScheduleInsert
-    {
-        public int EstablishmentUserProfileId { get; set; }
-        public DateTime Date { get; set; }
-        public string Start { get; set; }
-        public string End { get; set; }
-        public string? BreakStart { get; set; }
-        public string? BreakEnd { get; set; }
-    }
-    public class SpecialScheduleUpdate
-    {
-        public int SpecialScheduleId { get; set; }
-        public DateTime Date { get; set; }
-        public string Start { get; set; }
-        public string End { get; set; }
-        public string? BreakStart { get; set; }
-        public string? BreakEnd { get; set; }
-    }
 }

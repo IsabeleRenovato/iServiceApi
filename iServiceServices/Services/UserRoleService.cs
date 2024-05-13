@@ -14,11 +14,11 @@ namespace iServiceServices.Services
             _userRoleRepository = new UserRoleRepository(configuration);
         }
 
-        public Result<List<UserRole>> GetAllUserRoles()
+        public async Task<Result<List<UserRole>>> GetAllUserRoles()
         {
             try
             {
-                var roles = _userRoleRepository.Get();
+                var roles = await _userRoleRepository.GetAsync();
                 return Result<List<UserRole>>.Success(roles);
             }
             catch (Exception ex)
@@ -27,11 +27,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<UserRole> GetUserRoleById(int id)
+        public async Task<Result<UserRole>> GetUserRoleById(int id)
         {
             try
             {
-                var role = _userRoleRepository.GetById(id);
+                var role = await _userRoleRepository.GetByIdAsync(id);
                 if (role == null) return Result<UserRole>.Failure("Perfil de usuário não encontrado.");
                 return Result<UserRole>.Success(role);
             }
@@ -41,11 +41,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<UserRole> AddUserRole(UserRoleInsert userRoleModel)
+        public async Task<Result<UserRole>> AddUserRole(UserRole userRoleModel)
         {
             try
             {
-                var newUserRole = _userRoleRepository.Insert(userRoleModel);
+                var newUserRole = await _userRoleRepository.InsertAsync(userRoleModel);
                 return Result<UserRole>.Success(newUserRole);
             }
             catch (Exception ex)
@@ -54,11 +54,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<UserRole> UpdateUserRole(UserRoleUpdate userRole)
+        public async Task<Result<UserRole>> UpdateUserRole(UserRole userRole)
         {
             try
             {
-                var updatedUserRole = _userRoleRepository.Update(userRole);
+                var updatedUserRole = await _userRoleRepository.UpdateAsync(userRole);
                 return Result<UserRole>.Success(updatedUserRole);
             }
             catch (Exception ex)
@@ -67,11 +67,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> SetActiveStatus(int id, bool isActive)
+        public async Task<Result<bool>> SetActiveStatus(int id, bool isActive)
         {
             try
             {
-                _userRoleRepository.SetActiveStatus(id, isActive);
+                await _userRoleRepository.SetActiveStatusAsync(id, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
@@ -80,11 +80,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> SetDeletedStatus(int id, bool isDeleted)
+        public async Task<Result<bool>> SetDeletedStatus(int id, bool isDeleted)
         {
             try
             {
-                _userRoleRepository.SetDeletedStatus(id, isDeleted);
+                await _userRoleRepository.SetDeletedStatusAsync(id, isDeleted);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)

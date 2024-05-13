@@ -17,79 +17,151 @@ namespace iServiceRepositories.Repositories
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public List<User> Get()
+        public async Task<List<User>> GetAsync()
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.Query<User>("SELECT UserId, UserRoleId, Email, Password, Name, CreationDate, LastLogin, LastUpdateDate FROM User").AsList();
+                var queryResult = await connection.QueryAsync<User>("SELECT * FROM User");
+                return queryResult.AsList();
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public List<User> GetUserByUserRoleId(int userRoleId)
+        public async Task<List<User>> GetUserByUserRoleIdAsync(int userRoleId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.Query<User>("SELECT UserId, UserRoleId, Email, Password, Name, CreationDate, LastLogin, LastUpdateDate FROM User WHERE UserRoleId = @UserRoleId", new { UserRoleId = userRoleId }).AsList();
+                var queryResult = await connection.QueryAsync<User>(
+                    "SELECT * FROM User WHERE UserRoleId = @UserRoleId", new { UserRoleId = userRoleId });
+                return queryResult.AsList();
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public List<User> GetUserByEstablishmentCategoryId(int establishmentCategoryId)
+        public async Task<List<User>> GetUserByEstablishmentCategoryIdAsync(int establishmentCategoryId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.Query<User>("SELECT U.UserId, U.UserRoleId, U.Email, U.Password, U.Name, U.CreationDate, U.LastLogin, U.LastUpdateDate FROM User U RIGHT JOIN UserProfile UP ON UP.UserId = U.UserId WHERE U.UserRoleId = 2 AND UP.EstablishmentCategoryId = @EstablishmentCategoryId", new { EstablishmentCategoryId = establishmentCategoryId }).AsList();
+                var queryResult = await connection.QueryAsync<User>(
+                    "SELECT U.UserId, U.UserRoleId, U.Email, U.Password, U.Name, U.CreationDate, U.LastLogin, U.LastUpdateDate FROM User U RIGHT JOIN UserProfile UP ON UP.UserId = U.UserId WHERE U.UserRoleId = 2 AND UP.EstablishmentCategoryId = @EstablishmentCategoryId",
+                    new { EstablishmentCategoryId = establishmentCategoryId });
+                return queryResult.AsList();
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public User GetById(int userId)
+        public async Task<User> GetByIdAsync(int userId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.QueryFirstOrDefault<User>("SELECT UserId, UserRoleId, Email, Password, Name, CreationDate, LastLogin, LastUpdateDate FROM User WHERE UserId = @UserId", new { UserId = userId });
+                return await connection.QueryFirstOrDefaultAsync<User>(
+                    "SELECT * FROM User WHERE UserId = @UserId", new { UserId = userId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public User GetByEmail(string email)
+        public async Task<User> GetByEmailAsync(string email)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.QueryFirstOrDefault<User>("SELECT UserId, UserRoleId, Email, Password, Name, CreationDate, LastLogin, LastUpdateDate FROM User WHERE Email = @Email", new { Email = email });
+                return await connection.QueryFirstOrDefaultAsync<User>(
+                    "SELECT * FROM User WHERE Email = @Email", new { Email = email });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public bool CheckUser(string email)
+        public async Task<bool> CheckUserAsync(string email)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                int count = connection.QueryFirstOrDefault<int>("SELECT COUNT(*) FROM User WHERE Email = @Email", new { Email = email });
+                int count = await connection.QueryFirstOrDefaultAsync<int>(
+                    "SELECT COUNT(*) FROM User WHERE Email = @Email", new { Email = email });
                 return count > 0;
             }
-        }
-
-        public User Insert(UserInsert userModel)
-        {
-            using (var connection = _connectionSingleton.GetConnection())
+            finally
             {
-                var id = connection.QuerySingle<int>("INSERT INTO User (UserRoleId, Email, Password, Name) VALUES (@UserRoleId, @Email, @Password, @Name); SELECT LAST_INSERT_Id();", userModel);
-                return GetById(id);
+                await connection.CloseAsync();
             }
         }
 
-        public User Update(UserUpdate userUpdateModel)
+        public async Task<User> InsertAsync(User userModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE User SET UserRoleId = @UserRoleId, Email = @Email, Password = @Password, Name = @Name, LastLogin = @LastLogin, LastUpdateDate = NOW() WHERE UserId = @UserId", userUpdateModel);
-                return GetById(userUpdateModel.UserId);
+                var id = await connection.QuerySingleAsync<int>(
+                    "INSERT INTO User (UserRoleId, Email, Password, Name) VALUES (@UserRoleId, @Email, @Password, @Name); SELECT LAST_INSERT_Id();", userModel);
+                return await GetByIdAsync(id);
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public bool Delete(int userId)
+        public async Task<User> UpdateAsync(User userUpdateModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                var affectedRows = connection.Execute("DELETE FROM User WHERE UserId = @UserId", new { UserId = userId });
+                await connection.ExecuteAsync(
+                    "UPDATE User SET UserRoleId = @UserRoleId, Email = @Email, Password = @Password, Name = @Name, LastLogin = @LastLogin, LastUpdateDate = NOW() WHERE UserId = @UserId", userUpdateModel);
+                return await GetByIdAsync(userUpdateModel.UserId);
+            }
+            finally
+            {
+                await connection.CloseAsync();
+            }
+        }
+
+        public async Task<User> UpdateNameAsync(int userId, string name)
+        {
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
+            {
+                await connection.ExecuteAsync(
+                    "UPDATE User SET Name = @Name, LastUpdateDate = NOW() WHERE UserId = @UserId", new { UserId = userId, Name = name });
+                return await GetByIdAsync(userId);
+            }
+            finally
+            {
+                await connection.CloseAsync();
+            }
+        }
+
+        public async Task<bool> DeleteAsync(int userId)
+        {
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
+            {
+                int affectedRows = await connection.ExecuteAsync(
+                    "DELETE FROM User WHERE UserId = @UserId", new { UserId = userId });
                 return affectedRows > 0;
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
     }

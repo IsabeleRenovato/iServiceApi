@@ -17,61 +17,105 @@ namespace iServiceRepositories.Repositories
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public List<Feedback> Get()
+        public async Task<List<Feedback>> GetAsync()
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.Query<Feedback>("SELECT FeedbackId, AppointmentId, Description, Rating, Active, Deleted, CreationDate, LastUpdateDate FROM Feedback").AsList();
+                var queryResult = await connection.QueryAsync<Feedback>("SELECT * FROM Feedback");
+                return queryResult.AsList();
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public Feedback GetById(int feedbackId)
+        public async Task<Feedback> GetByIdAsync(int feedbackId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.QueryFirstOrDefault<Feedback>("SELECT FeedbackId, AppointmentId, Description, Rating, Active, Deleted, CreationDate, LastUpdateDate FROM Feedback WHERE FeedbackId = @FeedbackId", new { FeedbackId = feedbackId });
+                return await connection.QueryFirstOrDefaultAsync<Feedback>(
+                    "SELECT * FROM Feedback WHERE FeedbackId = @FeedbackId", new { FeedbackId = feedbackId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public List<Feedback> GetFeedbackByUserProfileId(int userProfileId)
+        public async Task<List<Feedback>> GetFeedbackByUserProfileIdAsync(int userProfileId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.Query<Feedback>("SELECT F.FeedbackId, F.AppointmentId, F.Description, F.Rating, F.Active, F.Deleted, F.CreationDate, F.LastUpdateDate FROM Feedback F INNER JOIN Appointment A ON A.AppointmentId = F.AppointmentId WHERE A.EstablishmentUserProfileId = @EstablishmentUserProfileId", new { EstablishmentUserProfileId = userProfileId }).AsList();
+                var queryResult = await connection.QueryAsync<Feedback>(
+                    "SELECT F.FeedbackId, F.AppointmentId, F.Description, F.Rating, F.Active, F.Deleted, F.CreationDate, F.LastUpdateDate FROM Feedback F INNER JOIN Appointment A ON A.AppointmentId = F.AppointmentId WHERE A.EstablishmentUserProfileId = @EstablishmentUserProfileId",
+                    new { EstablishmentUserProfileId = userProfileId });
+                return queryResult.AsList();
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public Feedback Insert(FeedbackInsert feedbackModel)
+        public async Task<Feedback> InsertAsync(Feedback feedbackModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                var id = connection.QuerySingle<int>("INSERT INTO Feedback (AppointmentId, Description, Rating) VALUES (@AppointmentId, @Description, @Rating); SELECT LAST_INSERT_Id();", feedbackModel);
-                return GetById(id);
+                var id = await connection.QuerySingleAsync<int>(
+                    "INSERT INTO Feedback (AppointmentId, Description, Rating) VALUES (@AppointmentId, @Description, @Rating); SELECT LAST_INSERT_Id();", feedbackModel);
+                return await GetByIdAsync(id);
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public Feedback Update(FeedbackUpdate feedbackUpdateModel)
+        public async Task<Feedback> UpdateAsync(Feedback feedbackUpdateModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE Feedback SET Description = @Description, Rating = @Rating, LastUpdateDate = NOW() WHERE FeedbackId = @FeedbackId", feedbackUpdateModel);
-                return GetById(feedbackUpdateModel.FeedbackId);
+                await connection.ExecuteAsync(
+                    "UPDATE Feedback SET Description = @Description, Rating = @Rating, LastUpdateDate = NOW() WHERE FeedbackId = @FeedbackId", feedbackUpdateModel);
+                return await GetByIdAsync(feedbackUpdateModel.FeedbackId);
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public void SetActiveStatus(int feedbackId, bool isActive)
+        public async Task SetActiveStatusAsync(int feedbackId, bool isActive)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE Feedback SET Active = @IsActive WHERE FeedbackId = @FeedbackId", new { IsActive = isActive, FeedbackId = feedbackId });
+                await connection.ExecuteAsync(
+                    "UPDATE Feedback SET Active = @IsActive WHERE FeedbackId = @FeedbackId", new { IsActive = isActive, FeedbackId = feedbackId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public void SetDeletedStatus(int feedbackId, bool isDeleted)
+        public async Task SetDeletedStatusAsync(int feedbackId, bool isDeleted)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE Feedback SET Deleted = @IsDeleted WHERE FeedbackId = @FeedbackId", new { IsDeleted = isDeleted, FeedbackId = feedbackId });
+                await connection.ExecuteAsync(
+                    "UPDATE Feedback SET Deleted = @IsDeleted WHERE FeedbackId = @FeedbackId", new { IsDeleted = isDeleted, FeedbackId = feedbackId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
     }

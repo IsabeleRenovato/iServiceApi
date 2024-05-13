@@ -14,11 +14,11 @@ namespace iServiceServices.Services
             _specialScheduleRepository = new SpecialScheduleRepository(configuration);
         }
 
-        public Result<List<SpecialSchedule>> GetAllSpecialSchedules()
+        public async Task<Result<List<SpecialSchedule>>> GetAllSpecialSchedules()
         {
             try
             {
-                var specialSchedules = _specialScheduleRepository.Get();
+                var specialSchedules = await _specialScheduleRepository.GetAsync();
                 return Result<List<SpecialSchedule>>.Success(specialSchedules);
             }
             catch (Exception ex)
@@ -27,11 +27,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<SpecialSchedule> GetSpecialScheduleById(int scheduleId)
+        public async Task<Result<SpecialSchedule>> GetSpecialScheduleById(int scheduleId)
         {
             try
             {
-                var specialSchedule = _specialScheduleRepository.GetById(scheduleId);
+                var specialSchedule = await _specialScheduleRepository.GetByIdAsync(scheduleId);
 
                 if (specialSchedule == null)
                 {
@@ -46,11 +46,30 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<SpecialSchedule> AddSpecialSchedule(SpecialScheduleInsert scheduleModel)
+        public async Task<Result<List<SpecialSchedule>>> GetByUserProfileId(int userProfileId)
         {
             try
             {
-                var newSpecialSchedule = _specialScheduleRepository.Insert(scheduleModel);
+                var specialSchedule = await _specialScheduleRepository.GetByUserProfileIdAsync(userProfileId);
+
+                if (specialSchedule == null)
+                {
+                    return Result<List<SpecialSchedule>>.Failure("Horário especial não encontrado.");
+                }
+
+                return Result<List<SpecialSchedule>>.Success(specialSchedule);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<SpecialSchedule>>.Failure($"Falha ao obter o horário especial: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<SpecialSchedule>> AddSpecialSchedule(SpecialSchedule scheduleModel)
+        {
+            try
+            {
+                var newSpecialSchedule = await _specialScheduleRepository.InsertAsync(scheduleModel);
                 return Result<SpecialSchedule>.Success(newSpecialSchedule);
             }
             catch (Exception ex)
@@ -59,11 +78,31 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<SpecialSchedule> UpdateSpecialSchedule(SpecialScheduleUpdate schedule)
+        public async Task<Result<SpecialSchedule>> Save(SpecialSchedule schedule)
         {
             try
             {
-                var updatedSpecialSchedule = _specialScheduleRepository.Update(schedule);
+                if (schedule.SpecialScheduleId > 0)
+                {
+                    schedule = await _specialScheduleRepository.UpdateAsync(schedule);
+                }
+                else
+                {
+                    schedule = await _specialScheduleRepository.InsertAsync(schedule);
+                }
+                return Result<SpecialSchedule>.Success(schedule);
+            }
+            catch (Exception ex)
+            {
+                return Result<SpecialSchedule>.Failure($"Falha ao inserir o horário especial: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<SpecialSchedule>> UpdateSpecialSchedule(SpecialSchedule schedule)
+        {
+            try
+            {
+                var updatedSpecialSchedule = await _specialScheduleRepository.UpdateAsync(schedule);
                 return Result<SpecialSchedule>.Success(updatedSpecialSchedule);
             }
             catch (Exception ex)
@@ -72,11 +111,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> SetActiveStatus(int scheduleId, bool isActive)
+        public async Task<Result<bool>> SetActiveStatus(int scheduleId, bool isActive)
         {
             try
             {
-                _specialScheduleRepository.SetActiveStatus(scheduleId, isActive);
+                await _specialScheduleRepository.SetActiveStatusAsync(scheduleId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
@@ -85,11 +124,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> SetDeletedStatus(int scheduleId, bool isDeleted)
+        public async Task<Result<bool>> SetDeletedStatus(int scheduleId, bool isDeleted)
         {
             try
             {
-                _specialScheduleRepository.SetDeletedStatus(scheduleId, isDeleted);
+                await _specialScheduleRepository.SetDeletedStatusAsync(scheduleId, isDeleted);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)

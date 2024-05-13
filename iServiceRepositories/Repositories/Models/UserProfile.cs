@@ -1,4 +1,7 @@
-﻿namespace iServiceRepositories.Repositories.Models
+﻿using Mysqlx.Crud;
+using System;
+
+namespace iServiceRepositories.Repositories.Models
 {
     public class UserProfile
     {
@@ -17,33 +20,5 @@
         public DateTime CreationDate { get; set; }
         public DateTime LastUpdateDate { get; set; }
         public Rating? Rating { get; set; }
-    }
-    public class UserProfileInsert
-    {
-        public int UserId { get; set; }
-        public int? EstablishmentCategoryId { get; set; }
-        public int? AddressId { get; set; }
-        public string Document { get; set; }
-        public DateTime? DateOfBirth { get; set; }
-        public string? Phone { get; set; }
-        public string? CommercialName { get; set; }
-        public string? CommercialPhone { get; set; }
-        public string? CommercialEmail { get; set; }
-        public string? Description { get; set; }
-        public string? ProfileImage { get; set; }
-    }
-    public class UserProfileUpdate
-    {
-        public int UserProfileId { get; set; }
-        public int? EstablishmentCategoryId { get; set; }
-        public int? AddressId { get; set; }
-        public string Document { get; set; }
-        public DateTime? DateOfBirth { get; set; }
-        public string? Phone { get; set; }
-        public string? CommercialName { get; set; }
-        public string? CommercialPhone { get; set; }
-        public string? CommercialEmail { get; set; }
-        public string? Description { get; set; }
-        public string? ProfileImage { get; set; }
     }
 }

@@ -16,9 +16,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<User>> Get()
+        public async Task<ActionResult<List<User>>> Get()
         {
-            var result = _userService.GetAllUsers();
+            var result = await _userService.GetAllUsers();
 
             if (result.IsSuccess)
             {
@@ -29,9 +29,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("{userId}")]
-        public ActionResult<User> GetById(int userId)
+        public async Task<ActionResult<User>> GetById(int userId)
         {
-            var result = _userService.GetUserById(userId);
+            var result = await _userService.GetUserById(userId);
 
             if (result.IsSuccess)
             {
@@ -42,14 +42,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<User> Post([FromBody] UserInsert userModel)
+        public async Task<ActionResult<User>> Post([FromBody] User userModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _userService.AddUser(userModel);
+            var result = await _userService.AddUser(userModel);
 
             if (result.IsSuccess)
             {
@@ -60,14 +60,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{userId}")]
-        public ActionResult<User> Put(int userId, [FromBody] UserUpdate user)
+        public async Task<ActionResult<User>> Put(int userId, [FromBody] User user)
         {
             if (userId != user.UserId)
             {
                 return BadRequest();
             }
 
-            var result = _userService.UpdateUser(user);
+            var result = await _userService.UpdateUser(user);
 
             if (result.IsSuccess)
             {
@@ -78,9 +78,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpDelete("{userId}")]
-        public IActionResult Delete(int userId)
+        public async Task<IActionResult> Delete(int userId)
         {
-            var result = _userService.DeleteUser(userId);
+            var result = await _userService.DeleteUser(userId);
 
             if (result.IsSuccess)
             {

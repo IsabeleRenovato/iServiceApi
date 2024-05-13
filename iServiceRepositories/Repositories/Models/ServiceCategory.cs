@@ -10,14 +10,4 @@
         public DateTime CreationDate { get; set; }
         public DateTime LastUpdateDate { get; set; }
     }
-    public class ServiceCategoryInsert
-    {
-        public int UserProfileId { get; set; }
-        public string Name { get; set; }
-    }
-    public class ServiceCategoryUpdate
-    {
-        public int ServiceCategoryId { get; set; }
-        public string Name { get; set; }
-    }
 }
