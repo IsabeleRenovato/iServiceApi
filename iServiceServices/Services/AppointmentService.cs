@@ -14,11 +14,11 @@ namespace iServiceServices.Services
             _appointmentRepository = new AppointmentRepository(configuration);
         }
 
-        public Result<List<Appointment>> GetAllAppointments()
+        public async Task<Result<List<Appointment>>> GetAllAppointments()
         {
             try
             {
-                var appointments = _appointmentRepository.Get();
+                var appointments = await _appointmentRepository.GetAsync();
                 return Result<List<Appointment>>.Success(appointments);
             }
             catch (Exception ex)
@@ -27,11 +27,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<Appointment> GetAppointmentById(int appointmentId)
+        public async Task<Result<Appointment>> GetAppointmentById(int appointmentId)
         {
             try
             {
-                var appointment = _appointmentRepository.GetById(appointmentId);
+                var appointment = await _appointmentRepository.GetByIdAsync(appointmentId);
 
                 if (appointment == null)
                 {
@@ -46,11 +46,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<Appointment> AddAppointment(AppointmentInsert appointmentModel)
+        public async Task<Result<Appointment>> AddAppointment(Appointment appointmentModel)
         {
             try
             {
-                var newAppointment = _appointmentRepository.Insert(appointmentModel);
+                var newAppointment = await _appointmentRepository.InsertAsync(appointmentModel);
                 return Result<Appointment>.Success(newAppointment);
             }
             catch (Exception ex)
@@ -59,11 +59,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<Appointment> UpdateAppointment(AppointmentUpdate appointment)
+        public async Task<Result<Appointment>> UpdateAppointment(Appointment appointment)
         {
             try
             {
-                var updatedAppointment = _appointmentRepository.Update(appointment);
+                var updatedAppointment = await _appointmentRepository.UpdateAsync(appointment);
                 return Result<Appointment>.Success(updatedAppointment);
             }
             catch (Exception ex)
@@ -72,11 +72,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> SetActiveStatus(int appointmentId, bool isActive)
+        public async Task<Result<bool>> SetActiveStatus(int appointmentId, bool isActive)
         {
             try
             {
-                _appointmentRepository.SetActiveStatus(appointmentId, isActive);
+                await _appointmentRepository.SetActiveStatusAsync(appointmentId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
@@ -85,11 +85,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> SetDeletedStatus(int appointmentId, bool isDeleted)
+        public async Task<Result<bool>> SetDeletedStatus(int appointmentId, bool isDeleted)
         {
             try
             {
-                _appointmentRepository.SetDeletedStatus(appointmentId, isDeleted);
+                await _appointmentRepository.SetDeletedStatusAsync(appointmentId, isDeleted);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)

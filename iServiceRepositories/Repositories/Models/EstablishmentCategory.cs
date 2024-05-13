@@ -9,13 +9,4 @@
         public DateTime CreationDate { get; set; }
         public DateTime LastUpdateDate { get; set; }
     }
-    public class EstablishmentCategoryInsert
-    {
-        public string Name { get; set; }
-    }
-    public class EstablishmentCategoryUpdate
-    {
-        public int EstablishmentCategoryId { get; set; }
-        public string Name { get; set; }
-    }
 }

@@ -16,9 +16,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Feedback>> Get()
+        public async Task<ActionResult<List<Feedback>>> Get()
         {
-            var result = _feedbackService.GetAllFeedbacks();
+            var result = await _feedbackService.GetAllFeedbacks();
 
             if (result.IsSuccess)
             {
@@ -29,9 +29,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("{feedbackId}")]
-        public ActionResult<Feedback> GetById(int feedbackId)
+        public async Task<ActionResult<Feedback>> GetById(int feedbackId)
         {
-            var result = _feedbackService.GetFeedbackById(feedbackId);
+            var result = await _feedbackService.GetFeedbackById(feedbackId);
 
             if (result.IsSuccess)
             {
@@ -42,14 +42,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Feedback> Post([FromBody] FeedbackInsert feedbackModel)
+        public async Task<ActionResult<Feedback>> Post([FromBody] Feedback feedbackModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _feedbackService.AddFeedback(feedbackModel);
+            var result = await _feedbackService.AddFeedback(feedbackModel);
 
             if (result.IsSuccess)
             {
@@ -60,14 +60,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{feedbackId}")]
-        public ActionResult<Feedback> Put(int feedbackId, [FromBody] FeedbackUpdate feedback)
+        public async Task<ActionResult<Feedback>> Put(int feedbackId, [FromBody] Feedback feedback)
         {
             if (feedbackId != feedback.FeedbackId)
             {
                 return BadRequest();
             }
 
-            var result = _feedbackService.UpdateFeedback(feedback);
+            var result = await _feedbackService.UpdateFeedback(feedback);
 
             if (result.IsSuccess)
             {
@@ -78,9 +78,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{feedbackId}/SetActive")]
-        public ActionResult<bool> SetActive(int feedbackId, [FromBody] bool isActive)
+        public async Task<ActionResult<bool>> SetActive(int feedbackId, [FromBody] bool isActive)
         {
-            var result = _feedbackService.SetActiveStatus(feedbackId, isActive);
+            var result = await _feedbackService.SetActiveStatus(feedbackId, isActive);
 
             if (result.IsSuccess)
             {
@@ -91,9 +91,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpDelete("{feedbackId}/SetDeleted")]
-        public ActionResult<bool> SetDeleted(int feedbackId, [FromBody] bool isDeleted)
+        public async Task<ActionResult<bool>> SetDeleted(int feedbackId, [FromBody] bool isDeleted)
         {
-            var result = _feedbackService.SetDeletedStatus(feedbackId, isDeleted);
+            var result = await _feedbackService.SetDeletedStatus(feedbackId, isDeleted);
 
             if (result.IsSuccess)
             {

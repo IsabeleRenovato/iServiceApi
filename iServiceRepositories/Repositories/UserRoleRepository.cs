@@ -17,53 +17,89 @@ namespace iServiceRepositories.Repositories
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public List<UserRole> Get()
+        public async Task<List<UserRole>> GetAsync()
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.Query<UserRole>("SELECT UserRoleId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM UserRole").AsList();
+                var queryResult = await connection.QueryAsync<UserRole>("SELECT * FROM UserRole");
+                return queryResult.AsList();
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public UserRole GetById(int userRoleId)
+        public async Task<UserRole> GetByIdAsync(int userRoleId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.QueryFirstOrDefault<UserRole>("SELECT UserRoleId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM UserRole WHERE UserRoleId = @UserRoleId", new { UserRoleId = userRoleId });
+                return await connection.QueryFirstOrDefaultAsync<UserRole>(
+                    "SELECT * FROM UserRole WHERE UserRoleId = @UserRoleId", new { UserRoleId = userRoleId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public UserRole Insert(UserRoleInsert userRoleModel)
+        public async Task<UserRole> InsertAsync(UserRole userRoleModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                var id = connection.QuerySingle<int>("INSERT INTO UserRole (Name) VALUES (@Name); SELECT LAST_INSERT_Id();", userRoleModel);
-                return GetById(id);
+                var id = await connection.QuerySingleAsync<int>(
+                    "INSERT INTO UserRole (Name) VALUES (@Name); SELECT LAST_INSERT_Id();", userRoleModel);
+                return await GetByIdAsync(id);
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public UserRole Update(UserRoleUpdate userRoleUpdateModel)
+        public async Task<UserRole> UpdateAsync(UserRole userRoleUpdateModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE UserRole SET Name = @Name, LastUpdateDate = NOW() WHERE UserRoleId = @UserRoleId", userRoleUpdateModel);
-                return GetById(userRoleUpdateModel.UserRoleId);
+                await connection.ExecuteAsync(
+                    "UPDATE UserRole SET Name = @Name, LastUpdateDate = NOW() WHERE UserRoleId = @UserRoleId", userRoleUpdateModel);
+                return await GetByIdAsync(userRoleUpdateModel.UserRoleId);
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public void SetActiveStatus(int userRoleId, bool isActive)
+        public async Task SetActiveStatusAsync(int userRoleId, bool isActive)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE UserRole SET Active = @IsActive WHERE UserRoleId = @UserRoleId", new { IsActive = isActive, UserRoleId = userRoleId });
+                await connection.ExecuteAsync(
+                    "UPDATE UserRole SET Active = @IsActive WHERE UserRoleId = @UserRoleId", new { IsActive = isActive, UserRoleId = userRoleId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public void SetDeletedStatus(int userRoleId, bool isDeleted)
+        public async Task SetDeletedStatusAsync(int userRoleId, bool isDeleted)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE UserRole SET Deleted = @IsDeleted WHERE UserRoleId = @UserRoleId", new { IsDeleted = isDeleted, UserRoleId = userRoleId });
+                await connection.ExecuteAsync(
+                    "UPDATE UserRole SET Deleted = @IsDeleted WHERE UserRoleId = @UserRoleId", new { IsDeleted = isDeleted, UserRoleId = userRoleId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
     }

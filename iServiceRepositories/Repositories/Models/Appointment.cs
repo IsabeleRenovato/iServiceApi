@@ -14,20 +14,4 @@
         public DateTime CreationDate { get; set; }
         public DateTime LastUpdateDate { get; set; }
     }
-    public class AppointmentInsert
-    {
-        public int ServiceId { get; set; }
-        public int ClientUserProfileId { get; set; }
-        public int EstablishmentUserProfileId { get; set; }
-        public int AppointmentStatusId { get; set; }
-        public DateTime Start { get; set; }
-        public DateTime End { get; set; }
-    }
-    public class AppointmentUpdate
-    {
-        public int AppointmentId { get; set; }
-        public int AppointmentStatusId { get; set; }
-        public DateTime Start { get; set; }
-        public DateTime End { get; set; }
-    }
 }

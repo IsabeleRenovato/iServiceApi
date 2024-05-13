@@ -1,4 +1,5 @@
-﻿using iServiceServices.Services;
+﻿using iServiceRepositories.Repositories.Models;
+using iServiceServices.Services;
 using iServiceServices.Services.Models;
 using iServiceServices.Services.Models.Auth;
 using Microsoft.AspNetCore.Authorization;
@@ -16,7 +17,7 @@ namespace iServiceAPI.Controllers
         {
             _configuration = configuration;
         }
-        [HttpPost("login")]
+        [HttpPost("Login")]
         public async Task<ActionResult<UserInfo>> LoginAsync([FromBody] Login model)
         {
             if (!ModelState.IsValid)
@@ -26,7 +27,7 @@ namespace iServiceAPI.Controllers
 
             try
             {
-                var result = new AuthService(_configuration).Login(model);
+                var result = await new AuthService(_configuration).Login(model);
 
                 if (result.IsSuccess)
                 {
@@ -43,7 +44,7 @@ namespace iServiceAPI.Controllers
                 return StatusCode(500, "Ocorreu um erro inesperado.");
             }
         }
-        [HttpPost("preregister")]
+        [HttpPost("PreRegister")]
         public async Task<ActionResult<UserInfo>> PreRegisterAsync([FromBody] PreRegister model)
         {
             if (!ModelState.IsValid)
@@ -53,7 +54,7 @@ namespace iServiceAPI.Controllers
 
             try
             {
-                var result = new AuthService(_configuration).PreRegister(model);
+                var result = await new AuthService(_configuration).PreRegister(model);
 
                 if (result.IsSuccess)
                 {
@@ -69,8 +70,8 @@ namespace iServiceAPI.Controllers
                 return StatusCode(500, "Ocorreu um erro inesperado.");
             }
         }
-        [HttpPost("register")]
-        public async Task<ActionResult<UserInfo>> RegisterAsync([FromBody] Register model)
+        [HttpPost("RegisterUserProfile")]
+        public async Task<ActionResult<UserInfo>> RegisterUserProfileAsync([FromBody] UserInfo model)
         {
 
             if (!ModelState.IsValid)
@@ -80,7 +81,34 @@ namespace iServiceAPI.Controllers
 
             try
             {
-                var result = new AuthService(_configuration).Register(model);
+                var result = await new AuthService(_configuration).RegisterUserProfile(model);
+
+                if (result.IsSuccess)
+                {
+                    return Ok(result.Value);
+                }
+                else
+                {
+                    return BadRequest(new { message = result.ErrorMessage });
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Ocorreu um erro inesperado.");
+            }
+        }
+
+        [HttpPost("RegisterAddress")]
+        public async Task<ActionResult<UserInfo>> RegisterAddressAsync([FromBody] UserInfo model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var result = await new AuthService(_configuration).RegisterAddress(model);
 
                 if (result.IsSuccess)
                 {

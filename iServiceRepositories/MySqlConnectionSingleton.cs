@@ -3,7 +3,7 @@ using System.Data;
 
 namespace iServiceRepositories
 {
-    public class MySqlConnectionSingleton : IDisposable
+    public class MySqlConnectionSingleton : IAsyncDisposable
     {
         private readonly string _connectionString;
         private MySqlConnection _connection;
@@ -11,32 +11,32 @@ namespace iServiceRepositories
         public MySqlConnectionSingleton(string connectionString)
         {
             _connectionString = connectionString;
-            _connection = CreateConnection();
+            _connection = CreateConnectionAsync().Result; // Chamada síncrona para estabelecer a conexão inicial
         }
 
-        private MySqlConnection CreateConnection()
+        private async Task<MySqlConnection> CreateConnectionAsync()
         {
             var connection = new MySqlConnection(_connectionString);
-            connection.Open();
+            await connection.OpenAsync();
             return connection;
         }
 
-        public MySqlConnection GetConnection()
+        public async Task<MySqlConnection> GetConnectionAsync()
         {
             if (_connection.State == ConnectionState.Closed || _connection.State == ConnectionState.Broken)
             {
-                _connection.Dispose(); // Dispose the old connection
-                _connection = CreateConnection(); // Create a new connection
+                await DisposeAsync(); // Dispose the old connection
+                _connection = await CreateConnectionAsync(); // Create a new connection asynchronously
             }
 
             return _connection;
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             if (_connection != null)
             {
-                _connection.Dispose();
+                await _connection.DisposeAsync();
             }
         }
     }

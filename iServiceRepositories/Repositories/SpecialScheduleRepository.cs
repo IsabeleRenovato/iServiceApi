@@ -17,53 +17,104 @@ namespace iServiceRepositories.Repositories
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public List<SpecialSchedule> Get()
+        public async Task<List<SpecialSchedule>> GetAsync()
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.Query<SpecialSchedule>("SELECT SpecialScheduleId, UserProfileId, Date, Start, End, BreakStart, BreakEnd, Active, Deleted, CreationDate, LastUpdateDate FROM SpecialSchedule").AsList();
+                var queryResult = await connection.QueryAsync<SpecialSchedule>("SELECT * FROM SpecialSchedule");
+                return queryResult.AsList();
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public SpecialSchedule GetById(int specialScheduleId)
+        public async Task<SpecialSchedule> GetByIdAsync(int specialScheduleId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.QueryFirstOrDefault<SpecialSchedule>("SELECT SpecialScheduleId, UserProfileId, Date, Start, End, BreakStart, BreakEnd, Active, Deleted, CreationDate, LastUpdateDate FROM SpecialSchedule WHERE SpecialScheduleId = @SpecialScheduleId", new { SpecialScheduleId = specialScheduleId });
+                return await connection.QueryFirstOrDefaultAsync<SpecialSchedule>(
+                    "SELECT * FROM SpecialSchedule WHERE SpecialScheduleId = @SpecialScheduleId", new { SpecialScheduleId = specialScheduleId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public SpecialSchedule Insert(SpecialScheduleInsert specialScheduleModel)
+        public async Task<List<SpecialSchedule>> GetByUserProfileIdAsync(int userProfileId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                var id = connection.QuerySingle<int>("INSERT INTO SpecialSchedule (UserProfileId, Date, Start, End, BreakStart, BreakEnd) VALUES (@UserProfileId, @Date, @Start, @End, @BreakStart, @BreakEnd); SELECT LAST_INSERT_Id();", specialScheduleModel);
-                return GetById(id);
+                var queryResult = await connection.QueryAsync<SpecialSchedule>(
+                    "SELECT * FROM SpecialSchedule WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND Deleted = 0", new { EstablishmentUserProfileId = userProfileId });
+                return queryResult.AsList();
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public SpecialSchedule Update(SpecialScheduleUpdate specialScheduleUpdateModel)
+        public async Task<SpecialSchedule> InsertAsync(SpecialSchedule specialScheduleModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE SpecialSchedule SET Date = @Date, Start = @Start, End = @End, BreakStart = @BreakStart, BreakEnd = @BreakEnd, LastUpdateDate = NOW() WHERE SpecialScheduleId = @SpecialScheduleId", specialScheduleUpdateModel);
-                return GetById(specialScheduleUpdateModel.SpecialScheduleId);
+                var id = await connection.QuerySingleAsync<int>(
+                    "INSERT INTO SpecialSchedule (EstablishmentUserProfileId, Date, Start, End, BreakStart, BreakEnd) VALUES (@EstablishmentUserProfileId, @Date, @Start, @End, @BreakStart, @BreakEnd); SELECT LAST_INSERT_Id();", specialScheduleModel);
+                return await GetByIdAsync(id);
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public void SetActiveStatus(int specialScheduleId, bool isActive)
+        public async Task<SpecialSchedule> UpdateAsync(SpecialSchedule specialScheduleUpdateModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE SpecialSchedule SET Active = @IsActive WHERE SpecialScheduleId = @SpecialScheduleId", new { IsActive = isActive, SpecialScheduleId = specialScheduleId });
+                await connection.ExecuteAsync(
+                    "UPDATE SpecialSchedule SET Date = @Date, Start = @Start, End = @End, BreakStart = @BreakStart, BreakEnd = @BreakEnd, LastUpdateDate = NOW() WHERE SpecialScheduleId = @SpecialScheduleId", specialScheduleUpdateModel);
+                return await GetByIdAsync(specialScheduleUpdateModel.SpecialScheduleId);
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public void SetDeletedStatus(int specialScheduleId, bool isDeleted)
+        public async Task SetActiveStatusAsync(int specialScheduleId, bool isActive)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE SpecialSchedule SET Deleted = @IsDeleted WHERE SpecialScheduleId = @SpecialScheduleId", new { IsDeleted = isDeleted, SpecialScheduleId = specialScheduleId });
+                await connection.ExecuteAsync(
+                    "UPDATE SpecialSchedule SET Active = @IsActive WHERE SpecialScheduleId = @SpecialScheduleId", new { IsActive = isActive, SpecialScheduleId = specialScheduleId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
+            }
+        }
+
+        public async Task SetDeletedStatusAsync(int specialScheduleId, bool isDeleted)
+        {
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
+            {
+                await connection.ExecuteAsync(
+                    "UPDATE SpecialSchedule SET Deleted = @IsDeleted WHERE SpecialScheduleId = @SpecialScheduleId", new { IsDeleted = isDeleted, SpecialScheduleId = specialScheduleId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
     }

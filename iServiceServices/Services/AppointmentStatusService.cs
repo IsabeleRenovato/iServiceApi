@@ -14,11 +14,11 @@ namespace iServiceServices.Services
             _appointmentStatusRepository = new AppointmentStatusRepository(configuration);
         }
 
-        public Result<List<AppointmentStatus>> GetAllAppointmentStatuses()
+        public async Task<Result<List<AppointmentStatus>>> GetAllAppointmentStatuses()
         {
             try
             {
-                var appointmentStatuses = _appointmentStatusRepository.Get();
+                var appointmentStatuses = await _appointmentStatusRepository.GetAsync();
                 return Result<List<AppointmentStatus>>.Success(appointmentStatuses);
             }
             catch (Exception ex)
@@ -27,11 +27,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<AppointmentStatus> GetAppointmentStatusById(int appointmentStatusId)
+        public async Task<Result<AppointmentStatus>> GetAppointmentStatusById(int appointmentStatusId)
         {
             try
             {
-                var appointmentStatus = _appointmentStatusRepository.GetById(appointmentStatusId);
+                var appointmentStatus = await _appointmentStatusRepository.GetByIdAsync(appointmentStatusId);
 
                 if (appointmentStatus == null)
                 {
@@ -46,11 +46,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<AppointmentStatus> AddAppointmentStatus(AppointmentStatusInsert appointmentStatusModel)
+        public async Task<Result<AppointmentStatus>> AddAppointmentStatus(AppointmentStatus appointmentStatusModel)
         {
             try
             {
-                var newAppointmentStatus = _appointmentStatusRepository.Insert(appointmentStatusModel);
+                var newAppointmentStatus = await _appointmentStatusRepository.InsertAsync(appointmentStatusModel);
                 return Result<AppointmentStatus>.Success(newAppointmentStatus);
             }
             catch (Exception ex)
@@ -59,11 +59,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<AppointmentStatus> UpdateAppointmentStatus(AppointmentStatusUpdate appointmentStatus)
+        public async Task<Result<AppointmentStatus>> UpdateAppointmentStatus(AppointmentStatus appointmentStatus)
         {
             try
             {
-                var updatedAppointmentStatus = _appointmentStatusRepository.Update(appointmentStatus);
+                var updatedAppointmentStatus = await _appointmentStatusRepository.UpdateAsync(appointmentStatus);
                 return Result<AppointmentStatus>.Success(updatedAppointmentStatus);
             }
             catch (Exception ex)
@@ -72,11 +72,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> SetActiveStatus(int appointmentStatusId, bool isActive)
+        public async Task<Result<bool>> SetActiveStatus(int appointmentStatusId, bool isActive)
         {
             try
             {
-                _appointmentStatusRepository.SetActiveStatus(appointmentStatusId, isActive);
+                await _appointmentStatusRepository.SetActiveStatusAsync(appointmentStatusId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
@@ -85,11 +85,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> SetDeletedStatus(int appointmentStatusId, bool isDeleted)
+        public async Task<Result<bool>> SetDeletedStatus(int appointmentStatusId, bool isDeleted)
         {
             try
             {
-                _appointmentStatusRepository.SetDeletedStatus(appointmentStatusId, isDeleted);
+                await _appointmentStatusRepository.SetDeletedStatusAsync(appointmentStatusId, isDeleted);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)

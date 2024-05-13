@@ -24,18 +24,18 @@ namespace iServiceServices.Services
             _feedbackRepository = new FeedbackRepository(configuration);
         }
 
-        public Result<UserInfo> GetUserInfoByUserId(int userId)
+        public async Task<Result<UserInfo>> GetUserInfoByUserId(int userId)
         {
             try
             {
-                var user = _userRepository.GetById(userId);
+                var user = await _userRepository.GetByIdAsync(userId);
 
                 if (user?.UserId > 0 == false)
                 {
                     return Result<UserInfo>.Failure("Falha ao recuperar os dados do usuário. (UserRole)");
                 }
 
-                return GetUserInfo(user);
+                return await GetUserInfo(user);
             }
             catch (Exception ex)
             {
@@ -43,22 +43,22 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<List<UserInfo>> GetUserInfoByUserRoleId(int userRoleId)
+        public async Task<Result<List<UserInfo>>> GetUserInfoByUserRoleId(int userRoleId)
         {
             try
             {
-                var userRole = _userRoleRepository.GetById(userRoleId);
+                var userRole = await _userRoleRepository.GetByIdAsync(userRoleId);
 
                 if (userRole?.UserRoleId > 0 == false)
                 {
                     return Result<List<UserInfo>>.Failure("Falha ao recuperar os dados do usuário. (UserRole)");
                 }
 
-                var users = _userRepository.GetUserByUserRoleId(userRoleId);
+                var users = await _userRepository.GetUserByUserRoleIdAsync(userRoleId);
 
                 if (users?.Count > 0)
                 {
-                    return GetUserInfo(users);
+                    return await GetUserInfo(users);
                 }
 
                 return Result<List<UserInfo>>.Success([]);
@@ -69,22 +69,22 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<List<UserInfo>> GetUserInfoByEstablishmentCategoryId(int establishmentCategoryId)
+        public async Task<Result<List<UserInfo>>> GetUserInfoByEstablishmentCategoryId(int establishmentCategoryId)
         {
             try
             {
-                var establishmentCategory = _establishmentCategoryRepository.GetById(establishmentCategoryId);
+                var establishmentCategory = await _establishmentCategoryRepository.GetByIdAsync(establishmentCategoryId);
 
                 if (establishmentCategory?.EstablishmentCategoryId > 0 == false)
                 {
                     return Result<List<UserInfo>>.Failure("Falha ao recuperar a categoria.");
                 }
 
-                var users = _userRepository.GetUserByEstablishmentCategoryId(establishmentCategoryId);
+                var users = await _userRepository.GetUserByEstablishmentCategoryIdAsync(establishmentCategoryId);
 
                 if (users?.Count > 0)
                 {
-                    return GetUserInfo(users);
+                    return await GetUserInfo(users);
                 }
 
                 return Result<List<UserInfo>>.Success([]);
@@ -95,23 +95,23 @@ namespace iServiceServices.Services
             }
         }
 
-        private Result<UserInfo> GetUserInfo(User user)
+        private async Task<Result<UserInfo>> GetUserInfo(User user)
         {
-            var userRole = _userRoleRepository.GetById(user.UserRoleId);
+            var userRole = await _userRoleRepository.GetByIdAsync(user.UserRoleId);
 
             if (userRole?.UserRoleId > 0 == false)
             {
                 return Result<UserInfo>.Failure("Falha ao recuperar os dados do usuário. (UserRole)");
             }
 
-            var userProfile = _userProfileRepository.GetByUserId(user.UserId);
+            var userProfile = await _userProfileRepository.GetByUserIdAsync(user.UserId);
 
             if (userProfile?.UserProfileId > 0 == false)
             {
                 return Result<UserInfo>.Failure("Falha ao recuperar os dados do perfil do usuário. (UserProfile)");
             }
 
-            var address = _addressRepository.GetById(userProfile.AddressId.GetValueOrDefault());
+            var address = await _addressRepository.GetByIdAsync(userProfile.AddressId.GetValueOrDefault());
 
             return Result<UserInfo>.Success(new UserInfo
             {
@@ -121,7 +121,7 @@ namespace iServiceServices.Services
                 Address = address
             });
         }
-        private Result<List<UserInfo>> GetUserInfo(List<User> users)
+        private async Task<Result<List<UserInfo>>> GetUserInfo(List<User> users)
         {
             var result = new List<UserInfo>();
 
@@ -129,14 +129,14 @@ namespace iServiceServices.Services
             {
                 if (user?.UserId > 0 == false) continue;
 
-                var userRole = _userRoleRepository.GetById(user.UserRoleId);
+                var userRole = await _userRoleRepository.GetByIdAsync(user.UserRoleId);
 
                 if (userRole?.UserRoleId > 0 == false)
                 {
                     return Result<List<UserInfo>>.Failure("Falha ao recuperar os dados do usuário. (UserRole)");
                 }
 
-                var userProfile = _userProfileRepository.GetByUserId(user.UserId);
+                var userProfile = await _userProfileRepository.GetByUserIdAsync(user.UserId);
 
                 if (userProfile?.UserProfileId > 0 == false)
                 {
@@ -145,7 +145,7 @@ namespace iServiceServices.Services
 
                 if (userRole.UserRoleId == 1)
                 {
-                    var feedbacks = _feedbackRepository.GetFeedbackByUserProfileId(userProfile.UserProfileId);
+                    var feedbacks = await _feedbackRepository.GetFeedbackByUserProfileIdAsync(userProfile.UserProfileId);
 
                     if (feedbacks?.Count > 0)
                     {
@@ -157,7 +157,7 @@ namespace iServiceServices.Services
                     }
                 }
 
-                var address = _addressRepository.GetById(userProfile.AddressId.GetValueOrDefault());
+                var address = await _addressRepository.GetByIdAsync(userProfile.AddressId.GetValueOrDefault());
 
                 result.Add(new UserInfo
                 {

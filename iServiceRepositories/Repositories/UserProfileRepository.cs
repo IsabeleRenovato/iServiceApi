@@ -17,72 +17,117 @@ namespace iServiceRepositories.Repositories
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public List<UserProfile> Get()
+        public async Task<List<UserProfile>> GetAsync()
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.Query<UserProfile>("SELECT UserProfileId, UserId, EstablishmentCategoryId, AddressId, Document, DateOfBirth, Phone, CommercialName, CommercialPhone, CommercialEmail, Description, ProfileImage, CreationDate, LastUpdateDate FROM UserProfile").AsList();
+                var queryResult = await connection.QueryAsync<UserProfile>("SELECT * FROM UserProfile");
+                return queryResult.AsList();
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public UserProfile GetById(int userProfileId)
+        public async Task<UserProfile> GetByIdAsync(int userProfileId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.QueryFirstOrDefault<UserProfile>("SELECT UserProfileId, UserId, EstablishmentCategoryId, AddressId, Document, DateOfBirth, Phone, CommercialName, CommercialPhone, CommercialEmail, Description, ProfileImage, CreationDate, LastUpdateDate FROM UserProfile WHERE UserProfileId = @UserProfileId", new { UserProfileId = userProfileId });
+                return await connection.QueryFirstOrDefaultAsync<UserProfile>(
+                    "SELECT * FROM UserProfile WHERE UserProfileId = @UserProfileId", new { UserProfileId = userProfileId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public UserProfile GetByUserId(int userId)
+        public async Task<UserProfile> GetByUserIdAsync(int userId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.QueryFirstOrDefault<UserProfile>("SELECT UserProfileId, UserId, EstablishmentCategoryId, AddressId, Document, DateOfBirth, Phone, CommercialName, CommercialPhone, CommercialEmail, Description, ProfileImage, CreationDate, LastUpdateDate FROM UserProfile WHERE UserId = @UserId", new { UserId = userId });
+                return await connection.QueryFirstOrDefaultAsync<UserProfile>(
+                    "SELECT * FROM UserProfile WHERE UserId = @UserId", new { UserId = userId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public UserProfile Insert(UserProfileInsert userProfileModel)
+        public async Task<UserProfile> InsertAsync(UserProfile userProfileModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                var id = connection.QuerySingle<int>("INSERT INTO UserProfile (UserId, EstablishmentCategoryId, AddressId, Document, DateOfBirth, Phone, CommercialName, CommercialPhone, CommercialEmail, Description, ProfileImage) VALUES (@UserId, @EstablishmentCategoryId, @AddressId, @Document, @DateOfBirth, @Phone, @CommercialName, @CommercialPhone, @CommercialEmail, @Description, @ProfileImage); SELECT LAST_INSERT_Id();", userProfileModel);
-                return GetById(id);
+                var id = await connection.QuerySingleAsync<int>(
+                    "INSERT INTO UserProfile (UserId, EstablishmentCategoryId, AddressId, Document, DateOfBirth, Phone, CommercialName, CommercialPhone, CommercialEmail, Description, ProfileImage) VALUES (@UserId, @EstablishmentCategoryId, @AddressId, @Document, @DateOfBirth, @Phone, @CommercialName, @CommercialPhone, @CommercialEmail, @Description, @ProfileImage); SELECT LAST_INSERT_Id();", userProfileModel);
+                return await GetByIdAsync(id);
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public UserProfile Update(UserProfileUpdate userProfile)
+        public async Task<UserProfile> UpdateAsync(UserProfile userProfile)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE UserProfile SET EstablishmentCategoryId = @EstablishmentCategoryId, AddressId = @AddressId, Document = @Document, DateOfBirth = @DateOfBirth, Phone = @Phone, CommercialName = @CommercialName, CommercialPhone = @CommercialPhone, CommercialEmail = @CommercialEmail, Description = @Description, ProfileImage = @ProfileImage, LastUpdateDate = NOW() WHERE UserProfileId = @UserProfileId", userProfile);
-                return GetById(userProfile.UserProfileId);
+                await connection.ExecuteAsync(
+                    "UPDATE UserProfile SET EstablishmentCategoryId = @EstablishmentCategoryId, AddressId = @AddressId, Document = @Document, DateOfBirth = @DateOfBirth, Phone = @Phone, CommercialName = @CommercialName, CommercialPhone = @CommercialPhone, CommercialEmail = @CommercialEmail, Description = @Description, ProfileImage = @ProfileImage, LastUpdateDate = NOW() WHERE UserProfileId = @UserProfileId", userProfile);
+                return await GetByIdAsync(userProfile.UserProfileId);
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public bool UpdateAddress(int userProfileId, int addressId)
+        public async Task<bool> UpdateAddressAsync(int userProfileId, int addressId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                int affectedRows = connection.Execute("UPDATE UserProfile SET AddressId = @AddressId WHERE UserProfileId = @UserProfileId", new { UserProfileId = userProfileId, AddressId = addressId });
+                int affectedRows = await connection.ExecuteAsync("UPDATE UserProfile SET AddressId = @AddressId WHERE UserProfileId = @UserProfileId", new { UserProfileId = userProfileId, AddressId = addressId });
                 return affectedRows > 0;
             }
-        }
-
-        public bool UpdateProfileImage(int id, string path)
-        {
-            using (var connection = _connectionSingleton.GetConnection())
+            finally
             {
-                int affectedRows = connection.Execute("UPDATE UserProfile SET ProfileImage = @ProfileImage, LastUpdateDate = NOW() WHERE UserProfileId = @UserProfileId", new { UserProfileId = id, ProfileImage = path });
-                return affectedRows > 0;
+                await connection.CloseAsync();
             }
         }
 
-        public bool Delete(int userProfileId)
+        public async Task<bool> UpdateProfileImageAsync(int id, string path)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                int affectedRows = connection.Execute("DELETE FROM UserProfile WHERE UserProfileId = @UserProfileId", new { UserProfileId = userProfileId });
+                int affectedRows = await connection.ExecuteAsync("UPDATE UserProfile SET ProfileImage = @ProfileImage, LastUpdateDate = NOW() WHERE UserProfileId = @UserProfileId", new { UserProfileId = id, ProfileImage = path });
                 return affectedRows > 0;
+            }
+            finally
+            {
+                await connection.CloseAsync();
+            }
+        }
+
+        public async Task<bool> DeleteAsync(int userProfileId)
+        {
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
+            {
+                int affectedRows = await connection.ExecuteAsync("DELETE FROM UserProfile WHERE UserProfileId = @UserProfileId", new { UserProfileId = userProfileId });
+                return affectedRows > 0;
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
     }

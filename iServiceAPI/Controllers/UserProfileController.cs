@@ -17,9 +17,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<UserProfile>> Get()
+        public async Task<ActionResult<List<UserProfile>>> Get()
         {
-            var result = _userProfileService.GetAllUserProfiles();
+            var result = await _userProfileService.GetAllUserProfiles();
 
             if (result.IsSuccess)
             {
@@ -30,9 +30,22 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("{userProfileId}")]
-        public ActionResult<UserProfile> GetById(int userProfileId)
+        public async Task<ActionResult<UserProfile>> GetById(int userProfileId)
         {
-            var result = _userProfileService.GetUserProfileById(userProfileId);
+            var result = await _userProfileService.GetUserProfileById(userProfileId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        [HttpGet("GetUserInfoByUserId/{userId}")]
+        public async Task<ActionResult<UserProfile>> GetUserInfoByUserId(int userId)
+        {
+            var result = await _userProfileService.GetUserInfoByUserId(userId);
 
             if (result.IsSuccess)
             {
@@ -43,14 +56,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<UserProfile> Post([FromBody] UserProfileInsert profileModel)
+        public async Task<ActionResult<UserProfile>> Post([FromBody] UserProfile profileModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _userProfileService.AddUserProfile(profileModel);
+            var result = await _userProfileService.AddUserProfile(profileModel);
 
             if (result.IsSuccess)
             {
@@ -60,15 +73,33 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpPost("UpdateProfileImage")]
-        public ActionResult<string> UpdateProfileImage([FromForm] ImageModel profileModel)
+        [HttpPost("Save")]
+        public async Task<ActionResult<UserInfo>> Save([FromBody] UserInfo request)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _userProfileService.UpdateProfileImage(profileModel);
+            var result = await _userProfileService.SaveUserProfile(request);
+
+            if (result.IsSuccess)
+            {
+                return CreatedAtAction(nameof(GetById), new { userProfileId = result.Value.UserProfile.UserProfileId }, result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpPost("UpdateProfileImage")]
+        public async Task<ActionResult<string>> UpdateProfileImage([FromForm] ImageModel profileModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await _userProfileService.UpdateProfileImage(profileModel);
 
             if (result.IsSuccess)
             {
@@ -79,14 +110,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{userProfileId}")]
-        public ActionResult<UserProfile> Put(int userProfileId, [FromBody] UserProfileUpdate profile)
+        public async Task<ActionResult<UserProfile>> Put(int userProfileId, [FromBody] UserProfile profile)
         {
             if (userProfileId != profile.UserProfileId)
             {
                 return BadRequest();
             }
 
-            var result = _userProfileService.UpdateUserProfile(profile);
+            var result = await _userProfileService.UpdateUserProfile(profile);
 
             if (result.IsSuccess)
             {
@@ -97,9 +128,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpDelete("{userProfileId}")]
-        public IActionResult Delete(int userProfileId)
+        public async Task<IActionResult> Delete(int userProfileId)
         {
-            var result = _userProfileService.DeleteUserProfile(userProfileId);
+            var result = await _userProfileService.DeleteUserProfile(userProfileId);
 
             if (result.IsSuccess)
             {

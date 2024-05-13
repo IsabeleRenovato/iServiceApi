@@ -24,11 +24,11 @@ namespace iServiceServices.Services
             _establishmentCategoryRepository = new EstablishmentCategoryRepository(configuration);
         }
 
-        public Result<List<User>> GetAllUsers()
+        public async Task<Result<List<User>>> GetAllUsers()
         {
             try
             {
-                var users = _userRepository.Get();
+                var users = await _userRepository.GetAsync();
                 return Result<List<User>>.Success(users);
             }
             catch (Exception ex)
@@ -37,11 +37,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<User> GetUserById(int userId)
+        public async Task<Result<User>> GetUserById(int userId)
         {
             try
             {
-                var user = _userRepository.GetById(userId);
+                var user = await _userRepository.GetByIdAsync(userId);
 
                 if (user == null)
                 {
@@ -56,11 +56,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<User> AddUser(UserInsert userModel)
+        public async Task<Result<User>> AddUser(User userModel)
         {
             try
             {
-                var newUser = _userRepository.Insert(userModel);
+                var newUser = await _userRepository.InsertAsync(userModel);
                 return Result<User>.Success(newUser);
             }
             catch (Exception ex)
@@ -69,11 +69,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<User> UpdateUser(UserUpdate user)
+        public async Task<Result<User>> UpdateUser(User user)
         {
             try
             {
-                var updatedUser = _userRepository.Update(user);
+                var updatedUser = await _userRepository.UpdateAsync(user);
                 return Result<User>.Success(updatedUser);
             }
             catch (Exception ex)
@@ -82,11 +82,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> DeleteUser(int userId)
+        public async Task<Result<bool>> DeleteUser(int userId)
         {
             try
             {
-                bool success = _userRepository.Delete(userId);
+                bool success = await _userRepository.DeleteAsync(userId);
 
                 if (!success)
                 {

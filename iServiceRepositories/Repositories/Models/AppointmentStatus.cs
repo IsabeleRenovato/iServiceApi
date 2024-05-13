@@ -9,13 +9,4 @@
         public DateTime CreationDate { get; set; }
         public DateTime LastUpdateDate { get; set; }
     }
-    public class AppointmentStatusInsert
-    {
-        public string Name { get; set; }
-    }
-    public class AppointmentStatusUpdate
-    {
-        public int AppointmentStatusId { get; set; }
-        public string Name { get; set; }
-    }
 }

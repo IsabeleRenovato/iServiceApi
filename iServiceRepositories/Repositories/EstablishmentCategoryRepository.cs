@@ -17,53 +17,89 @@ namespace iServiceRepositories.Repositories
             _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public List<EstablishmentCategory> Get()
+        public async Task<List<EstablishmentCategory>> GetAsync()
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.Query<EstablishmentCategory>("SELECT EstablishmentCategoryId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM EstablishmentCategory WHERE Active = 1 AND Deleted = 0").AsList();
+                var queryResult = await connection.QueryAsync<EstablishmentCategory>("SELECT * FROM EstablishmentCategory WHERE Active = 1 AND Deleted = 0");
+                return queryResult.AsList();
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public EstablishmentCategory GetById(int establishmentCategoryId)
+        public async Task<EstablishmentCategory> GetByIdAsync(int establishmentCategoryId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                return connection.QueryFirstOrDefault<EstablishmentCategory>("SELECT EstablishmentCategoryId, Name, Active, Deleted, CreationDate, LastUpdateDate FROM EstablishmentCategory WHERE EstablishmentCategoryId = @EstablishmentCategoryId AND Active = 1 AND Deleted = 0", new { EstablishmentCategoryId = establishmentCategoryId });
+                return await connection.QueryFirstOrDefaultAsync<EstablishmentCategory>(
+                    "SELECT * FROM EstablishmentCategory WHERE EstablishmentCategoryId = @EstablishmentCategoryId AND Active = 1 AND Deleted = 0", new { EstablishmentCategoryId = establishmentCategoryId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public EstablishmentCategory Insert(EstablishmentCategoryInsert establishmentCategoryModel)
+        public async Task<EstablishmentCategory> InsertAsync(EstablishmentCategory establishmentCategoryModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                var id = connection.QuerySingle<int>("INSERT INTO EstablishmentCategory (Name) VALUES (@Name); SELECT LAST_INSERT_Id();", establishmentCategoryModel);
-                return GetById(id);
+                var id = await connection.QuerySingleAsync<int>(
+                    "INSERT INTO EstablishmentCategory (Name) VALUES (@Name); SELECT LAST_INSERT_Id();", establishmentCategoryModel);
+                return await GetByIdAsync(id);
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public EstablishmentCategory Update(EstablishmentCategoryUpdate establishmentCategoryUpdateModel)
+        public async Task<EstablishmentCategory> UpdateAsync(EstablishmentCategory establishmentCategoryUpdateModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE EstablishmentCategory SET Name = @Name, LastUpdateDate = NOW() WHERE EstablishmentCategoryId = @EstablishmentCategoryId", establishmentCategoryUpdateModel);
-                return GetById(establishmentCategoryUpdateModel.EstablishmentCategoryId);
+                await connection.ExecuteAsync(
+                    "UPDATE EstablishmentCategory SET Name = @Name, LastUpdateDate = NOW() WHERE EstablishmentCategoryId = @EstablishmentCategoryId", establishmentCategoryUpdateModel);
+                return await GetByIdAsync(establishmentCategoryUpdateModel.EstablishmentCategoryId);
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public void SetActiveStatus(int establishmentCategoryId, bool isActive)
+        public async Task SetActiveStatusAsync(int establishmentCategoryId, bool isActive)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE EstablishmentCategory SET Active = @IsActive WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { IsActive = isActive, EstablishmentCategoryId = establishmentCategoryId });
+                await connection.ExecuteAsync(
+                    "UPDATE EstablishmentCategory SET Active = @IsActive WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { IsActive = isActive, EstablishmentCategoryId = establishmentCategoryId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
 
-        public void SetDeletedStatus(int establishmentCategoryId, bool isDeleted)
+        public async Task SetDeletedStatusAsync(int establishmentCategoryId, bool isDeleted)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = await _connectionSingleton.GetConnectionAsync();
+            try
             {
-                connection.Execute("UPDATE EstablishmentCategory SET Deleted = @IsDeleted WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { IsDeleted = isDeleted, EstablishmentCategoryId = establishmentCategoryId });
+                await connection.ExecuteAsync(
+                    "UPDATE EstablishmentCategory SET Deleted = @IsDeleted WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { IsDeleted = isDeleted, EstablishmentCategoryId = establishmentCategoryId });
+            }
+            finally
+            {
+                await connection.CloseAsync();
             }
         }
     }

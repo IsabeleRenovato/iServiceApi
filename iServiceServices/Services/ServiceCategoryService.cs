@@ -14,11 +14,11 @@ namespace iServiceServices.Services
             _serviceCategoryRepository = new ServiceCategoryRepository(configuration);
         }
 
-        public Result<List<ServiceCategory>> GetAllServiceCategories()
+        public async Task<Result<List<ServiceCategory>>> GetAllServiceCategories()
         {
             try
             {
-                var serviceCategories = _serviceCategoryRepository.Get();
+                var serviceCategories = await _serviceCategoryRepository.GetAsync();
                 return Result<List<ServiceCategory>>.Success(serviceCategories);
             }
             catch (Exception ex)
@@ -27,11 +27,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<ServiceCategory> GetServiceCategoryById(int categoryId)
+        public async Task<Result<ServiceCategory>> GetServiceCategoryById(int categoryId)
         {
             try
             {
-                var serviceCategory = _serviceCategoryRepository.GetById(categoryId);
+                var serviceCategory = await _serviceCategoryRepository.GetByIdAsync(categoryId);
 
                 if (serviceCategory == null)
                 {
@@ -46,11 +46,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<List<ServiceCategory>> GetByUserProfileId(int userProfileId)
+        public async Task<Result<List<ServiceCategory>>> GetByUserProfileId(int userProfileId)
         {
             try
             {
-                var serviceCategory = _serviceCategoryRepository.GetByUserProfileId(userProfileId);
+                var serviceCategory = await _serviceCategoryRepository.GetByUserProfileIdAsync(userProfileId);
 
                 if (serviceCategory == null)
                 {
@@ -65,11 +65,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<ServiceCategory> AddServiceCategory(ServiceCategoryInsert categoryModel)
+        public async Task<Result<ServiceCategory>> AddServiceCategory(ServiceCategory categoryModel)
         {
             try
             {
-                var newCategory = _serviceCategoryRepository.Insert(categoryModel);
+                var newCategory = await _serviceCategoryRepository.InsertAsync(categoryModel);
                 return Result<ServiceCategory>.Success(newCategory);
             }
             catch (Exception ex)
@@ -78,11 +78,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<ServiceCategory> UpdateServiceCategory(ServiceCategoryUpdate category)
+        public async Task<Result<ServiceCategory>> UpdateServiceCategory(ServiceCategory category)
         {
             try
             {
-                var updatedCategory = _serviceCategoryRepository.Update(category);
+                var updatedCategory = await _serviceCategoryRepository.UpdateAsync(category);
                 return Result<ServiceCategory>.Success(updatedCategory);
             }
             catch (Exception ex)
@@ -91,11 +91,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> SetActiveStatus(int categoryId, bool isActive)
+        public async Task<Result<bool>> SetActiveStatus(int categoryId, bool isActive)
         {
             try
             {
-                _serviceCategoryRepository.SetActiveStatus(categoryId, isActive);
+                await _serviceCategoryRepository.SetActiveStatusAsync(categoryId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
@@ -104,11 +104,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> SetDeletedStatus(int categoryId, bool isDeleted)
+        public async Task<Result<bool>> SetDeletedStatus(int categoryId, bool isDeleted)
         {
             try
             {
-                _serviceCategoryRepository.SetDeletedStatus(categoryId, isDeleted);
+                await _serviceCategoryRepository.SetDeletedStatusAsync(categoryId, isDeleted);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)

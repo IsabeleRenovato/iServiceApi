@@ -16,9 +16,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Appointment>> Get()
+        public async Task<ActionResult<List<Appointment>>> Get()
         {
-            var result = _appointmentService.GetAllAppointments();
+            var result = await _appointmentService.GetAllAppointments();
 
             if (result.IsSuccess)
             {
@@ -29,9 +29,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("{appointmentId}")]
-        public ActionResult<Appointment> GetById(int appointmentId)
+        public async Task<ActionResult<Appointment>> GetById(int appointmentId)
         {
-            var result = _appointmentService.GetAppointmentById(appointmentId);
+            var result = await _appointmentService.GetAppointmentById(appointmentId);
 
             if (result.IsSuccess)
             {
@@ -42,14 +42,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Appointment> Post([FromBody] AppointmentInsert appointmentModel)
+        public async Task<ActionResult<Appointment>> Post([FromBody] Appointment appointmentModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _appointmentService.AddAppointment(appointmentModel);
+            var result = await _appointmentService.AddAppointment(appointmentModel);
 
             if (result.IsSuccess)
             {
@@ -60,14 +60,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{appointmentId}")]
-        public ActionResult<Appointment> Put(int appointmentId, [FromBody] AppointmentUpdate appointment)
+        public async Task<ActionResult<Appointment>> Put(int appointmentId, [FromBody] Appointment appointment)
         {
             if (appointmentId != appointment.AppointmentId)
             {
                 return BadRequest();
             }
 
-            var result = _appointmentService.UpdateAppointment(appointment);
+            var result = await _appointmentService.UpdateAppointment(appointment);
 
             if (result.IsSuccess)
             {
@@ -78,9 +78,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{appointmentId}/SetActive")]
-        public ActionResult<bool> SetActive(int appointmentId, [FromBody] bool isActive)
+        public async Task<ActionResult<bool>> SetActive(int appointmentId, [FromBody] bool isActive)
         {
-            var result = _appointmentService.SetActiveStatus(appointmentId, isActive);
+            var result = await _appointmentService.SetActiveStatus(appointmentId, isActive);
 
             if (result.IsSuccess)
             {
@@ -91,9 +91,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpDelete("{appointmentId}/SetDeleted")]
-        public ActionResult<bool> SetDeleted(int appointmentId, [FromBody] bool isDeleted)
+        public async Task<ActionResult<bool>> SetDeleted(int appointmentId, [FromBody] bool isDeleted)
         {
-            var result = _appointmentService.SetDeletedStatus(appointmentId, isDeleted);
+            var result = await _appointmentService.SetDeletedStatus(appointmentId, isDeleted);
 
             if (result.IsSuccess)
             {

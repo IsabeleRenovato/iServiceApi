@@ -16,9 +16,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<ServiceCategory>> Get()
+        public async Task<ActionResult<List<ServiceCategory>>> Get()
         {
-            var result = _serviceCategoryService.GetAllServiceCategories();
+            var result = await _serviceCategoryService.GetAllServiceCategories();
 
             if (result.IsSuccess)
             {
@@ -29,9 +29,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("{categoryId}")]
-        public ActionResult<ServiceCategory> GetById(int categoryId)
+        public async Task<ActionResult<ServiceCategory>> GetById(int categoryId)
         {
-            var result = _serviceCategoryService.GetServiceCategoryById(categoryId);
+            var result = await _serviceCategoryService.GetServiceCategoryById(categoryId);
 
             if (result.IsSuccess)
             {
@@ -42,9 +42,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("GetByUserProfileId/{userProfileId}")]
-        public ActionResult<List<ServiceCategory>> GetByUserProfileId(int userProfileId)
+        public async Task<ActionResult<List<ServiceCategory>>> GetByUserProfileId(int userProfileId)
         {
-            var result = _serviceCategoryService.GetByUserProfileId(userProfileId);
+            var result = await _serviceCategoryService.GetByUserProfileId(userProfileId);
 
             if (result.IsSuccess)
             {
@@ -55,14 +55,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<ServiceCategory> Post([FromBody] ServiceCategoryInsert categoryModel)
+        public async Task<ActionResult<ServiceCategory>> Post([FromBody] ServiceCategory categoryModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _serviceCategoryService.AddServiceCategory(categoryModel);
+            var result = await _serviceCategoryService.AddServiceCategory(categoryModel);
 
             if (result.IsSuccess)
             {
@@ -73,14 +73,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{categoryId}")]
-        public ActionResult<ServiceCategory> Put(int categoryId, [FromBody] ServiceCategoryUpdate category)
+        public async Task<ActionResult<ServiceCategory>> Put(int categoryId, [FromBody] ServiceCategory category)
         {
             if (categoryId != category.ServiceCategoryId)
             {
                 return BadRequest();
             }
 
-            var result = _serviceCategoryService.UpdateServiceCategory(category);
+            var result = await _serviceCategoryService.UpdateServiceCategory(category);
 
             if (result.IsSuccess)
             {
@@ -91,9 +91,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{categoryId}/SetActive")]
-        public ActionResult<bool> SetActive(int categoryId, [FromBody] bool isActive)
+        public async Task<ActionResult<bool>> SetActive(int categoryId, [FromBody] bool isActive)
         {
-            var result = _serviceCategoryService.SetActiveStatus(categoryId, isActive);
+            var result = await _serviceCategoryService.SetActiveStatus(categoryId, isActive);
 
             if (result.IsSuccess)
             {
@@ -104,9 +104,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpDelete("{categoryId}/SetDeleted")]
-        public ActionResult<bool> SetDeleted(int categoryId, [FromBody] bool isDeleted)
+        public async Task<ActionResult<bool>> SetDeleted(int categoryId, [FromBody] bool isDeleted)
         {
-            var result = _serviceCategoryService.SetDeletedStatus(categoryId, isDeleted);
+            var result = await _serviceCategoryService.SetDeletedStatus(categoryId, isDeleted);
 
             if (result.IsSuccess)
             {
