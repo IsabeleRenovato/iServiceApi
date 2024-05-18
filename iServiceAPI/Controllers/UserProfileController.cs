@@ -29,6 +29,19 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
+        [HttpGet("GetByEstablishmentCategoryId/{establishmentCategoryId}")]
+        public async Task<ActionResult<List<UserProfile>>> GetByEstablishmentCategoryId(int establishmentCategoryId)
+        {
+            var result = await _userProfileService.GetByEstablishmentCategoryId(establishmentCategoryId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
         [HttpGet("{userProfileId}")]
         public async Task<ActionResult<UserProfile>> GetById(int userProfileId)
         {

@@ -3,7 +3,7 @@
     public class ServiceCategory
     {
         public int ServiceCategoryId { get; set; }
-        public int UserProfileId { get; set; }
+        public int EstablishmentUserProfileId { get; set; }
         public string Name { get; set; }
         public bool Active { get; set; }
         public bool Deleted { get; set; }

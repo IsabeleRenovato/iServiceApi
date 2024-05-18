@@ -1,6 +1,4 @@
-﻿using iServiceRepositories.Repositories.Models;
-
-namespace iServiceServices.Services.Models
+﻿namespace iServiceRepositories.Repositories.Models
 {
     public class UserInfo
     {

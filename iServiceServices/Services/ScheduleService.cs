@@ -51,7 +51,7 @@ namespace iServiceServices.Services
         {
             try
             {
-                var schedule = await _scheduleRepository.GetByUserProfileIdAsync(userProfileId);
+                var schedule = await _scheduleRepository.GetByEstablishmentUserProfileIdAsync(userProfileId);
 
                 if (schedule == null)
                 {

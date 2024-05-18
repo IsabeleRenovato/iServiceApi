@@ -1,6 +1,5 @@
 ﻿using iServiceRepositories.Repositories.Models;
 using iServiceServices.Services;
-using iServiceServices.Services.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace iServiceAPI.Controllers

@@ -5,7 +5,7 @@ namespace iServiceRepositories.Repositories.Models
     public class Service
     {
         public int ServiceId { get; set; }
-        public int UserProfileId { get; set; }
+        public int EstablishmentUserProfileId { get; set; }
         public int ServiceCategoryId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }

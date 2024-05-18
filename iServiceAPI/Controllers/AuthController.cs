@@ -1,6 +1,5 @@
 ﻿using iServiceRepositories.Repositories.Models;
 using iServiceServices.Services;
-using iServiceServices.Services.Models;
 using iServiceServices.Services.Models.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

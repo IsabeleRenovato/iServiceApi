@@ -43,6 +43,32 @@ namespace iServiceServices.Services
             }
         }
 
+        public async Task<Result<UserInfo>> GetUserInfoByUserProfileId(int userProfileId)
+        {
+            try
+            {
+                var userProfile = await _userProfileRepository.GetByIdAsync(userProfileId);
+
+                if (userProfile?.UserProfileId > 0 == false)
+                {
+                    return Result<UserInfo>.Failure("Falha ao recuperar os dados do usuário. (UserRole)");
+                }
+
+                var user = await _userRepository.GetByIdAsync(userProfile.UserId);
+
+                if (user?.UserId > 0 == false)
+                {
+                    return Result<UserInfo>.Failure("Falha ao recuperar os dados do usuário. (UserRole)");
+                }
+
+                return await GetUserInfo(user);
+            }
+            catch (Exception ex)
+            {
+                return Result<UserInfo>.Failure($"Falha ao obter os usuários: {ex.Message}");
+            }
+        }
+
         public async Task<Result<List<UserInfo>>> GetUserInfoByUserRoleId(int userRoleId)
         {
             try
@@ -113,6 +139,21 @@ namespace iServiceServices.Services
 
             var address = await _addressRepository.GetByIdAsync(userProfile.AddressId.GetValueOrDefault());
 
+            if (userRole.UserRoleId == 2)
+            {
+                var feedbacks = await _feedbackRepository.GetFeedbackByUserProfileIdAsync(userProfile.UserProfileId);
+
+                if (feedbacks?.Count > 0)
+                {
+                    userProfile.Rating = new Rating
+                    {
+                        Value = feedbacks.Sum(f => f.Rating) / feedbacks.Count,
+                        Total = feedbacks.Count,
+                        Feedback = feedbacks,
+                    };
+                }
+            }
+
             return Result<UserInfo>.Success(new UserInfo
             {
                 User = user,
@@ -152,7 +193,8 @@ namespace iServiceServices.Services
                         userProfile.Rating = new Rating
                         {
                             Value = feedbacks.Sum(f => f.Rating) / feedbacks.Count,
-                            Total = feedbacks.Count
+                            Total = feedbacks.Count,
+                            Feedback = feedbacks,
                         };
                     }
                 }

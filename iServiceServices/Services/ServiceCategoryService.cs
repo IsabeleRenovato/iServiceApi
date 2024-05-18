@@ -50,7 +50,7 @@ namespace iServiceServices.Services
         {
             try
             {
-                var serviceCategory = await _serviceCategoryRepository.GetByUserProfileIdAsync(userProfileId);
+                var serviceCategory = await _serviceCategoryRepository.GetByEstablishmentUserProfileIdAsync(userProfileId);
 
                 if (serviceCategory == null)
                 {

@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using iServiceRepositories.Repositories.Models;
 using Microsoft.Extensions.Configuration;
+using MySql.Data.MySqlClient;
 
 namespace iServiceRepositories.Repositories
 {
@@ -8,98 +9,100 @@ namespace iServiceRepositories.Repositories
     {
         private readonly IConfiguration _configuration;
         private readonly string _connectionString;
-        private readonly MySqlConnectionSingleton _connectionSingleton;
 
         public AppointmentRepository(IConfiguration configuration)
         {
             _configuration = configuration;
             _connectionString = _configuration.GetConnectionString("DefaultConnection");
-            _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
+        }
+
+        private async Task<MySqlConnection> OpenConnectionAsync()
+        {
+            var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+            return connection;
         }
 
         public async Task<List<Appointment>> GetAsync()
         {
-            var connection = await _connectionSingleton.GetConnectionAsync();
-            try
+            using (var connection = await OpenConnectionAsync())
             {
                 var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment");
-                return queryResult.AsList();
+                return queryResult.ToList();
             }
-            finally
+        }
+
+        public async Task<List<Appointment>> GetClientAppointmentsAsync(int userProfileId)
+        {
+            using (var connection = await OpenConnectionAsync())
             {
-                await connection.CloseAsync();
+                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE Active = 1 AND Deleted = 0 AND ClientUserProfileId = @ClientUserProfileId", new { ClientUserProfileId = userProfileId });
+                return queryResult.ToList();
+            }
+        }
+
+        public async Task<List<Appointment>> GetEstablishmentAppointmentsAsync(int userProfileId)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE Active = 1 AND Deleted = 0 AND EstablishmentUserProfileId = @EstablishmentUserProfileId", new { EstablishmentUserProfileId = userProfileId });
+                return queryResult.ToList();
+            }
+        }
+
+        public async Task<List<Appointment>> GetByEstablishmentAndDate(int establishmentUserProfileId, DateTime date)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND CAST(Start AS DATE) = CAST(@Start AS DATE)", new { EstablishmentUserProfileId = establishmentUserProfileId, Start = date });
+                return queryResult.ToList();
             }
         }
 
         public async Task<Appointment> GetByIdAsync(int appointmentId)
         {
-            var connection = await _connectionSingleton.GetConnectionAsync();
-            try
+            using (var connection = await OpenConnectionAsync())
             {
                 return await connection.QueryFirstOrDefaultAsync<Appointment>(
                     "SELECT * FROM Appointment WHERE AppointmentId = @AppointmentId", new { AppointmentId = appointmentId });
-            }
-            finally
-            {
-                await connection.CloseAsync();
             }
         }
 
         public async Task<Appointment> InsertAsync(Appointment appointmentModel)
         {
-            var connection = await _connectionSingleton.GetConnectionAsync();
-            try
+            using (var connection = await OpenConnectionAsync())
             {
                 var id = await connection.QuerySingleAsync<int>(
-                    "INSERT INTO Appointment (ServiceId, ClientUserProfileId, EstablishmentUserProfileId, AppointmentStatusId, Start, End) VALUES (@ServiceId, @ClientUserProfileId, @EstablishmentUserProfileId, @AppointmentStatusId, @Start, @End); SELECT LAST_INSERT_Id();", appointmentModel);
+                    "INSERT INTO Appointment (ServiceId, ClientUserProfileId, EstablishmentUserProfileId, AppointmentStatusId, Start, End) VALUES (@ServiceId, @ClientUserProfileId, @EstablishmentUserProfileId, @AppointmentStatusId, @Start, @End); SELECT LAST_INSERT_ID();", appointmentModel);
                 return await GetByIdAsync(id);
-            }
-            finally
-            {
-                await connection.CloseAsync();
             }
         }
 
         public async Task<Appointment> UpdateAsync(Appointment appointmentUpdateModel)
         {
-            var connection = await _connectionSingleton.GetConnectionAsync();
-            try
+            using (var connection = await OpenConnectionAsync())
             {
                 await connection.ExecuteAsync(
                     "UPDATE Appointment SET AppointmentStatusId = @AppointmentStatusId, Start = @Start, End = @End, LastUpdateDate = NOW() WHERE AppointmentId = @AppointmentId", appointmentUpdateModel);
                 return await GetByIdAsync(appointmentUpdateModel.AppointmentId);
             }
-            finally
-            {
-                await connection.CloseAsync();
-            }
         }
 
         public async Task SetActiveStatusAsync(int appointmentId, bool isActive)
         {
-            var connection = await _connectionSingleton.GetConnectionAsync();
-            try
+            using (var connection = await OpenConnectionAsync())
             {
                 await connection.ExecuteAsync(
                     "UPDATE Appointment SET Active = @IsActive WHERE AppointmentId = @AppointmentId", new { IsActive = isActive, AppointmentId = appointmentId });
-            }
-            finally
-            {
-                await connection.CloseAsync();
             }
         }
 
         public async Task SetDeletedStatusAsync(int appointmentId, bool isDeleted)
         {
-            var connection = await _connectionSingleton.GetConnectionAsync();
-            try
+            using (var connection = await OpenConnectionAsync())
             {
                 await connection.ExecuteAsync(
                     "UPDATE Appointment SET Deleted = @IsDeleted WHERE AppointmentId = @AppointmentId", new { IsDeleted = isDeleted, AppointmentId = appointmentId });
-            }
-            finally
-            {
-                await connection.CloseAsync();
             }
         }
     }

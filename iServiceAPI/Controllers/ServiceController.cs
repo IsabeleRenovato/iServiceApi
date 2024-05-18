@@ -54,6 +54,19 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
+        [HttpGet("GetAvailableTimes/{serviceId}/{date}")]
+        public async Task<ActionResult<List<string>>> GetAvailableTimes(int serviceId, DateTime date)
+        {
+            var result = await _serviceService.GetAvailableTimes(serviceId, date);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
         [HttpPost]
         public async Task<ActionResult<Service>> Post([FromForm] Service serviceModel)
         {

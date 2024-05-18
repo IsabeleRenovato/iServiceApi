@@ -1,6 +1,5 @@
 ﻿using iServiceRepositories.Repositories.Models;
 using iServiceServices.Services;
-using iServiceServices.Services.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace iServiceAPI.Controllers
@@ -17,7 +16,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("GetUserInfoByUserId/{userId}")]
-        public async Task<ActionResult<User>> GetUserInfoByUserId(int userId)
+        public async Task<ActionResult<UserInfo>> GetUserInfoByUserId(int userId)
         {
             var result = await _userInfoService.GetUserInfoByUserId(userId);
 

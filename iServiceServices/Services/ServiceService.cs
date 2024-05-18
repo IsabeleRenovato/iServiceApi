@@ -2,16 +2,23 @@
 using iServiceRepositories.Repositories.Models;
 using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
+using System.Configuration;
 
 namespace iServiceServices.Services
 {
     public class ServiceService
     {
         private readonly ServiceRepository _serviceRepository;
+        private readonly ScheduleRepository _scheduleRepository;
+        private readonly SpecialScheduleRepository _specialScheduleRepository;
+        private readonly AppointmentRepository _appointmentRepository;
         private readonly ServiceCategoryRepository _serviceCategoryRepository;
         public ServiceService(IConfiguration configuration)
         {
             _serviceRepository = new ServiceRepository(configuration);
+            _scheduleRepository = new ScheduleRepository(configuration);
+            _specialScheduleRepository = new SpecialScheduleRepository(configuration);
+            _appointmentRepository = new AppointmentRepository(configuration);
             _serviceCategoryRepository = new ServiceCategoryRepository(configuration);
         }
 
@@ -60,7 +67,7 @@ namespace iServiceServices.Services
         {
             try
             {
-                var services = await _serviceRepository.GetServiceByUserProfileIdAsync(userProfileId);
+                var services = await _serviceRepository.GetServiceByEstablishmentUserProfileIdAsync(userProfileId);
 
                 if (services?.Count > 0 == false)
                 {
@@ -87,11 +94,43 @@ namespace iServiceServices.Services
             }
         }
 
+        public async Task<Result<List<string>>> GetAvailableTimes(int serviceId, DateTime date)
+        {
+            try
+            {
+                var schedules = new List<string>();
+                var service = await _serviceRepository.GetByIdAsync(serviceId);
+                var schedule = await _scheduleRepository.GetByEstablishmentUserProfileIdAsync(service.EstablishmentUserProfileId);
+                var appointments = await _appointmentRepository.GetByEstablishmentAndDate(service.EstablishmentUserProfileId, date);
+                var specialSchedule = await _specialScheduleRepository.GetByEstablishmentAndDate(service.EstablishmentUserProfileId, date);
+
+                var appointmentFinder = new AppointmentFinderService();
+                var availableSlots = appointmentFinder.FindAvailableSlots(schedule, specialSchedule, service, date, appointments);
+                if (availableSlots.Any())
+                {
+                    foreach (var slot in availableSlots)
+                    {
+                        schedules.Add(slot.ToString("hh\\:mm"));
+                    }
+                }
+                else
+                {
+                    return Result<List<string>>.Failure($"Nenhum horário disponível.");
+                }
+
+                return Result<List<string>>.Success(schedules);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<string>>.Failure($"Falha ao obter os serviços: {ex.Message}");
+            }
+        }
+
         public async Task<Result<Service>> AddService(Service request)
         {
             try
             {
-                var serviceCategory = await _serviceCategoryRepository.GetByFilterAsync(request.UserProfileId, request.ServiceCategoryId);
+                var serviceCategory = await _serviceCategoryRepository.GetByFilterAsync(request.EstablishmentUserProfileId, request.ServiceCategoryId);
 
                 if (serviceCategory?.ServiceCategoryId > 0 == false)
                 {
