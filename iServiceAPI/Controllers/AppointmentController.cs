@@ -41,6 +41,19 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
+        [HttpGet("GetAllAppointments/{userRoleId}/{userProfileId}")]
+        public async Task<ActionResult<List<Appointment>>> GetAllAppointments(int userRoleId, int userProfileId)
+        {
+            var result = await _appointmentService.GetAllAppointments(userRoleId, userProfileId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
         [HttpPost]
         public async Task<ActionResult<Appointment>> Post([FromBody] Appointment appointmentModel)
         {

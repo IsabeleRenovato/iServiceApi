@@ -46,6 +46,25 @@ namespace iServiceServices.Services
             }
         }
 
+        public async Task<Result<Feedback>> GetByAppointmentId(int appointmentId)
+        {
+            try
+            {
+                var feedback = await _feedbackRepository.GetByAppointmentIdAsync(appointmentId);
+
+                if (feedback == null)
+                {
+                    return Result<Feedback>.Failure("Feedback não encontrado.");
+                }
+
+                return Result<Feedback>.Success(feedback);
+            }
+            catch (Exception ex)
+            {
+                return Result<Feedback>.Failure($"Falha ao obter o feedback: {ex.Message}");
+            }
+        }
+
         public async Task<Result<Feedback>> AddFeedback(Feedback feedbackModel)
         {
             try

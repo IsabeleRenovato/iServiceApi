@@ -25,7 +25,7 @@ namespace iServiceServices.Services
 
                 var userRole = await new UserRoleRepository(_configuration).GetByIdAsync(model.UserRoleId);
 
-                if (userRole.UserRoleId > 0 == false)
+                if (userRole?.UserRoleId > 0 == false)
                 {
                     return Result<UserInfo>.Failure("Falha ao recuperar a Role do usuário.");
                 }

@@ -13,5 +13,9 @@
         public bool Deleted { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime LastUpdateDate { get; set; }
+        public UserInfo? ClientUserInfo { get; set; }
+        public UserInfo? EstablishmentUserInfo { get; set; }
+        public Service? Service { get; set; }
+        public Feedback? Feedback { get; set; }
     }
 }

@@ -3,7 +3,7 @@
     public class Schedule
     {
         public int ScheduleId { get; set; }
-        public int UserProfileId { get; set; }
+        public int EstablishmentUserProfileId { get; set; }
         public string Days { get; set; }
         public string Start { get; set; }
         public string End { get; set; }

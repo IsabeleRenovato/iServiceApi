@@ -21,6 +21,22 @@ namespace iServiceServices.Services
             var breakEnd = specialDay != null ? ParseTime(specialDay.BreakEnd) : ParseTime(schedule?.BreakEnd);
 
             TimeSpan currentTime = start.GetValueOrDefault();
+
+            if (date.Date == DateTime.Today)
+            {
+                DateTime now = DateTime.Now;
+                int minutes = now.Minute;
+                int roundedMinutes = ((minutes + 14) / 15) * 15; // Arredonda os minutos para o próximo intervalo de 15 minutos
+                if (roundedMinutes == 60)
+                {
+                    currentTime = new TimeSpan(now.Hour + 1, 0, 0); // Define a próxima hora e zera os minutos e segundos
+                }
+                else
+                {
+                    currentTime = new TimeSpan(now.Hour, roundedMinutes, 0); // Define a hora atual, minutos arredondados e zera os segundos
+                }
+            }
+
             while (currentTime.Add(TimeSpan.FromMinutes(service.EstimatedDuration)) <= end)
             {
                 var potentialEndTime = currentTime.Add(TimeSpan.FromMinutes(service.EstimatedDuration));

@@ -35,6 +35,34 @@ namespace iServiceServices.Services
             }
         }
 
+        public async Task<Result<List<UserProfile>>> GetByEstablishmentCategoryId(int establishmentCategoryId)
+        {
+            try
+            {
+                var userProfiles = await _userProfileRepository.GetByEstablishmentCategoryIdAsync(establishmentCategoryId);
+
+                foreach (var profile in userProfiles)
+                {
+                    var feedbacks = await _feedbackRepository.GetFeedbackByUserProfileIdAsync(profile.UserProfileId);
+                    if (feedbacks?.Count > 0)
+                    {
+                        profile.Rating = new Rating
+                        {
+                            Total = feedbacks.Count,
+                            Value = feedbacks.Sum(f => f.Rating) / feedbacks.Count,
+                            Feedback = feedbacks
+                        };
+                    }
+                }
+
+                return Result<List<UserProfile>>.Success(userProfiles);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<UserProfile>>.Failure($"Falha ao obter os perfis de usuário: {ex.Message}");
+            }
+        }
+
         public async Task<Result<UserProfile>> GetUserProfileById(int userProfileId)
         {
             try
@@ -53,7 +81,8 @@ namespace iServiceServices.Services
                     userProfile.Rating = new Rating
                     {
                         Value = feedbacks.Sum(f => f.Rating) / feedbacks.Count,
-                        Total = feedbacks.Count
+                        Total = feedbacks.Count,
+                        Feedback = feedbacks
                     };
                 }
 
@@ -83,7 +112,8 @@ namespace iServiceServices.Services
                     userInfo.Value.UserProfile.Rating = new Rating
                     {
                         Value = feedbacks.Sum(f => f.Rating) / feedbacks.Count,
-                        Total = feedbacks.Count
+                        Total = feedbacks.Count,
+                        Feedback = feedbacks
                     };
                 }
 
