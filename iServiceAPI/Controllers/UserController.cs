@@ -1,7 +1,5 @@
 ﻿using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services;
-using iServiceServices.Services.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace iServiceAPI.Controllers
@@ -18,9 +16,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<User>> Get()
+        public async Task<ActionResult<List<User>>> Get()
         {
-            var result = _userService.GetAllUsers();
+            var result = await _userService.GetAllUsers();
 
             if (result.IsSuccess)
             {
@@ -30,36 +28,10 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("GetById/{userId}")]
-        public ActionResult<User> GetById(int userId)
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<User>> GetById(int userId)
         {
-            var result = _userService.GetUserById(userId);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return NotFound(new { message = result.ErrorMessage });
-        }
-
-        [HttpGet("GetUserInfoById/{userId}")]
-        public ActionResult<UserInfo> GetUserInfoById(int userId)
-        {
-            var result = _userService.GetUserInfoById(userId);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return NotFound(new { message = result.ErrorMessage });
-        }
-
-        [HttpGet("GetByEmail/{email}")]
-        public ActionResult<User> GetByEmail(string email)
-        {
-            var result = _userService.GetUserByEmail(email);
+            var result = await _userService.GetUserById(userId);
 
             if (result.IsSuccess)
             {
@@ -70,14 +42,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<User> Post([FromBody] UserModel userModel)
+        public async Task<ActionResult<User>> Post([FromBody] User userModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _userService.AddUser(userModel);
+            var result = await _userService.AddUser(userModel);
 
             if (result.IsSuccess)
             {
@@ -88,32 +60,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{userId}")]
-        public ActionResult<User> Put(int userId, [FromBody] User user)
+        public async Task<ActionResult<User>> Put(int userId, [FromBody] User user)
         {
             if (userId != user.UserId)
             {
                 return BadRequest();
             }
 
-            var result = _userService.UpdateUser(user);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return BadRequest(new { message = result.ErrorMessage });
-        }
-
-        [HttpPut("UpdateUserProfile")]
-        public ActionResult<UserInfo> Put([FromBody] ProfileUpdate user)
-        {
-            if (user?.ClientProfile == null && user?.EstablishmentProfile == null)
-            {
-                return BadRequest();
-            }
-
-            var result = _userService.UpdateUserProfile(user);
+            var result = await _userService.UpdateUser(user);
 
             if (result.IsSuccess)
             {
@@ -124,9 +78,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpDelete("{userId}")]
-        public IActionResult Delete(int userId)
+        public async Task<IActionResult> Delete(int userId)
         {
-            var result = _userService.DeleteUser(userId);
+            var result = await _userService.DeleteUser(userId);
 
             if (result.IsSuccess)
             {

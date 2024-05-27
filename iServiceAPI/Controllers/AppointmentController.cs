@@ -1,5 +1,4 @@
 ﻿using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,9 +16,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Appointment>> Get()
+        public async Task<ActionResult<List<Appointment>>> Get()
         {
-            var result = _appointmentService.GetAllAppointments();
+            var result = await _appointmentService.GetAllAppointments();
 
             if (result.IsSuccess)
             {
@@ -29,10 +28,10 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("GetById/{appointmentId}")]
-        public ActionResult<Appointment> GetById(int appointmentId)
+        [HttpGet("{appointmentId}")]
+        public async Task<ActionResult<Appointment>> GetById(int appointmentId)
         {
-            var result = _appointmentService.GetAppointmentById(appointmentId);
+            var result = await _appointmentService.GetAppointmentById(appointmentId);
 
             if (result.IsSuccess)
             {
@@ -42,15 +41,28 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
+        [HttpGet("GetAllAppointments/{userRoleId}/{userProfileId}")]
+        public async Task<ActionResult<List<Appointment>>> GetAllAppointments(int userRoleId, int userProfileId)
+        {
+            var result = await _appointmentService.GetAllAppointments(userRoleId, userProfileId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
         [HttpPost]
-        public ActionResult<Appointment> Post([FromBody] AppointmentModel model)
+        public async Task<ActionResult<Appointment>> Post([FromBody] Appointment appointmentModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _appointmentService.AddAppointment(model);
+            var result = await _appointmentService.AddAppointment(appointmentModel);
 
             if (result.IsSuccess)
             {
@@ -61,14 +73,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{appointmentId}")]
-        public ActionResult<Appointment> Put(int appointmentId, [FromBody] Appointment appointment)
+        public async Task<ActionResult<Appointment>> Put(int appointmentId, [FromBody] Appointment appointment)
         {
             if (appointmentId != appointment.AppointmentId)
             {
                 return BadRequest();
             }
 
-            var result = _appointmentService.UpdateAppointment(appointment);
+            var result = await _appointmentService.UpdateAppointment(appointment);
 
             if (result.IsSuccess)
             {
@@ -78,18 +90,30 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpDelete("{appointmentId}")]
-        public IActionResult Delete(int appointmentId)
+        [HttpPut("{appointmentId}/SetActive")]
+        public async Task<ActionResult<bool>> SetActive(int appointmentId, [FromBody] bool isActive)
         {
-            var result = _appointmentService.DeleteAppointment(appointmentId);
+            var result = await _appointmentService.SetActiveStatus(appointmentId, isActive);
 
             if (result.IsSuccess)
             {
-                return NoContent();
+                return Ok(result.Value);
             }
 
-            return NotFound(new { message = result.ErrorMessage });
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpDelete("{appointmentId}/SetDeleted")]
+        public async Task<ActionResult<bool>> SetDeleted(int appointmentId, [FromBody] bool isDeleted)
+        {
+            var result = await _appointmentService.SetDeletedStatus(appointmentId, isDeleted);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
         }
     }
-
 }

@@ -1,6 +1,5 @@
 ﻿using iServiceRepositories.Repositories;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
 
@@ -15,31 +14,31 @@ namespace iServiceServices.Services
             _serviceCategoryRepository = new ServiceCategoryRepository(configuration);
         }
 
-        public Result<List<ServiceCategory>> GetAllServiceCategories()
+        public async Task<Result<List<ServiceCategory>>> GetAllServiceCategories()
         {
             try
             {
-                var categories = _serviceCategoryRepository.Get();
-                return Result<List<ServiceCategory>>.Success(categories);
+                var serviceCategories = await _serviceCategoryRepository.GetAsync();
+                return Result<List<ServiceCategory>>.Success(serviceCategories);
             }
             catch (Exception ex)
             {
-                return Result<List<ServiceCategory>>.Failure($"Falha ao obter as categorias de serviços: {ex.Message}");
+                return Result<List<ServiceCategory>>.Failure($"Falha ao obter as categorias de serviço: {ex.Message}");
             }
         }
 
-        public Result<ServiceCategory> GetServiceCategoryById(int serviceCategoryId)
+        public async Task<Result<ServiceCategory>> GetServiceCategoryById(int categoryId)
         {
             try
             {
-                var category = _serviceCategoryRepository.GetById(serviceCategoryId);
+                var serviceCategory = await _serviceCategoryRepository.GetByIdAsync(categoryId);
 
-                if (category == null)
+                if (serviceCategory == null)
                 {
                     return Result<ServiceCategory>.Failure("Categoria de serviço não encontrada.");
                 }
 
-                return Result<ServiceCategory>.Success(category);
+                return Result<ServiceCategory>.Success(serviceCategory);
             }
             catch (Exception ex)
             {
@@ -47,24 +46,43 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<ServiceCategory> AddServiceCategory(ServiceCategoryModel model)
+        public async Task<Result<List<ServiceCategory>>> GetByUserProfileId(int userProfileId)
         {
             try
             {
-                var newCategory = _serviceCategoryRepository.Insert(model);
+                var serviceCategory = await _serviceCategoryRepository.GetByEstablishmentUserProfileIdAsync(userProfileId);
+
+                if (serviceCategory == null)
+                {
+                    return Result<List<ServiceCategory>>.Failure("Categoria de serviço não encontrada.");
+                }
+
+                return Result<List<ServiceCategory>>.Success(serviceCategory);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<ServiceCategory>>.Failure($"Falha ao obter a categoria de serviço: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<ServiceCategory>> AddServiceCategory(ServiceCategory categoryModel)
+        {
+            try
+            {
+                var newCategory = await _serviceCategoryRepository.InsertAsync(categoryModel);
                 return Result<ServiceCategory>.Success(newCategory);
             }
             catch (Exception ex)
             {
-                return Result<ServiceCategory>.Failure($"Falha ao criar a categoria de serviço: {ex.Message}");
+                return Result<ServiceCategory>.Failure($"Falha ao inserir a categoria de serviço: {ex.Message}");
             }
         }
 
-        public Result<ServiceCategory> UpdateServiceCategory(ServiceCategory serviceCategory)
+        public async Task<Result<ServiceCategory>> UpdateServiceCategory(ServiceCategory category)
         {
             try
             {
-                var updatedCategory = _serviceCategoryRepository.Update(serviceCategory);
+                var updatedCategory = await _serviceCategoryRepository.UpdateAsync(category);
                 return Result<ServiceCategory>.Success(updatedCategory);
             }
             catch (Exception ex)
@@ -73,22 +91,29 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> DeleteServiceCategory(int serviceCategoryId)
+        public async Task<Result<bool>> SetActiveStatus(int categoryId, bool isActive)
         {
             try
             {
-                bool success = _serviceCategoryRepository.Delete(serviceCategoryId);
-
-                if (!success)
-                {
-                    return Result<bool>.Failure("Falha ao deletar a categoria de serviço ou categoria não encontrada.");
-                }
-
+                await _serviceCategoryRepository.SetActiveStatusAsync(categoryId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure($"Falha ao deletar a categoria de serviço: {ex.Message}");
+                return Result<bool>.Failure($"Falha ao definir o status ativo da categoria de serviço: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<bool>> SetDeletedStatus(int categoryId, bool isDeleted)
+        {
+            try
+            {
+                await _serviceCategoryRepository.SetDeletedStatusAsync(categoryId, isDeleted);
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure($"Falha ao definir o status excluído da categoria de serviço: {ex.Message}");
             }
         }
     }

@@ -1,5 +1,4 @@
 ﻿using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,9 +16,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Address>> Get()
+        public async Task<ActionResult<List<Address>>> Get()
         {
-            var result = _addressService.GetAllAddresses();
+            var result = await _addressService.GetAllAddresses();
 
             if (result.IsSuccess)
             {
@@ -29,10 +28,10 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("GetById/{addressId}")]
-        public ActionResult<Address> GetById(int addressId)
+        [HttpGet("{addressId}")]
+        public async Task<ActionResult<Address>> GetById(int addressId)
         {
-            var result = _addressService.GetAddressById(addressId);
+            var result = await _addressService.GetAddressById(addressId);
 
             if (result.IsSuccess)
             {
@@ -43,14 +42,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Address> Post([FromBody] AddressModel addressModel)
+        public async Task<ActionResult<Address>> Post([FromBody] Address addressModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _addressService.AddAddress(addressModel);
+            var result = await _addressService.AddAddress(addressModel);
 
             if (result.IsSuccess)
             {
@@ -60,15 +59,33 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
+        [HttpPost("Save")]
+        public async Task<ActionResult<UserInfo>> Save([FromBody] UserInfo request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await _addressService.SaveAddress(request);
+
+            if (result.IsSuccess)
+            {
+                return CreatedAtAction(nameof(GetById), new { addressId = result.Value.Address.AddressId }, result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
         [HttpPut("{addressId}")]
-        public ActionResult<Address> Put(int addressId, [FromBody] Address address)
+        public async Task<ActionResult<Address>> Put(int addressId, [FromBody] Address address)
         {
             if (addressId != address.AddressId)
             {
                 return BadRequest();
             }
 
-            var result = _addressService.UpdateAddress(address);
+            var result = await _addressService.UpdateAddress(address);
 
             if (result.IsSuccess)
             {
@@ -78,17 +95,30 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpDelete("{addressId}")]
-        public IActionResult Delete(int addressId)
+        [HttpPut("{addressId}/SetActive")]
+        public async Task<ActionResult<bool>> SetActive(int addressId, [FromBody] bool isActive)
         {
-            var result = _addressService.DeleteAddress(addressId);
+            var result = await _addressService.SetActiveStatus(addressId, isActive);
 
             if (result.IsSuccess)
             {
-                return NoContent();
+                return Ok(result.Value);
             }
 
-            return NotFound(new { message = result.ErrorMessage });
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpDelete("{addressId}/SetDeleted")]
+        public async Task<ActionResult<bool>> SetDeleted(int addressId, [FromBody] bool isDeleted)
+        {
+            var result = await _addressService.SetDeletedStatus(addressId, isDeleted);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
         }
     }
 }

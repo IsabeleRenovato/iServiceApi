@@ -1,12 +1,10 @@
-﻿using iServiceRepositories.Repositories.Models.Request;
+﻿using iServiceRepositories.Repositories.Models;
 
 namespace iServiceServices.Services.Models.Auth
 {
     public class Register
     {
-        public int UserId { get; set; }
-        public EstablishmentProfileModel? EstablishmentProfile { get; set; }
-        public ClientProfileModel? ClientProfile { get; set; }
-        public AddressModel Address { get; set; }
+        public UserProfile UserProfile { get; set; }
+        public Address? Address { get; set; }
     }
 }

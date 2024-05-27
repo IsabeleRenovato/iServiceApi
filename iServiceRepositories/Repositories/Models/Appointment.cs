@@ -4,12 +4,18 @@
     {
         public int AppointmentId { get; set; }
         public int ServiceId { get; set; }
-        public int ClientProfileId { get; set; }
-        public int EstablishmentProfileId { get; set; }
+        public int ClientUserProfileId { get; set; }
+        public int EstablishmentUserProfileId { get; set; }
         public int AppointmentStatusId { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
+        public bool Active { get; set; }
+        public bool Deleted { get; set; }
         public DateTime CreationDate { get; set; }
-        public DateTime? LastUpdateDate { get; set; }
+        public DateTime LastUpdateDate { get; set; }
+        public UserInfo? ClientUserInfo { get; set; }
+        public UserInfo? EstablishmentUserInfo { get; set; }
+        public Service? Service { get; set; }
+        public Feedback? Feedback { get; set; }
     }
 }

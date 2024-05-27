@@ -1,6 +1,5 @@
 ﻿using iServiceRepositories.Repositories;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
 
@@ -15,80 +14,87 @@ namespace iServiceServices.Services
             _appointmentStatusRepository = new AppointmentStatusRepository(configuration);
         }
 
-        public Result<List<AppointmentStatus>> GetAllAppointmentStatuses()
+        public async Task<Result<List<AppointmentStatus>>> GetAllAppointmentStatuses()
         {
             try
             {
-                var statuses = _appointmentStatusRepository.Get();
-                return Result<List<AppointmentStatus>>.Success(statuses);
+                var appointmentStatuses = await _appointmentStatusRepository.GetAsync();
+                return Result<List<AppointmentStatus>>.Success(appointmentStatuses);
             }
             catch (Exception ex)
             {
-                return Result<List<AppointmentStatus>>.Failure($"Falha ao obter os status de agendamento: {ex.Message}");
+                return Result<List<AppointmentStatus>>.Failure($"Falha ao obter os status dos agendamentos: {ex.Message}");
             }
         }
 
-        public Result<AppointmentStatus> GetAppointmentStatusById(int appointmentStatusId)
+        public async Task<Result<AppointmentStatus>> GetAppointmentStatusById(int appointmentStatusId)
         {
             try
             {
-                var status = _appointmentStatusRepository.GetById(appointmentStatusId);
+                var appointmentStatus = await _appointmentStatusRepository.GetByIdAsync(appointmentStatusId);
 
-                if (status == null)
+                if (appointmentStatus == null)
                 {
-                    return Result<AppointmentStatus>.Failure("Status de agendamento não encontrado.");
+                    return Result<AppointmentStatus>.Failure("Status do agendamento não encontrado.");
                 }
 
-                return Result<AppointmentStatus>.Success(status);
+                return Result<AppointmentStatus>.Success(appointmentStatus);
             }
             catch (Exception ex)
             {
-                return Result<AppointmentStatus>.Failure($"Falha ao obter o status de agendamento: {ex.Message}");
+                return Result<AppointmentStatus>.Failure($"Falha ao obter o status do agendamento: {ex.Message}");
             }
         }
 
-        public Result<AppointmentStatus> AddAppointmentStatus(AppointmentStatusModel model)
+        public async Task<Result<AppointmentStatus>> AddAppointmentStatus(AppointmentStatus appointmentStatusModel)
         {
             try
             {
-                var newStatus = _appointmentStatusRepository.Insert(model);
-                return Result<AppointmentStatus>.Success(newStatus);
+                var newAppointmentStatus = await _appointmentStatusRepository.InsertAsync(appointmentStatusModel);
+                return Result<AppointmentStatus>.Success(newAppointmentStatus);
             }
             catch (Exception ex)
             {
-                return Result<AppointmentStatus>.Failure($"Falha ao criar o status de agendamento: {ex.Message}");
+                return Result<AppointmentStatus>.Failure($"Falha ao inserir o status do agendamento: {ex.Message}");
             }
         }
 
-        public Result<AppointmentStatus> UpdateAppointmentStatus(AppointmentStatus appointmentStatus)
+        public async Task<Result<AppointmentStatus>> UpdateAppointmentStatus(AppointmentStatus appointmentStatus)
         {
             try
             {
-                var updatedStatus = _appointmentStatusRepository.Update(appointmentStatus);
-                return Result<AppointmentStatus>.Success(updatedStatus);
+                var updatedAppointmentStatus = await _appointmentStatusRepository.UpdateAsync(appointmentStatus);
+                return Result<AppointmentStatus>.Success(updatedAppointmentStatus);
             }
             catch (Exception ex)
             {
-                return Result<AppointmentStatus>.Failure($"Falha ao atualizar o status de agendamento: {ex.Message}");
+                return Result<AppointmentStatus>.Failure($"Falha ao atualizar o status do agendamento: {ex.Message}");
             }
         }
 
-        public Result<bool> DeleteAppointmentStatus(int appointmentStatusId)
+        public async Task<Result<bool>> SetActiveStatus(int appointmentStatusId, bool isActive)
         {
             try
             {
-                bool success = _appointmentStatusRepository.Delete(appointmentStatusId);
-
-                if (!success)
-                {
-                    return Result<bool>.Failure("Falha ao deletar o status de agendamento ou status não encontrado.");
-                }
-
+                await _appointmentStatusRepository.SetActiveStatusAsync(appointmentStatusId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure($"Falha ao deletar o status de agendamento: {ex.Message}");
+                return Result<bool>.Failure($"Falha ao definir o status ativo do status do agendamento: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<bool>> SetDeletedStatus(int appointmentStatusId, bool isDeleted)
+        {
+            try
+            {
+                await _appointmentStatusRepository.SetDeletedStatusAsync(appointmentStatusId, isDeleted);
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure($"Falha ao definir o status excluído do status do agendamento: {ex.Message}");
             }
         }
     }
