@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
+using MySql.Data.MySqlClient;
 
 namespace iServiceRepositories.Repositories
 {
@@ -9,65 +9,94 @@ namespace iServiceRepositories.Repositories
     {
         private readonly IConfiguration _configuration;
         private readonly string _connectionString;
-        private readonly MySqlConnectionSingleton _connectionSingleton;
 
         public FeedbackRepository(IConfiguration configuration)
         {
             _configuration = configuration;
             _connectionString = _configuration.GetConnectionString("DefaultConnection");
-            _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public List<Feedback> Get()
+        private async Task<MySqlConnection> OpenConnectionAsync()
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+            return connection;
+        }
+
+        public async Task<List<Feedback>> GetAsync()
+        {
+            using (var connection = await OpenConnectionAsync())
             {
-                return connection.Query<Feedback>("SELECT FeedbackId, AppointmentId, Description, Rating, CreationDate, LastUpdateDate FROM Feedback").AsList();
+                var queryResult = await connection.QueryAsync<Feedback>("SELECT * FROM Feedback");
+                return queryResult.ToList();
             }
         }
 
-        public Feedback GetById(int feedbackId)
+        public async Task<Feedback> GetByIdAsync(int feedbackId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                return connection.QueryFirstOrDefault<Feedback>("SELECT FeedbackId, AppointmentId, Description, Rating, CreationDate, LastUpdateDate FROM Feedback WHERE FeedbackId = @FeedbackId", new { FeedbackId = feedbackId });
+                return await connection.QueryFirstOrDefaultAsync<Feedback>(
+                    "SELECT * FROM Feedback WHERE FeedbackId = @FeedbackId", new { FeedbackId = feedbackId });
             }
         }
 
-        public List<Feedback> GetByEstablishmentProfileId(int establishmentProfileId)
+        public async Task<Feedback> GetByAppointmentIdAsync(int appointmentId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                return connection.Query<Feedback>("SELECT F.FeedbackId, F.AppointmentId, F.Description, F.Rating, F.CreationDate, F.LastUpdateDate  FROM Feedback F INNER JOIN Appointment A ON F.AppointmentId = A.AppointmentId WHERE A.EstablishmentProfileId = @EstablishmentProfileId", new { EstablishmentProfileId = establishmentProfileId }).AsList();
+                return await connection.QueryFirstOrDefaultAsync<Feedback>(
+                    "SELECT F.FeedbackId, F.AppointmentId, F.Description, F.Rating, F.Active, F.Deleted, F.CreationDate, F.LastUpdateDate FROM Feedback F INNER JOIN Appointment A ON A.AppointmentId = F.AppointmentId WHERE F.AppointmentId = @AppointmentId AND F.Active = 1 AND F.Deleted = 0;", new { AppointmentId = appointmentId });
             }
         }
 
-        public Feedback Insert(FeedbackModel model)
+        public async Task<List<Feedback>> GetFeedbackByUserProfileIdAsync(int userProfileId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO Feedback (AppointmentId, Description, Rating) VALUES (@AppointmentId, @Description, @Rating); SELECT LAST_INSERT_Id();", model);
-                return GetById(id);
+                var queryResult = await connection.QueryAsync<Feedback>(
+                    "SELECT F.FeedbackId, F.AppointmentId, F.Description, F.Rating, F.Active, F.Deleted, F.CreationDate, F.LastUpdateDate, U.Name FROM Feedback F INNER JOIN Appointment A ON A.AppointmentId = F.AppointmentId LEFT JOIN UserProfile UP ON UP.UserProfileId = A.ClientUserProfileId LEFT JOIN User U ON U.UserId = UP.UserId WHERE A.EstablishmentUserProfileId = @EstablishmentUserProfileId;",
+                    new { EstablishmentUserProfileId = userProfileId });
+                return queryResult.ToList();
             }
         }
 
-        public Feedback Update(Feedback feedback)
+        public async Task<Feedback> InsertAsync(Feedback feedbackModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                connection.Execute("UPDATE Feedback SET AppointmentId = @AppointmentId, Description = @Description, Rating = @Rating, LastUpdateDate = NOW() WHERE FeedbackId = @FeedbackId", feedback);
-                return GetById(feedback.FeedbackId);
+                var id = await connection.QuerySingleAsync<int>(
+                    "INSERT INTO Feedback (AppointmentId, Description, Rating) VALUES (@AppointmentId, @Description, @Rating); SELECT LAST_INSERT_ID();", feedbackModel);
+                return await GetByIdAsync(id);
             }
         }
 
-        public bool Delete(int feedbackId)
+        public async Task<Feedback> UpdateAsync(Feedback feedbackUpdateModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                int affectedRows = connection.Execute("DELETE FROM Feedback WHERE FeedbackId = @FeedbackId", new { FeedbackId = feedbackId });
-                return affectedRows > 0;
+                await connection.ExecuteAsync(
+                    "UPDATE Feedback SET Description = @Description, Rating = @Rating, LastUpdateDate = NOW() WHERE FeedbackId = @FeedbackId", feedbackUpdateModel);
+                return await GetByIdAsync(feedbackUpdateModel.FeedbackId);
+            }
+        }
+
+        public async Task SetActiveStatusAsync(int feedbackId, bool isActive)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                await connection.ExecuteAsync(
+                    "UPDATE Feedback SET Active = @IsActive WHERE FeedbackId = @FeedbackId", new { IsActive = isActive, FeedbackId = feedbackId });
+            }
+        }
+
+        public async Task SetDeletedStatusAsync(int feedbackId, bool isDeleted)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                await connection.ExecuteAsync(
+                    "UPDATE Feedback SET Deleted = @IsDeleted WHERE FeedbackId = @FeedbackId", new { IsDeleted = isDeleted, FeedbackId = feedbackId });
             }
         }
     }
-
 }

@@ -1,6 +1,5 @@
 ﻿using iServiceRepositories.Repositories;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
 
@@ -9,18 +8,17 @@ namespace iServiceServices.Services
     public class FeedbackService
     {
         private readonly FeedbackRepository _feedbackRepository;
-        private readonly AppointmentRepository _appointmentRepository;
+
         public FeedbackService(IConfiguration configuration)
         {
             _feedbackRepository = new FeedbackRepository(configuration);
-            _appointmentRepository = new AppointmentRepository(configuration);
         }
-
-        public Result<List<Feedback>> GetAllFeedbacks()
+        
+        public async Task<Result<List<Feedback>>> GetAllFeedbacks()
         {
             try
             {
-                var feedbacks = _feedbackRepository.Get();
+                var feedbacks = await _feedbackRepository.GetAsync();
                 return Result<List<Feedback>>.Success(feedbacks);
             }
             catch (Exception ex)
@@ -29,11 +27,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<Feedback> GetFeedbackById(int feedbackId)
+        public async Task<Result<Feedback>> GetFeedbackById(int feedbackId)
         {
             try
             {
-                var feedback = _feedbackRepository.GetById(feedbackId);
+                var feedback = await _feedbackRepository.GetByIdAsync(feedbackId);
 
                 if (feedback == null)
                 {
@@ -48,38 +46,43 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<List<Feedback>> GetByEstablishmentProfileId(int establishmentProfileId)
+        public async Task<Result<Feedback>> GetByAppointmentId(int appointmentId)
         {
             try
             {
-                var feedbacks = _feedbackRepository.GetByEstablishmentProfileId(establishmentProfileId);
+                var feedback = await _feedbackRepository.GetByAppointmentIdAsync(appointmentId);
 
-                return Result<List<Feedback>>.Success(feedbacks);
+                if (feedback == null)
+                {
+                    return Result<Feedback>.Failure("Feedback não encontrado.");
+                }
+
+                return Result<Feedback>.Success(feedback);
             }
             catch (Exception ex)
             {
-                return Result<List<Feedback>>.Failure($"Falha ao obter os feedbacks: {ex.Message}");
+                return Result<Feedback>.Failure($"Falha ao obter o feedback: {ex.Message}");
             }
         }
 
-        public Result<Feedback> AddFeedback(FeedbackModel model)
+        public async Task<Result<Feedback>> AddFeedback(Feedback feedbackModel)
         {
             try
             {
-                var newFeedback = _feedbackRepository.Insert(model);
+                var newFeedback = await _feedbackRepository.InsertAsync(feedbackModel);
                 return Result<Feedback>.Success(newFeedback);
             }
             catch (Exception ex)
             {
-                return Result<Feedback>.Failure($"Falha ao criar o feedback: {ex.Message}");
+                return Result<Feedback>.Failure($"Falha ao inserir o feedback: {ex.Message}");
             }
         }
 
-        public Result<Feedback> UpdateFeedback(Feedback feedback)
+        public async Task<Result<Feedback>> UpdateFeedback(Feedback feedback)
         {
             try
             {
-                var updatedFeedback = _feedbackRepository.Update(feedback);
+                var updatedFeedback = await _feedbackRepository.UpdateAsync(feedback);
                 return Result<Feedback>.Success(updatedFeedback);
             }
             catch (Exception ex)
@@ -88,22 +91,29 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> DeleteFeedback(int feedbackId)
+        public async Task<Result<bool>> SetActiveStatus(int feedbackId, bool isActive)
         {
             try
             {
-                bool success = _feedbackRepository.Delete(feedbackId);
-
-                if (!success)
-                {
-                    return Result<bool>.Failure("Falha ao deletar o feedback ou feedback não encontrado.");
-                }
-
+                await _feedbackRepository.SetActiveStatusAsync(feedbackId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure($"Falha ao deletar o feedback: {ex.Message}");
+                return Result<bool>.Failure($"Falha ao definir o status ativo do feedback: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<bool>> SetDeletedStatus(int feedbackId, bool isDeleted)
+        {
+            try
+            {
+                await _feedbackRepository.SetDeletedStatusAsync(feedbackId, isDeleted);
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure($"Falha ao definir o status excluído do feedback: {ex.Message}");
             }
         }
     }

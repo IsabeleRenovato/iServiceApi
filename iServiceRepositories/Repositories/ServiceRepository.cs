@@ -1,8 +1,7 @@
 ﻿using Dapper;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
-using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
+using MySql.Data.MySqlClient;
 
 namespace iServiceRepositories.Repositories
 {
@@ -10,81 +9,92 @@ namespace iServiceRepositories.Repositories
     {
         private readonly IConfiguration _configuration;
         private readonly string _connectionString;
-        private readonly MySqlConnectionSingleton _connectionSingleton;
 
         public ServiceRepository(IConfiguration configuration)
         {
             _configuration = configuration;
             _connectionString = _configuration.GetConnectionString("DefaultConnection");
-            _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public List<Service> Get()
+        private async Task<MySqlConnection> OpenConnectionAsync()
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+            return connection;
+        }
+
+        public async Task<List<Service>> GetAsync()
+        {
+            using (var connection = await OpenConnectionAsync())
             {
-                return connection.Query<Service>("SELECT ServiceId, EstablishmentProfileId, ServiceCategoryId, Name, Description, Price, EstimatedDuration, Photo, CreationDate, LastUpdateDate FROM Service").AsList();
+                var queryResult = await connection.QueryAsync<Service>("SELECT * FROM Service");
+                return queryResult.ToList();
             }
         }
 
-        public Service GetById(int serviceId)
+        public async Task<Service> GetByIdAsync(int serviceId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                return connection.QueryFirstOrDefault<Service>("SELECT ServiceId, EstablishmentProfileId, ServiceCategoryId, Name, Description, Price, EstimatedDuration, Photo, CreationDate, LastUpdateDate FROM Service WHERE ServiceId = @ServiceId", new { ServiceId = serviceId });
+                return await connection.QueryFirstOrDefaultAsync<Service>(
+                    "SELECT * FROM Service WHERE ServiceId = @ServiceId", new { ServiceId = serviceId });
             }
         }
 
-
-        public List<Service> GetByEstablishmentProfileId(int establishmentProfileId)
+        public async Task<List<Service>> GetServiceByEstablishmentUserProfileIdAsync(int establishmentUserProfileId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                return connection.Query<Service>("SELECT ServiceId, EstablishmentProfileId, ServiceCategoryId, Name, Description, Price, EstimatedDuration, Photo, CreationDate, LastUpdateDate FROM Service WHERE EstablishmentProfileId = @EstablishmentProfileId", new { EstablishmentProfileId = establishmentProfileId }).AsList();
+                var queryResult = await connection.QueryAsync<Service>(
+                    "SELECT * FROM Service WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND Deleted = 0", new { EstablishmentUserProfileId = establishmentUserProfileId });
+                return queryResult.ToList();
             }
         }
 
-        public List<Service> GetByServiceCategoryId(int serviceCategoryId)
+        public async Task<Service> InsertAsync(Service serviceModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                return connection.Query<Service>("SELECT ServiceId, EstablishmentProfileId, ServiceCategoryId, Name, Description, Price, EstimatedDuration, Photo, CreationDate, LastUpdateDate FROM Service WHERE ServiceCategoryId = @ServiceCategoryId", new { ServiceCategoryId = serviceCategoryId }).AsList();
+                var id = await connection.QuerySingleAsync<int>(
+                    "INSERT INTO Service (EstablishmentUserProfileId, ServiceCategoryId, Name, Description, Price, EstimatedDuration, ServiceImage) VALUES (@EstablishmentUserProfileId, @ServiceCategoryId, @Name, @Description, @Price, @EstimatedDuration, @ServiceImage); SELECT LAST_INSERT_ID();", serviceModel);
+                return await GetByIdAsync(id);
             }
         }
 
-        public Service Insert(ServiceModel model)
+        public async Task<Service> UpdateAsync(Service serviceUpdateModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO Service (EstablishmentProfileId, ServiceCategoryId, Name, Description, Price, EstimatedDuration) VALUES (@EstablishmentProfileId, @ServiceCategoryId, @Name, @Description, @Price, @EstimatedDuration); SELECT LAST_INSERT_Id();", model);
-                return GetById(id);
+                await connection.ExecuteAsync(
+                    "UPDATE Service SET ServiceCategoryId = @ServiceCategoryId, Name = @Name, Description = @Description, Price = @Price, EstimatedDuration = @EstimatedDuration, ServiceImage = @ServiceImage, LastUpdateDate = NOW() WHERE ServiceId = @ServiceId", serviceUpdateModel);
+                return await GetByIdAsync(serviceUpdateModel.ServiceId);
             }
         }
 
-        public Service Update(Service service)
+        public async Task<bool> UpdateServiceImageAsync(int id, string path)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                connection.Execute("UPDATE Service SET EstablishmentProfileId = @EstablishmentProfileId, ServiceCategoryId = @ServiceCategoryId, Name = @Name, Description = @Description, Price = @Price, EstimatedDuration = @EstimatedDuration, Photo = @Photo, LastUpdateDate = NOW() WHERE ServiceId = @ServiceId", service);
-                return GetById(service.ServiceId);
-            }
-        }
-
-        public bool UpdatePhoto(int id, string path)
-        {
-            using (var connection = _connectionSingleton.GetConnection())
-            {
-                int rowsAffected = connection.Execute("UPDATE Service SET Photo = @Photo, LastUpdateDate = NOW() WHERE ServiceId = @Id", new { Id = id, Photo = path });
-                return rowsAffected > 0;
-            }
-        }
-
-        public bool Delete(int serviceId)
-        {
-            using (var connection = _connectionSingleton.GetConnection())
-            {
-                int affectedRows = connection.Execute("DELETE FROM Service WHERE ServiceId = @ServiceId", new { ServiceId = serviceId });
+                int affectedRows = await connection.ExecuteAsync("UPDATE Service SET ServiceImage = @ServiceImage, LastUpdateDate = NOW() WHERE ServiceId = @ServiceId", new { ServiceId = id, ServiceImage = path });
                 return affectedRows > 0;
+            }
+        }
+
+        public async Task SetActiveStatusAsync(int serviceId, bool isActive)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                await connection.ExecuteAsync(
+                    "UPDATE Service SET Active = @IsActive WHERE ServiceId = @ServiceId", new { IsActive = isActive, ServiceId = serviceId });
+            }
+        }
+
+        public async Task SetDeletedStatusAsync(int serviceId, bool isDeleted)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                await connection.ExecuteAsync(
+                    "UPDATE Service SET Deleted = @IsDeleted WHERE ServiceId = @ServiceId", new { IsDeleted = isDeleted, ServiceId = serviceId });
             }
         }
     }

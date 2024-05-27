@@ -1,6 +1,4 @@
-﻿using iServiceRepositories.Repositories;
-using iServiceServices.Services.Models;
-using Microsoft.Extensions.Configuration;
+﻿using iServiceServices.Services.Models;
 using System.Text.Json;
 
 namespace iServiceServices.Services

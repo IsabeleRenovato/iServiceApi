@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
+using MySql.Data.MySqlClient;
 
 namespace iServiceRepositories.Repositories
 {
@@ -9,55 +9,73 @@ namespace iServiceRepositories.Repositories
     {
         private readonly IConfiguration _configuration;
         private readonly string _connectionString;
-        private readonly MySqlConnectionSingleton _connectionSingleton;
 
         public AddressRepository(IConfiguration configuration)
         {
             _configuration = configuration;
             _connectionString = _configuration.GetConnectionString("DefaultConnection");
-            _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public List<Address> Get()
+        private async Task<MySqlConnection> OpenConnectionAsync()
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+            return connection;
+        }
+
+        public async Task<List<Address>> GetAsync()
+        {
+            using (var connection = await OpenConnectionAsync())
             {
-                return connection.Query<Address>("SELECT AddressId, Street, Number, AdditionalInfo, City, State, Country, PostalCode, CreationDate, LastUpdateDate FROM Address").AsList();
+                var queryResult = await connection.QueryAsync<Address>("SELECT * FROM Address");
+                return queryResult.ToList();
             }
         }
 
-        public Address GetById(int addressId)
+        public async Task<Address> GetByIdAsync(int addressId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                return connection.QueryFirstOrDefault<Address>("SELECT AddressId, Street, Number, AdditionalInfo, City, State, Country, PostalCode, CreationDate, LastUpdateDate FROM Address WHERE AddressId = @AddressId", new { AddressId = addressId });
+                return await connection.QueryFirstOrDefaultAsync<Address>(
+                    "SELECT * FROM Address WHERE AddressId = @AddressId", new { AddressId = addressId });
             }
         }
 
-        public Address Insert(AddressModel addressModel)
+        public async Task<Address> InsertAsync(Address addressModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO Address (Street, Number, AdditionalInfo, City, State, Country, PostalCode) VALUES (@Street, @Number, @AdditionalInfo, @City, @State, @Country, @PostalCode); SELECT LAST_INSERT_Id();", addressModel);
-                return GetById(id);
+                var id = await connection.QuerySingleAsync<int>(
+                    "INSERT INTO Address (Street, Number, Neighborhood, AdditionalInfo, City, State, Country, PostalCode) VALUES (@Street, @Number, @Neighborhood, @AdditionalInfo, @City, @State, @Country, @PostalCode); SELECT LAST_INSERT_ID();", addressModel);
+                return await GetByIdAsync(id);
             }
         }
 
-        public Address Update(Address address)
+        public async Task<Address> UpdateAsync(Address addressUpdateModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                connection.Execute("UPDATE Address SET Street = @Street, Number = @Number, AdditionalInfo = @AdditionalInfo, City = @City, State = @State, Country = @Country, PostalCode = @PostalCode, LastUpdateDate = NOW() WHERE AddressId = @AddressId", address);
-                return GetById(address.AddressId);
+                await connection.ExecuteAsync(
+                    "UPDATE Address SET Street = @Street, Number = @Number, Neighborhood = @Neighborhood, AdditionalInfo = @AdditionalInfo, City = @City, State = @State, Country = @Country, PostalCode = @PostalCode, LastUpdateDate = NOW() WHERE AddressId = @AddressId", addressUpdateModel);
+                return await GetByIdAsync(addressUpdateModel.AddressId);
             }
         }
 
-        public bool Delete(int addressId)
+        public async Task SetActiveStatusAsync(int addressId, bool isActive)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                int affectedRows = connection.Execute("DELETE FROM Address WHERE AddressId = @AddressId", new { AddressId = addressId });
-                return affectedRows > 0;
+                await connection.ExecuteAsync(
+                    "UPDATE Address SET Active = @IsActive WHERE AddressId = @AddressId", new { IsActive = isActive, AddressId = addressId });
+            }
+        }
+
+        public async Task SetDeletedStatusAsync(int addressId, bool isDeleted)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                await connection.ExecuteAsync(
+                    "UPDATE Address SET Deleted = @IsDeleted WHERE AddressId = @AddressId", new { IsDeleted = isDeleted, AddressId = addressId });
             }
         }
     }
