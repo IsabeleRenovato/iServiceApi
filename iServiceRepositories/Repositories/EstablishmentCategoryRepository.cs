@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
+using MySql.Data.MySqlClient;
 
 namespace iServiceRepositories.Repositories
 {
@@ -9,55 +9,73 @@ namespace iServiceRepositories.Repositories
     {
         private readonly IConfiguration _configuration;
         private readonly string _connectionString;
-        private readonly MySqlConnectionSingleton _connectionSingleton;
 
         public EstablishmentCategoryRepository(IConfiguration configuration)
         {
             _configuration = configuration;
             _connectionString = _configuration.GetConnectionString("DefaultConnection");
-            _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public List<EstablishmentCategory> Get()
+        private async Task<MySqlConnection> OpenConnectionAsync()
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+            return connection;
+        }
+
+        public async Task<List<EstablishmentCategory>> GetAsync()
+        {
+            using (var connection = await OpenConnectionAsync())
             {
-                return connection.Query<EstablishmentCategory>("SELECT EstablishmentCategoryId, Name, CreationDate, LastUpdateDate FROM EstablishmentCategory").AsList();
+                var queryResult = await connection.QueryAsync<EstablishmentCategory>("SELECT * FROM EstablishmentCategory WHERE Active = 1 AND Deleted = 0");
+                return queryResult.ToList();
             }
         }
 
-        public EstablishmentCategory GetById(int establishmentCategoryId)
+        public async Task<EstablishmentCategory> GetByIdAsync(int establishmentCategoryId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                return connection.QueryFirstOrDefault<EstablishmentCategory>("SELECT EstablishmentCategoryId, Name, CreationDate, LastUpdateDate FROM EstablishmentCategory WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { EstablishmentCategoryId = establishmentCategoryId });
+                return await connection.QueryFirstOrDefaultAsync<EstablishmentCategory>(
+                    "SELECT * FROM EstablishmentCategory WHERE EstablishmentCategoryId = @EstablishmentCategoryId AND Active = 1 AND Deleted = 0", new { EstablishmentCategoryId = establishmentCategoryId });
             }
         }
 
-        public EstablishmentCategory Insert(EstablishmentCategoryModel model)
+        public async Task<EstablishmentCategory> InsertAsync(EstablishmentCategory establishmentCategoryModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO EstablishmentCategory (Name) VALUES (@Name); SELECT LAST_INSERT_Id();", model);
-                return GetById(id);
+                var id = await connection.QuerySingleAsync<int>(
+                    "INSERT INTO EstablishmentCategory (Name) VALUES (@Name); SELECT LAST_INSERT_ID();", establishmentCategoryModel);
+                return await GetByIdAsync(id);
             }
         }
 
-        public EstablishmentCategory Update(EstablishmentCategory category)
+        public async Task<EstablishmentCategory> UpdateAsync(EstablishmentCategory establishmentCategoryUpdateModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                connection.Execute("UPDATE EstablishmentCategory SET Name = @Name, LastUpdateDate = NOW() WHERE EstablishmentCategoryId = @EstablishmentCategoryId", category);
-                return GetById(category.EstablishmentCategoryId);
+                await connection.ExecuteAsync(
+                    "UPDATE EstablishmentCategory SET Name = @Name, LastUpdateDate = NOW() WHERE EstablishmentCategoryId = @EstablishmentCategoryId", establishmentCategoryUpdateModel);
+                return await GetByIdAsync(establishmentCategoryUpdateModel.EstablishmentCategoryId);
             }
         }
 
-        public bool Delete(int establishmentCategoryId)
+        public async Task SetActiveStatusAsync(int establishmentCategoryId, bool isActive)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                int affectedRows = connection.Execute("DELETE FROM EstablishmentCategory WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { EstablishmentCategoryId = establishmentCategoryId });
-                return affectedRows > 0;
+                await connection.ExecuteAsync(
+                    "UPDATE EstablishmentCategory SET Active = @IsActive WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { IsActive = isActive, EstablishmentCategoryId = establishmentCategoryId });
+            }
+        }
+
+        public async Task SetDeletedStatusAsync(int establishmentCategoryId, bool isDeleted)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                await connection.ExecuteAsync(
+                    "UPDATE EstablishmentCategory SET Deleted = @IsDeleted WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { IsDeleted = isDeleted, EstablishmentCategoryId = establishmentCategoryId });
             }
         }
     }

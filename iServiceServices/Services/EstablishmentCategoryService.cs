@@ -1,6 +1,5 @@
 ﻿using iServiceRepositories.Repositories;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
 
@@ -15,12 +14,12 @@ namespace iServiceServices.Services
             _establishmentCategoryRepository = new EstablishmentCategoryRepository(configuration);
         }
 
-        public Result<List<EstablishmentCategory>> GetAllCategories()
+        public async Task<Result<List<EstablishmentCategory>>> GetAllEstablishmentCategories()
         {
             try
             {
-                var categories = _establishmentCategoryRepository.Get();
-                return Result<List<EstablishmentCategory>>.Success(categories);
+                var establishmentCategories = await _establishmentCategoryRepository.GetAsync();
+                return Result<List<EstablishmentCategory>>.Success(establishmentCategories);
             }
             catch (Exception ex)
             {
@@ -28,18 +27,18 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<EstablishmentCategory> GetCategoryById(int categoryId)
+        public async Task<Result<EstablishmentCategory>> GetEstablishmentCategoryById(int categoryId)
         {
             try
             {
-                var category = _establishmentCategoryRepository.GetById(categoryId);
+                var establishmentCategory = await _establishmentCategoryRepository.GetByIdAsync(categoryId);
 
-                if (category == null)
+                if (establishmentCategory == null)
                 {
                     return Result<EstablishmentCategory>.Failure("Categoria de estabelecimento não encontrada.");
                 }
 
-                return Result<EstablishmentCategory>.Success(category);
+                return Result<EstablishmentCategory>.Success(establishmentCategory);
             }
             catch (Exception ex)
             {
@@ -47,11 +46,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<EstablishmentCategory> AddCategory(EstablishmentCategoryModel model)
+        public async Task<Result<EstablishmentCategory>> AddEstablishmentCategory(EstablishmentCategory categoryModel)
         {
             try
             {
-                var newCategory = _establishmentCategoryRepository.Insert(model);
+                var newCategory = await _establishmentCategoryRepository.InsertAsync(categoryModel);
                 return Result<EstablishmentCategory>.Success(newCategory);
             }
             catch (Exception ex)
@@ -60,11 +59,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<EstablishmentCategory> UpdateCategory(EstablishmentCategory category)
+        public async Task<Result<EstablishmentCategory>> UpdateEstablishmentCategory(EstablishmentCategory category)
         {
             try
             {
-                var updatedCategory = _establishmentCategoryRepository.Update(category);
+                var updatedCategory = await _establishmentCategoryRepository.UpdateAsync(category);
                 return Result<EstablishmentCategory>.Success(updatedCategory);
             }
             catch (Exception ex)
@@ -73,22 +72,29 @@ namespace iServiceServices.Services
             }
         }
 
-        public Result<bool> DeleteCategory(int categoryId)
+        public async Task<Result<bool>> SetActiveStatus(int categoryId, bool isActive)
         {
             try
             {
-                bool success = _establishmentCategoryRepository.Delete(categoryId);
-
-                if (!success)
-                {
-                    return Result<bool>.Failure("Falha ao deletar a categoria de estabelecimento ou categoria não encontrada.");
-                }
-
+                await _establishmentCategoryRepository.SetActiveStatusAsync(categoryId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure($"Falha ao deletar a categoria de estabelecimento: {ex.Message}");
+                return Result<bool>.Failure($"Falha ao definir o status ativo da categoria de estabelecimento: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<bool>> SetDeletedStatus(int categoryId, bool isDeleted)
+        {
+            try
+            {
+                await _establishmentCategoryRepository.SetDeletedStatusAsync(categoryId, isDeleted);
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure($"Falha ao definir o status excluído da categoria de estabelecimento: {ex.Message}");
             }
         }
     }

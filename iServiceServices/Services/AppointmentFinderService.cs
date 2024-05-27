@@ -4,12 +4,12 @@ namespace iServiceServices.Services
 {
     public class AppointmentFinderService
     {
-        public List<TimeSpan> FindAvailableSlots(Schedule schedule, List<SpecialDay> specialDays, Service service, DateTime date, List<Appointment> existingAppointments)
+        public List<TimeSpan> FindAvailableSlots(Schedule schedule, List<SpecialSchedule> specialSchedules, Service service, DateTime date, List<Appointment> existingAppointments)
         {
             List<TimeSpan> availableSlots = new List<TimeSpan>();
             // Lógica adaptada para usar strings convertidas para TimeSpan
             var dayOfWeek = (int)date.DayOfWeek;
-            var specialDay = specialDays.FirstOrDefault(sd => sd.Date.Date == date.Date);
+            var specialDay = specialSchedules.FirstOrDefault(sd => sd.Date.Date == date.Date);
 
             // Verifica se o dia é um dia de funcionamento normal
             if (!schedule.Days.Contains(dayOfWeek.ToString())) return new List<TimeSpan>();
@@ -21,6 +21,22 @@ namespace iServiceServices.Services
             var breakEnd = specialDay != null ? ParseTime(specialDay.BreakEnd) : ParseTime(schedule?.BreakEnd);
 
             TimeSpan currentTime = start.GetValueOrDefault();
+
+            if (date.Date == DateTime.Today)
+            {
+                DateTime now = DateTime.Now;
+                int minutes = now.Minute;
+                int roundedMinutes = ((minutes + 14) / 15) * 15; // Arredonda os minutos para o próximo intervalo de 15 minutos
+                if (roundedMinutes == 60)
+                {
+                    currentTime = new TimeSpan(now.Hour + 1, 0, 0); // Define a próxima hora e zera os minutos e segundos
+                }
+                else
+                {
+                    currentTime = new TimeSpan(now.Hour, roundedMinutes, 0); // Define a hora atual, minutos arredondados e zera os segundos
+                }
+            }
+
             while (currentTime.Add(TimeSpan.FromMinutes(service.EstimatedDuration)) <= end)
             {
                 var potentialEndTime = currentTime.Add(TimeSpan.FromMinutes(service.EstimatedDuration));

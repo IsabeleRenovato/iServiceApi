@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using Microsoft.Extensions.Configuration;
+using MySql.Data.MySqlClient;
 
 namespace iServiceRepositories.Repositories
 {
@@ -9,63 +9,82 @@ namespace iServiceRepositories.Repositories
     {
         private readonly IConfiguration _configuration;
         private readonly string _connectionString;
-        private readonly MySqlConnectionSingleton _connectionSingleton;
 
         public ScheduleRepository(IConfiguration configuration)
         {
             _configuration = configuration;
             _connectionString = _configuration.GetConnectionString("DefaultConnection");
-            _connectionSingleton = new MySqlConnectionSingleton(_connectionString);
         }
 
-        public List<Schedule> Get()
+        private async Task<MySqlConnection> OpenConnectionAsync()
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
+            return connection;
+        }
+
+        public async Task<List<Schedule>> GetAsync()
+        {
+            using (var connection = await OpenConnectionAsync())
             {
-                return connection.Query<Schedule>("SELECT ScheduleId, EstablishmentProfileId, Days, Start, End, BreakStart, BreakEnd, CreationDate, LastUpdateDate FROM Schedule").AsList();
+                var queryResult = await connection.QueryAsync<Schedule>("SELECT * FROM Schedule");
+                return queryResult.ToList();
             }
         }
 
-        public Schedule GetById(int scheduleId)
+        public async Task<Schedule> GetByIdAsync(int scheduleId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                return connection.QueryFirstOrDefault<Schedule>("SELECT ScheduleId, EstablishmentProfileId, Days, Start, End, BreakStart, BreakEnd, CreationDate, LastUpdateDate FROM Schedule WHERE ScheduleId = @ScheduleId", new { ScheduleId = scheduleId });
+                return await connection.QueryFirstOrDefaultAsync<Schedule>(
+                    "SELECT * FROM Schedule WHERE ScheduleId = @ScheduleId", new { ScheduleId = scheduleId });
             }
         }
 
-        public Schedule GetByEstablishmentProfileId(int establishmentProfileId)
+        public async Task<Schedule> GetByEstablishmentUserProfileIdAsync(int establishmentUserProfileId)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                return connection.QueryFirstOrDefault<Schedule>("SELECT ScheduleId, EstablishmentProfileId, Days, Start, End, BreakStart, BreakEnd, CreationDate, LastUpdateDate FROM Schedule WHERE EstablishmentProfileId = @EstablishmentProfileId", new { EstablishmentProfileId = establishmentProfileId });
+                return await connection.QueryFirstOrDefaultAsync<Schedule>(
+                    "SELECT * FROM Schedule WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND Deleted = 0", new { EstablishmentUserProfileId = establishmentUserProfileId });
             }
         }
 
-        public Schedule Insert(ScheduleModel model)
+        public async Task<Schedule> InsertAsync(Schedule scheduleModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                var id = connection.QuerySingle<int>("INSERT INTO Schedule (EstablishmentProfileId, Days, Start, End, BreakStart, BreakEnd) VALUES (@EstablishmentProfileId, @Days, @Start, @End, @BreakStart, @BreakEnd); SELECT LAST_INSERT_Id();", model);
-                return GetById(id);
+                var id = await connection.QuerySingleAsync<int>(
+                    "INSERT INTO Schedule (EstablishmentUserProfileId, Days, Start, End, BreakStart, BreakEnd) VALUES (@EstablishmentUserProfileId, @Days, @Start, @End, @BreakStart, @BreakEnd); SELECT LAST_INSERT_ID();", scheduleModel);
+                return await GetByIdAsync(id);
             }
         }
 
-        public Schedule Update(Schedule schedule)
+        public async Task<Schedule> UpdateAsync(Schedule scheduleUpdateModel)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                connection.Execute("UPDATE Schedule SET EstablishmentProfileId = @EstablishmentProfileId, Days = @Days, Start = @Start, End = @End, BreakStart = @BreakStart, BreakEnd = @BreakEnd, LastUpdateDate = NOW() WHERE ScheduleId = @ScheduleId", schedule);
-                return GetById(schedule.ScheduleId);
+                await connection.ExecuteAsync(
+                    "UPDATE Schedule SET Days = @Days, Start = @Start, End = @End, BreakStart = @BreakStart, BreakEnd = @BreakEnd, LastUpdateDate = NOW() WHERE ScheduleId = @ScheduleId", scheduleUpdateModel);
+                return await GetByIdAsync(scheduleUpdateModel.ScheduleId);
             }
         }
 
-        public bool Delete(int scheduleId)
+        public async Task SetActiveStatusAsync(int scheduleId, bool isActive)
         {
-            using (var connection = _connectionSingleton.GetConnection())
+            using (var connection = await OpenConnectionAsync())
             {
-                int affectedRows = connection.Execute("DELETE FROM Schedule WHERE ScheduleId = @ScheduleId", new { ScheduleId = scheduleId });
-                return affectedRows > 0;
+                await connection.ExecuteAsync(
+                    "UPDATE Schedule SET Active = @IsActive WHERE ScheduleId = @ScheduleId", new { IsActive = isActive, ScheduleId = scheduleId });
+            }
+        }
+
+        public async Task SetDeletedStatusAsync(int scheduleId, bool isDeleted)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                await connection.ExecuteAsync(
+                    "UPDATE Schedule SET Deleted = @IsDeleted WHERE ScheduleId = @ScheduleId", new { IsDeleted = isDeleted, ScheduleId = scheduleId });
             }
         }
     }

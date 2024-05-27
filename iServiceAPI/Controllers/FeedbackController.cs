@@ -1,5 +1,4 @@
-﻿using iServiceRepositories.Repositories.Models.Request;
-using iServiceRepositories.Repositories.Models;
+﻿using iServiceRepositories.Repositories.Models;
 using iServiceServices.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,9 +16,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Feedback>> Get()
+        public async Task<ActionResult<List<Feedback>>> Get()
         {
-            var result = _feedbackService.GetAllFeedbacks();
+            var result = await _feedbackService.GetAllFeedbacks();
 
             if (result.IsSuccess)
             {
@@ -30,9 +29,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet("{feedbackId}")]
-        public ActionResult<Feedback> GetById(int feedbackId)
+        public async Task<ActionResult<Feedback>> GetById(int feedbackId)
         {
-            var result = _feedbackService.GetFeedbackById(feedbackId);
+            var result = await _feedbackService.GetFeedbackById(feedbackId);
 
             if (result.IsSuccess)
             {
@@ -42,28 +41,15 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
-        [HttpGet("GetByEstablishmentProfileId/{establishmentProfileId}")]
-        public ActionResult<List<Feedback>> Get(int establishmentProfileId)
-        {
-            var result = _feedbackService.GetByEstablishmentProfileId(establishmentProfileId);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return BadRequest(new { message = result.ErrorMessage });
-        }
-
         [HttpPost]
-        public ActionResult<Feedback> Post([FromBody] FeedbackModel model)
+        public async Task<ActionResult<Feedback>> Post([FromBody] Feedback feedbackModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _feedbackService.AddFeedback(model);
+            var result = await _feedbackService.AddFeedback(feedbackModel);
 
             if (result.IsSuccess)
             {
@@ -74,14 +60,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{feedbackId}")]
-        public ActionResult<Feedback> Put(int feedbackId, [FromBody] Feedback feedback)
+        public async Task<ActionResult<Feedback>> Put(int feedbackId, [FromBody] Feedback feedback)
         {
             if (feedbackId != feedback.FeedbackId)
             {
                 return BadRequest();
             }
 
-            var result = _feedbackService.UpdateFeedback(feedback);
+            var result = await _feedbackService.UpdateFeedback(feedback);
 
             if (result.IsSuccess)
             {
@@ -91,17 +77,30 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpDelete("{feedbackId}")]
-        public IActionResult Delete(int feedbackId)
+        [HttpPut("{feedbackId}/SetActive")]
+        public async Task<ActionResult<bool>> SetActive(int feedbackId, [FromBody] bool isActive)
         {
-            var result = _feedbackService.DeleteFeedback(feedbackId);
+            var result = await _feedbackService.SetActiveStatus(feedbackId, isActive);
 
             if (result.IsSuccess)
             {
-                return NoContent();
+                return Ok(result.Value);
             }
 
-            return NotFound(new { message = result.ErrorMessage });
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpDelete("{feedbackId}/SetDeleted")]
+        public async Task<ActionResult<bool>> SetDeleted(int feedbackId, [FromBody] bool isDeleted)
+        {
+            var result = await _feedbackService.SetDeletedStatus(feedbackId, isDeleted);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
         }
     }
 }
