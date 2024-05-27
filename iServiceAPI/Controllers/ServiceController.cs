@@ -1,8 +1,6 @@
 ﻿using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services;
 using Microsoft.AspNetCore.Mvc;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace iServiceAPI.Controllers
 {
@@ -18,9 +16,9 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Service>> Get()
+        public async Task<ActionResult<List<Service>>> Get()
         {
-            var result = _serviceService.GetAllServices();
+            var result = await _serviceService.GetAllServices();
 
             if (result.IsSuccess)
             {
@@ -28,51 +26,38 @@ namespace iServiceAPI.Controllers
             }
 
             return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpGet("{serviceId}")]
+        public async Task<ActionResult<Service>> GetById(int serviceId)
+        {
+            var result = await _serviceService.GetServiceById(serviceId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return NotFound(new { message = result.ErrorMessage });
+        }
+
+        [HttpGet("GetServiceByUserProfileId/{userProfileId}")]
+        public async Task<ActionResult<List<Service>>> GetServiceByUserProfileId(int userProfileId)
+        {
+            var result = await _serviceService.GetServiceByUserProfileId(userProfileId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return NotFound(new { message = result.ErrorMessage });
         }
 
         [HttpGet("GetAvailableTimes/{serviceId}/{date}")]
-        public ActionResult<List<string>> GetAvailableTimes(int serviceId, DateTime date)
+        public async Task<ActionResult<List<string>>> GetAvailableTimes(int serviceId, DateTime date)
         {
-            var result = _serviceService.GetAvailableTimes(serviceId, date);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return BadRequest(new { message = result.ErrorMessage });
-        }
-
-        [HttpGet("GetById/{serviceId}")]
-        public ActionResult<Service> GetById(int serviceId)
-        {
-            var result = _serviceService.GetServiceById(serviceId);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return NotFound(new { message = result.ErrorMessage });
-        }
-
-        [HttpGet("GetByEstablishmentProfileId/{establishmentProfileId}")]
-        public ActionResult<List<Service>> GetByEstablishmentProfileId(int establishmentProfileId)
-        {
-            var result = _serviceService.GetByEstablishmentProfileId(establishmentProfileId);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return NotFound(new { message = result.ErrorMessage });
-        }
-
-        [HttpGet("GetByServiceCategoryId/{serviceCategoryId}")]
-        public ActionResult<List<Service>> GetByServiceCategoryId(int serviceCategoryId)
-        {
-            var result = _serviceService.GetByServiceCategoryId(serviceCategoryId);
+            var result = await _serviceService.GetAvailableTimes(serviceId, date);
 
             if (result.IsSuccess)
             {
@@ -83,14 +68,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Service> Post([FromForm] ServiceModel model)
+        public async Task<ActionResult<Service>> Post([FromForm] Service serviceModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = _serviceService.AddService(model);
+            var result = await _serviceService.AddService(serviceModel);
 
             if (result.IsSuccess)
             {
@@ -101,14 +86,14 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{serviceId}")]
-        public ActionResult<Service> Put(int serviceId, [FromForm] Service service)
+        public async Task<ActionResult<Service>> Put(int serviceId, [FromBody] Service service)
         {
             if (serviceId != service.ServiceId)
             {
                 return BadRequest();
             }
 
-            var result = _serviceService.UpdateService(service);
+            var result = await _serviceService.UpdateService(service);
 
             if (result.IsSuccess)
             {
@@ -118,17 +103,30 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpDelete("{serviceId}")]
-        public IActionResult Delete(int serviceId)
+        [HttpPut("{serviceId}/SetActive")]
+        public async Task<ActionResult<bool>> SetActive(int serviceId, [FromBody] bool isActive)
         {
-            var result = _serviceService.DeleteService(serviceId);
+            var result = await _serviceService.SetActiveStatus(serviceId, isActive);
 
             if (result.IsSuccess)
             {
-                return NoContent();
+                return Ok(result.Value);
             }
 
-            return NotFound(new { message = result.ErrorMessage });
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpDelete("{serviceId}/SetDeleted")]
+        public async Task<ActionResult<bool>> SetDeleted(int serviceId, [FromBody] bool isDeleted)
+        {
+            var result = await _serviceService.SetDeletedStatus(serviceId, isDeleted);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
         }
     }
 }

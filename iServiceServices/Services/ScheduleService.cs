@@ -1,122 +1,140 @@
 ﻿using iServiceRepositories.Repositories;
 using iServiceRepositories.Repositories.Models;
-using iServiceRepositories.Repositories.Models.Request;
 using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
 
 namespace iServiceServices.Services
 {
     public class ScheduleService
     {
-        private readonly IConfiguration _configuration;
         private readonly ScheduleRepository _scheduleRepository;
 
         public ScheduleService(IConfiguration configuration)
         {
-            _configuration = configuration;
             _scheduleRepository = new ScheduleRepository(configuration);
         }
 
-        public Result<List<Schedule>> GetAllSchedules()
+        public async Task<Result<List<Schedule>>> GetAllSchedules()
         {
             try
             {
-                var schedules = _scheduleRepository.Get();
+                var schedules = await _scheduleRepository.GetAsync();
                 return Result<List<Schedule>>.Success(schedules);
             }
             catch (Exception ex)
             {
-                return Result<List<Schedule>>.Failure($"Falha ao obter as agendas: {ex.Message}");
+                return Result<List<Schedule>>.Failure($"Falha ao obter os horários: {ex.Message}");
             }
         }
 
-        public Result<Schedule> GetScheduleById(int scheduleId)
+        public async Task<Result<Schedule>> GetScheduleById(int scheduleId)
         {
             try
             {
-                var schedule = _scheduleRepository.GetById(scheduleId);
+                var schedule = await _scheduleRepository.GetByIdAsync(scheduleId);
 
                 if (schedule == null)
                 {
-                    return Result<Schedule>.Failure("Agenda não encontrada.");
+                    return Result<Schedule>.Failure("Horário não encontrado.");
                 }
 
                 return Result<Schedule>.Success(schedule);
             }
             catch (Exception ex)
             {
-                return Result<Schedule>.Failure($"Falha ao obter a agenda: {ex.Message}");
+                return Result<Schedule>.Failure($"Falha ao obter o horário: {ex.Message}");
             }
         }
 
-        public Result<Schedule> GetByEstablishmentProfileId(int establishmentProfileId)
+        public async Task<Result<Schedule>> GetByUserProfileId(int userProfileId)
         {
             try
             {
-                var schedule = _scheduleRepository.GetByEstablishmentProfileId(establishmentProfileId);
+                var schedule = await _scheduleRepository.GetByEstablishmentUserProfileIdAsync(userProfileId);
 
                 if (schedule == null)
                 {
-                    return Result<Schedule>.Failure("Agenda não encontrada.");
+                    return Result<Schedule>.Failure("Horário não encontrado.");
                 }
 
                 return Result<Schedule>.Success(schedule);
             }
             catch (Exception ex)
             {
-                return Result<Schedule>.Failure($"Falha ao obter a agenda: {ex.Message}");
+                return Result<Schedule>.Failure($"Falha ao obter o horário: {ex.Message}");
             }
         }
 
-        public Result<Schedule> AddSchedule(ScheduleModel model)
+        public async Task<Result<Schedule>> AddSchedule(Schedule scheduleModel)
         {
             try
             {
-                var establishmentProfile = new EstablishmentProfileRepository(_configuration).GetById(model.EstablishmentProfileId);
-
-                if (establishmentProfile?.EstablishmentProfileId > 0 == false)
-                {
-                    return Result<Schedule>.Failure($"Estabelecimento não encontrado.");
-                }
-
-                var newSchedule = _scheduleRepository.Insert(model);
+                var newSchedule = await _scheduleRepository.InsertAsync(scheduleModel);
                 return Result<Schedule>.Success(newSchedule);
             }
             catch (Exception ex)
             {
-                return Result<Schedule>.Failure($"Falha ao inserir a agenda: {ex.Message}");
+                return Result<Schedule>.Failure($"Falha ao inserir o horário: {ex.Message}");
             }
         }
 
-        public Result<Schedule> UpdateSchedule(Schedule schedule)
+        public async Task<Result<Schedule>> Save(Schedule schedule)
         {
             try
             {
-                var updatedSchedule = _scheduleRepository.Update(schedule);
+                if (schedule.ScheduleId > 0)
+                {
+                    schedule = await _scheduleRepository.UpdateAsync(schedule);
+                }
+                else
+                {
+                    schedule = await _scheduleRepository.InsertAsync(schedule);
+                }
+                return Result<Schedule>.Success(schedule);
+            }
+            catch (Exception ex)
+            {
+                return Result<Schedule>.Failure($"Falha ao inserir o horário: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<Schedule>> UpdateSchedule(Schedule schedule)
+        {
+            try
+            {
+                var updatedSchedule = await _scheduleRepository.UpdateAsync(schedule);
                 return Result<Schedule>.Success(updatedSchedule);
             }
             catch (Exception ex)
             {
-                return Result<Schedule>.Failure($"Falha ao atualizar a agenda: {ex.Message}");
+                return Result<Schedule>.Failure($"Falha ao atualizar o horário: {ex.Message}");
             }
         }
 
-        public Result<bool> DeleteSchedule(int scheduleId)
+        public async Task<Result<bool>> SetActiveStatus(int scheduleId, bool isActive)
         {
             try
             {
-                bool success = _scheduleRepository.Delete(scheduleId);
-
-                if (!success)
-                {
-                    return Result<bool>.Failure("Falha ao deletar a agenda ou agenda não encontrada.");
-                }
-
+                await _scheduleRepository.SetActiveStatusAsync(scheduleId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                return Result<bool>.Failure($"Falha ao deletar a agenda: {ex.Message}");
+                return Result<bool>.Failure($"Falha ao definir o status ativo do horário: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<bool>> SetDeletedStatus(int scheduleId, bool isDeleted)
+        {
+            try
+            {
+                await _scheduleRepository.SetDeletedStatusAsync(scheduleId, isDeleted);
+                return Result<bool>.Success(true);
+            }
+            catch (Exception ex)
+            {
+                return Result<bool>.Failure($"Falha ao definir o status excluído do horário: {ex.Message}");
             }
         }
     }
