@@ -71,6 +71,8 @@ namespace iServiceServices.Services
                             appointment.Feedback = feedback.Value;
                         }
                     }
+
+                    _ = appointments.OrderBy(d => d.Start).ToList();
                 }
 
                 return Result<List<Appointment>>.Success(appointments);

@@ -20,5 +20,6 @@ namespace iServiceRepositories.Repositories.Models
         public DateTime CreationDate { get; set; }
         public DateTime LastUpdateDate { get; set; }
         public Rating? Rating { get; set; }
+        public Schedule? Schedule { get; set; }
     }
 }

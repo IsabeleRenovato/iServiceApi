@@ -13,6 +13,7 @@ namespace iServiceServices.Services
         private readonly AddressRepository _addressRepository;
         private readonly EstablishmentCategoryRepository _establishmentCategoryRepository;
         private readonly FeedbackRepository _feedbackRepository;
+        private readonly ScheduleRepository _scheduleRepository;
 
         public UserInfoService(IConfiguration configuration)
         {
@@ -22,6 +23,7 @@ namespace iServiceServices.Services
             _addressRepository = new AddressRepository(configuration);
             _establishmentCategoryRepository = new EstablishmentCategoryRepository(configuration);
             _feedbackRepository = new FeedbackRepository(configuration);
+            _scheduleRepository = new ScheduleRepository(configuration);
         }
 
         public async Task<Result<UserInfo>> GetUserInfoByUserId(int userId)
@@ -152,6 +154,10 @@ namespace iServiceServices.Services
                         Feedback = feedbacks,
                     };
                 }
+
+                var schedule = await _scheduleRepository.GetByEstablishmentUserProfileIdAsync(userProfile.UserProfileId);
+
+                userProfile.Schedule = schedule;
             }
 
             return Result<UserInfo>.Success(new UserInfo
