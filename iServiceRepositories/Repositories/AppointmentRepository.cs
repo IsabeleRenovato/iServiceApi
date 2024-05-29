@@ -105,5 +105,19 @@ namespace iServiceRepositories.Repositories
                     "UPDATE Appointment SET Deleted = @IsDeleted WHERE AppointmentId = @AppointmentId", new { IsDeleted = isDeleted, AppointmentId = appointmentId });
             }
         }
+
+        public async Task<bool> CancelAppointment(int appointmentId)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                var result = await connection.ExecuteAsync(
+                    "UPDATE Appointment SET Status = 3 WHERE AppointmentId = @AppointmentId;SELECT @@ROWCOUNT AS [RowsAffected]", new { AppointmentId = appointmentId });
+                if (result > 0)
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
     }
 }

@@ -54,6 +54,19 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
+        [HttpDelete("CancelAppointment/{userRoleId}/{appointmentId}")]
+        public async Task<ActionResult<bool>> CancelAppointment(int userRoleId, int appointmentId)
+        {
+            var result = await _appointmentService.CancelAppointment(userRoleId, appointmentId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
         [HttpPost]
         public async Task<ActionResult<Appointment>> Post([FromBody] Appointment appointmentModel)
         {

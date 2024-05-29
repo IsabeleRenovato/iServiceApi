@@ -83,6 +83,22 @@ namespace iServiceServices.Services
             }
         }
 
+        public async Task<Result<bool>> CancelAppointment(int userRoleId, int appointmentId)
+        {
+            var appointment = await _appointmentRepository.GetByIdAsync(appointmentId);
+            var now = DateTime.Now;
+            if (appointment.Start - TimeSpan.FromMinutes(30) <= now && now < appointment.Start)
+            {
+                throw new Exception("Não é possivel realizar o cancelamento, faltam menos de 30 minutos para o horário.");
+            }
+
+            if (await _appointmentRepository.CancelAppointment(appointmentId))
+            {
+                return Result<bool>.Success(true);
+            }
+            return Result<bool>.Failure("Não foi possível realizar o cancelamento do seu agendamento, favor contatar o suporte!");
+        }
+
         public async Task<Result<Appointment>> GetAppointmentById(int appointmentId)
         {
             try
