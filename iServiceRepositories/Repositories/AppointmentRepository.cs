@@ -110,13 +110,11 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = await OpenConnectionAsync())
             {
-                var result = await connection.ExecuteAsync(
-                    "UPDATE Appointment SET Status = 3 WHERE AppointmentId = @AppointmentId;SELECT @@ROWCOUNT AS [RowsAffected]", new { AppointmentId = appointmentId });
-                if (result > 0)
-                {
-                    return true;
-                }
-                return false;
+                var rowsAffected = await connection.ExecuteAsync(
+                    "UPDATE Appointment SET AppointmentStatusId = 3 WHERE AppointmentId = @AppointmentId",
+                    new { AppointmentId = appointmentId });
+
+                return rowsAffected > 0;
             }
         }
     }
