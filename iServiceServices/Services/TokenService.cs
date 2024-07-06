@@ -9,7 +9,9 @@ namespace iServiceServices.Services
 {
     public static class TokenService
     {
-        public static string GenerateToken((User User, UserRole UserRole) user)
+        public const string UserId = "UserId";
+        public const string UserProfileId = "UserProfileId";
+        public static string GenerateToken((User User, UserRole UserRole, UserProfile UserProfile) user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(Settings.Secret);
@@ -18,7 +20,9 @@ namespace iServiceServices.Services
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.Name, user.User.Email),
-                    new Claim(ClaimTypes.Role, user.UserRole.Name)
+                    new Claim(ClaimTypes.Role, user.UserRole.Name),
+                    new Claim(UserId, user.User.UserId.ToString()),
+                    new Claim(UserProfileId, user.UserProfile.UserProfileId.ToString()),
                 }),
                 Expires = DateTime.UtcNow.AddHours(8),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
