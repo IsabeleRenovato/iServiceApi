@@ -11,6 +11,7 @@ namespace iServiceServices.Services
     {
         public const string UserId = "UserId";
         public const string UserProfileId = "UserProfileId";
+        public const string AddressId = "AddressId";
         public static string GenerateToken((User User, UserRole UserRole, UserProfile UserProfile) user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -23,6 +24,7 @@ namespace iServiceServices.Services
                     new Claim(ClaimTypes.Role, user.UserRole.Name),
                     new Claim(UserId, user.User.UserId.ToString()),
                     new Claim(UserProfileId, user.UserProfile.UserProfileId.ToString()),
+                    new Claim(AddressId, user.UserProfile.AddressId.ToString() ?? "")
                 }),
                 Expires = DateTime.UtcNow.AddHours(8),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
