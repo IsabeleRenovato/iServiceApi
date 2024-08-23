@@ -42,7 +42,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<EstablishmentCategory>> Post([FromBody] EstablishmentCategory categoryModel)
+        public async Task<ActionResult<EstablishmentCategory>> Post([FromForm] EstablishmentCategory categoryModel)
         {
             if (!ModelState.IsValid)
             {
@@ -60,7 +60,7 @@ namespace iServiceAPI.Controllers
         }
 
         [HttpPut("{categoryId}")]
-        public async Task<ActionResult<EstablishmentCategory>> Put(int categoryId, [FromBody] EstablishmentCategory category)
+        public async Task<ActionResult<EstablishmentCategory>> Put(int categoryId, [FromForm] EstablishmentCategory category)
         {
             if (categoryId != category.EstablishmentCategoryId)
             {

@@ -28,6 +28,19 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
+        [HttpGet("Search/{service}/{pageSize}/{currentPage}")]
+        public async Task<ActionResult<List<Service>>> Search(string service, int pageSize, int currentPage)
+        {
+            var result = await _serviceService.Search(service, pageSize, currentPage);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
         [HttpGet("{serviceId}")]
         public async Task<ActionResult<Service>> GetById(int serviceId)
         {

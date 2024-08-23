@@ -61,6 +61,16 @@ namespace iServiceRepositories.Repositories
             }
         }
 
+        public async Task<EstablishmentCategory> UpdateIconAsync(int establishmentCategoryId, string path)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                await connection.ExecuteAsync(
+                    "UPDATE EstablishmentCategory SET Icon = @Icon, LastUpdateDate = NOW() WHERE EstablishmentCategoryId = @EstablishmentCategoryId", new { EstablishmentCategoryId = establishmentCategoryId, Icon = path });
+                return await GetByIdAsync(establishmentCategoryId);
+            }
+        }
+
         public async Task SetActiveStatusAsync(int establishmentCategoryId, bool isActive)
         {
             using (var connection = await OpenConnectionAsync())

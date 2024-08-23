@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.Security.Policy;
 
 namespace iServiceRepositories.Repositories.Models
 {
@@ -18,5 +19,6 @@ namespace iServiceRepositories.Repositories.Models
         public DateTime LastUpdateDate { get; set; }
         public ServiceCategory? ServiceCategory { get; set; }
         public IFormFile? File { get; set; }
+        public int? TotalPages { get; set; }
     }
 }

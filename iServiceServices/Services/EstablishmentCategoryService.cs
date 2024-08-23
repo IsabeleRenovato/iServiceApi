@@ -2,6 +2,7 @@
 using iServiceRepositories.Repositories.Models;
 using iServiceServices.Services.Models;
 using Microsoft.Extensions.Configuration;
+using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace iServiceServices.Services
 {
@@ -51,6 +52,18 @@ namespace iServiceServices.Services
             try
             {
                 var newCategory = await _establishmentCategoryRepository.InsertAsync(categoryModel);
+
+                if (newCategory != null)
+                {
+                    if (categoryModel.File != null)
+                    {
+                        var path = await new FtpServices().UploadFileAsync(categoryModel.File, "icons", $"icon_{newCategory.EstablishmentCategoryId}.png");
+
+                        var image = await _establishmentCategoryRepository.UpdateIconAsync(newCategory.EstablishmentCategoryId, path);
+                        newCategory.Icon = path;
+                    }
+                }
+
                 return Result<EstablishmentCategory>.Success(newCategory);
             }
             catch (Exception ex)
@@ -64,6 +77,18 @@ namespace iServiceServices.Services
             try
             {
                 var updatedCategory = await _establishmentCategoryRepository.UpdateAsync(category);
+
+                if (updatedCategory != null)
+                {
+                    if (category.File != null)
+                    {
+                        var path = await new FtpServices().UploadFileAsync(category.File, "icons", $"icon_{category.EstablishmentCategoryId}.png");
+
+                        var image = await _establishmentCategoryRepository.UpdateIconAsync(category.EstablishmentCategoryId, path);
+                        updatedCategory.Icon = path;
+                    }
+                }
+
                 return Result<EstablishmentCategory>.Success(updatedCategory);
             }
             catch (Exception ex)

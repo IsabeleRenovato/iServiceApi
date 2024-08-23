@@ -1,6 +1,9 @@
 using iServiceServices.Services.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Globalization;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,7 +11,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+#if RELEASE
+    c.AddServer(new OpenApiServer
+    {
+        Url = "/iService"
+    });
+#endif
+});
 
 // Configuração da chave JWT
 var key = Encoding.ASCII.GetBytes(Settings.Secret);
@@ -31,16 +44,18 @@ builder.Services.AddAuthentication(x =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseCors(x => x.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.RoutePrefix = string.Empty;
+#if DEBUG
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "");
+#else
+    c.SwaggerEndpoint($"/iService/swagger/v1/swagger.json", "");
+#endif
+});
 
-app.UseHttpsRedirection();
-app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
 app.Run();

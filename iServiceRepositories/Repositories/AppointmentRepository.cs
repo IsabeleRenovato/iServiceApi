@@ -2,6 +2,7 @@
 using iServiceRepositories.Repositories.Models;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace iServiceRepositories.Repositories
 {
@@ -29,6 +30,42 @@ namespace iServiceRepositories.Repositories
             {
                 var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment");
                 return queryResult.ToList();
+            }
+        }
+
+        public async Task<List<Appointment>> GetAllByDateAsync(int userProfileId, DateTime date)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND DATE(@Date) = DATE(NOW()) AND Active = 1 AND Deleted = 0", new { EstablishmentUserProfileId = userProfileId, Date = date });
+                return queryResult.ToList();
+            }
+        }
+
+        public async Task<int> GetCountByDateAsync(int userProfileId, DateTime date)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                var queryResult = await connection.QueryAsync<int>("SELECT COUNT(*) FROM Appointment WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND DATE(@Date) = DATE(NOW()) AND Active = 1 AND Deleted = 0", new { EstablishmentUserProfileId = userProfileId, Date = date });
+                return queryResult.FirstOrDefault();
+            }
+        }
+
+        public async Task<Appointment> GetNextAppointmentEstablishmentAsync(int userProfileId)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND Start > NOW() AND Active = 1 AND Deleted = 0 ORDER BY Start ASC LIMIT 1;", new { EstablishmentUserProfileId = userProfileId});
+                return queryResult.FirstOrDefault();
+            }
+        }
+
+        public async Task<Appointment> GetNextAppointmentClientAsync(int userProfileId)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE ClientUserProfileId = @ClientUserProfileId AND Start > NOW() AND Active = 1 AND Deleted = 0 ORDER BY Start ASC LIMIT 1", new { ClientUserProfileId = userProfileId});
+                return queryResult.FirstOrDefault();
             }
         }
 

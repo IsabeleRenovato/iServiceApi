@@ -32,6 +32,15 @@ namespace iServiceRepositories.Repositories
             }
         }
 
+        public async Task<List<Service>> Search(string service, int pageSize, int currentPage)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                var queryResult = await connection.QueryAsync<Service>("CALL GetPagedServices(@Service, @PageSize, @CurrentPage)", new { Service = service, PageSize = pageSize, CurrentPage = currentPage });
+                return queryResult.ToList();
+            }
+        }
+
         public async Task<Service> GetByIdAsync(int serviceId)
         {
             using (var connection = await OpenConnectionAsync())

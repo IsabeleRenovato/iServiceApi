@@ -35,6 +35,20 @@ namespace iServiceServices.Services
             }
         }
 
+        public async Task<Result<List<Service>>> Search(string service, int pageSize, int currentPage)
+        {
+            try
+            {
+                var services = await _serviceRepository.Search(service, pageSize, currentPage);
+                return Result<List<Service>>.Success(services);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<Service>>.Failure($"Falha ao obter os serviços: {ex.Message}");
+            }
+        }
+
+
         public async Task<Result<Service>> GetServiceById(int serviceId)
         {
             try
