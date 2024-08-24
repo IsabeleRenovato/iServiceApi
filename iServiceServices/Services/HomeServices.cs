@@ -16,12 +16,14 @@ namespace iServiceServices.Services
         public Appointment? NextAppointment { get; set; }
         public UserInfo? Establishment { get; set; }
         public UserInfo? Client { get; set; }
+        public List<EstablishmentCategory>? Categories { get; set; }
         public int? TotalAppointments { get; set; }
         public HomeModel()
         {
             NextAppointment = new Appointment();
             Establishment = new UserInfo();
             Client = new UserInfo();
+            Categories = new List<EstablishmentCategory>();
         }
     }
 
@@ -29,12 +31,13 @@ namespace iServiceServices.Services
     {
         private readonly UserInfoService _userInfoService;
         private readonly AppointmentRepository _appointmentRepository;
+        private readonly EstablishmentCategoryRepository _establishmentCategoryRepository;
 
         public HomeServices(IConfiguration configuration)
         {
             _userInfoService = new UserInfoService(configuration);
             _appointmentRepository = new AppointmentRepository(configuration);
-
+            _establishmentCategoryRepository = new EstablishmentCategoryRepository(configuration);
         }
 
         public async Task<Result<HomeModel>> GetAsync(int userId)
@@ -65,6 +68,7 @@ namespace iServiceServices.Services
                         var establishment = await _userInfoService.GetUserInfoByUserProfileId(appointment.EstablishmentUserProfileId);
                         home.Establishment = establishment.Value;
                     }
+                    home.Categories = await _establishmentCategoryRepository.GetAsync();
                     return Result<HomeModel>.Success(home);
                 }
                 return Result<HomeModel>.Failure($"Falha ao obter os dados.");

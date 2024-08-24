@@ -228,7 +228,7 @@ namespace iServiceServices.Services
                     return Result<string>.Failure("Falha ao ler o arquivo.");
                 }
 
-                var path = await new FtpServices().UploadFileAsync(model.File, "profile", $"profile{model.Id}.png");
+                var path = await new FtpServices().UploadFileAsync(model.File, "service", $"service{model.Id}.png");
 
                 if (string.IsNullOrEmpty(path))
                 {
