@@ -6,9 +6,11 @@
         public int ServiceId { get; set; }
         public int ClientUserProfileId { get; set; }
         public int EstablishmentUserProfileId { get; set; }
-        public int AppointmentStatusId { get; set; }
+        public AppointmentStatusEnum AppointmentStatusId { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
         public bool Active { get; set; }
         public bool Deleted { get; set; }
         public DateTime CreationDate { get; set; }

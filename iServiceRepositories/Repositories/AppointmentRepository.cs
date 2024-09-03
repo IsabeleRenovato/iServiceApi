@@ -105,6 +105,28 @@ namespace iServiceRepositories.Repositories
             }
         }
 
+        public async Task<Appointment> GetByFilterAsync(int appointmentId, string? clientUserProfileId, string? establishmentUserProfileId)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                var query = "SELECT * FROM Appointment WHERE AppointmentId = @AppointmentId";
+
+                if (string.IsNullOrEmpty(clientUserProfileId) == false)
+                {
+                    query += " AND ClientUserProfileId = @ClientUserProfileId";
+                }
+                else if (string.IsNullOrEmpty(establishmentUserProfileId) == false)
+                {
+                    query += " AND EstablishmentUserProfileId = @EstablishmentUserProfileId";
+                }
+
+                return await connection.QueryFirstOrDefaultAsync<Appointment>(
+                    query,
+                    new { AppointmentId = appointmentId, ClientUserProfileId = clientUserProfileId, EstablishmentUserProfileId = establishmentUserProfileId });
+            }
+        }
+
+
         public async Task<Appointment> InsertAsync(Appointment appointmentModel)
         {
             using (var connection = await OpenConnectionAsync())
@@ -120,7 +142,7 @@ namespace iServiceRepositories.Repositories
             using (var connection = await OpenConnectionAsync())
             {
                 await connection.ExecuteAsync(
-                    "UPDATE Appointment SET AppointmentStatusId = @AppointmentStatusId, Start = @Start, End = @End, LastUpdateDate = NOW() WHERE AppointmentId = @AppointmentId", appointmentUpdateModel);
+                    "UPDATE Appointment SET AppointmentStatusId = @AppointmentStatusId, Start = @Start, End = @End, StartTime = @StartTime, EndTime = @EndTime, LastUpdateDate = NOW() WHERE AppointmentId = @AppointmentId", appointmentUpdateModel);
                 return await GetByIdAsync(appointmentUpdateModel.AppointmentId);
             }
         }
@@ -140,18 +162,6 @@ namespace iServiceRepositories.Repositories
             {
                 await connection.ExecuteAsync(
                     "UPDATE Appointment SET Deleted = @IsDeleted WHERE AppointmentId = @AppointmentId", new { IsDeleted = isDeleted, AppointmentId = appointmentId });
-            }
-        }
-
-        public async Task<bool> CancelAppointment(int appointmentId)
-        {
-            using (var connection = await OpenConnectionAsync())
-            {
-                var rowsAffected = await connection.ExecuteAsync(
-                    "UPDATE Appointment SET AppointmentStatusId = 3 WHERE AppointmentId = @AppointmentId",
-                    new { AppointmentId = appointmentId });
-
-                return rowsAffected > 0;
             }
         }
     }

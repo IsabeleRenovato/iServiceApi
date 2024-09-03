@@ -46,7 +46,7 @@ namespace iServiceServices.Services
                 {
                     appointments = await _appointmentRepository.GetClientAppointmentsAsync(userProfileId);
                 }
-                
+
                 if (appointments?.Count > 0)
                 {
                     foreach (var appointment in appointments)
@@ -61,7 +61,7 @@ namespace iServiceServices.Services
                             var establishmentUserInfo = await _userInfoService.GetUserInfoByUserProfileId(appointment.EstablishmentUserProfileId);
                             appointment.EstablishmentUserInfo = establishmentUserInfo.Value;
                         }
-                        
+
                         var service = await _serviceService.GetServiceById(appointment.ServiceId);
                         appointment.Service = service.Value;
 
@@ -83,19 +83,65 @@ namespace iServiceServices.Services
             }
         }
 
-        public async Task<Result<bool>> CancelAppointment(int userRoleId, int appointmentId)
+        public async Task<Result<bool>> UpdateStatusAppointment(TokenInfo tokenInfo, int appointmentId, AppointmentStatusEnum status)
         {
-            var appointment = await _appointmentRepository.GetByIdAsync(appointmentId);
-            var now = DateTime.Now;
-            if (appointment.Start - TimeSpan.FromMinutes(30) <= now && now < appointment.Start)
+            var appointment = new Appointment();
+            switch (tokenInfo.Role)
             {
-                throw new Exception("Não é possivel realizar o cancelamento, faltam menos de 30 minutos para o horário.");
+                case "Establishment":
+                    appointment = await _appointmentRepository.GetByFilterAsync(appointmentId, null, tokenInfo.UserProfileId);
+                    break;
+                case "Client":
+                    appointment = await _appointmentRepository.GetByFilterAsync(appointmentId, tokenInfo.UserProfileId, null);
+                    break;
+                default:
+                    return Result<bool>.Failure("Não foi possível realizar o cancelamento do seu agendamento, favor contatar o suporte!");
             }
 
-            if (await _appointmentRepository.CancelAppointment(appointmentId))
+            switch (status)
             {
-                return Result<bool>.Success(true);
+                case AppointmentStatusEnum.Novo:
+                    break;
+                case AppointmentStatusEnum.Confirmado:
+                    break;
+                case AppointmentStatusEnum.Iniciado:
+                    if (appointment.AppointmentStatusId == AppointmentStatusEnum.Novo || appointment.AppointmentStatusId == AppointmentStatusEnum.Confirmado)
+                    {
+                        appointment.AppointmentStatusId = AppointmentStatusEnum.Iniciado;
+                        appointment.StartTime = DateTime.Now;
+                        await _appointmentRepository.UpdateAsync(appointment);
+                        return Result<bool>.Success(true);
+                    }
+                    break;
+                case AppointmentStatusEnum.Finalizado:
+                    if (appointment.AppointmentStatusId == AppointmentStatusEnum.Iniciado)
+                    {
+                        appointment.AppointmentStatusId = AppointmentStatusEnum.Finalizado;
+                        appointment.EndTime = DateTime.Now;
+                        await _appointmentRepository.UpdateAsync(appointment);
+                        return Result<bool>.Success(true);
+                    }
+                    break;
+                case AppointmentStatusEnum.Cancelado:
+                    if (appointment.AppointmentStatusId == AppointmentStatusEnum.Novo || appointment.AppointmentStatusId == AppointmentStatusEnum.Confirmado)
+                    {
+                        var now = DateTime.Now;
+                        if (appointment.Start - TimeSpan.FromMinutes(30) <= now && now < appointment.Start)
+                        {
+                            throw new Exception("Não é possivel realizar o cancelamento, faltam menos de 30 minutos para o horário.");
+                        }
+
+                        appointment.AppointmentStatusId = AppointmentStatusEnum.Cancelado;
+                        var updatedAppointment = await _appointmentRepository.UpdateAsync(appointment);
+
+                        if (updatedAppointment.AppointmentStatusId == AppointmentStatusEnum.Cancelado)
+                        {
+                            return Result<bool>.Success(true);
+                        }
+                    }
+                    break;
             }
+
             return Result<bool>.Failure("Não foi possível realizar o cancelamento do seu agendamento, favor contatar o suporte!");
         }
 

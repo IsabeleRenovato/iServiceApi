@@ -1,5 +1,6 @@
 ﻿using iServiceRepositories.Repositories.Models;
 using iServiceServices.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace iServiceAPI.Controllers
@@ -54,19 +55,6 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
-        [HttpDelete("CancelAppointment/{userRoleId}/{appointmentId}")]
-        public async Task<ActionResult<bool>> CancelAppointment(int userRoleId, int appointmentId)
-        {
-            var result = await _appointmentService.CancelAppointment(userRoleId, appointmentId);
-
-            if (result.IsSuccess)
-            {
-                return Ok(result.Value);
-            }
-
-            return BadRequest(new { message = result.ErrorMessage });
-        }
-
         [HttpPost]
         public async Task<ActionResult<Appointment>> Post([FromBody] Appointment appointmentModel)
         {
@@ -94,6 +82,39 @@ namespace iServiceAPI.Controllers
             }
 
             var result = await _appointmentService.UpdateAppointment(appointment);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
+        [HttpPut("{appointmentId}/{status}")]
+        [Authorize(Roles = "Establishment,Client")]
+        public async Task<ActionResult<Appointment>> Put(int appointmentId, AppointmentStatusEnum status)
+        {
+            if (appointmentId > 0 == false)
+            {
+                return BadRequest();
+            }
+
+            var jwtToken = TokenService.GetJwtToken(HttpContext);
+
+            if (string.IsNullOrEmpty(jwtToken))
+            {
+                return Unauthorized(new { message = "Token JWT não encontrado." });
+            }
+
+            var tokenInfo = TokenService.GetTokenInfo(jwtToken);
+
+            if (tokenInfo == null || string.IsNullOrEmpty(tokenInfo.UserId))
+            {
+                return Unauthorized(new { message = "ID do usuário não encontrado no token." });
+            }
+
+            var result = await _appointmentService.UpdateStatusAppointment(tokenInfo, appointmentId, status);
 
             if (result.IsSuccess)
             {

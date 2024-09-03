@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System.Drawing;
-using System.Drawing.Imaging;
+using SixLabors.ImageSharp;
 using System.Net;
 
 namespace iServiceServices.Services
@@ -16,27 +15,31 @@ namespace iServiceServices.Services
             using (var imageStream = new MemoryStream())
             {
                 await file.CopyToAsync(imageStream);
-                Image image = Image.FromStream(imageStream);
-                MemoryStream pngStream = new MemoryStream();
-                image.Save(pngStream, ImageFormat.Png);
-                pngStream.Position = 0;
+                imageStream.Position = 0;
 
-                string url = $"ftp://{ftpServer}/var/www/html/images/{remoteDir}/{remoteFileName}";
-                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(url);
-                request.Method = WebRequestMethods.Ftp.UploadFile;
-                request.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
-                request.UsePassive = true;
-                request.UseBinary = true;
-                request.KeepAlive = false;
-
-                using (Stream reqStream = await request.GetRequestStreamAsync())
+                using (var image = await Image.LoadAsync(imageStream))
                 {
-                    await pngStream.CopyToAsync(reqStream);
-                }
+                    var pngStream = new MemoryStream();
+                    await image.SaveAsPngAsync(pngStream);
+                    pngStream.Position = 0;
 
-                using (FtpWebResponse response = (FtpWebResponse)await request.GetResponseAsync())
-                {
-                    return $"http://srv452480.hstgr.cloud/images/{remoteDir}/{remoteFileName}";
+                    string url = $"ftp://{ftpServer}/var/www/html/images/{remoteDir}/{remoteFileName}";
+                    FtpWebRequest request = (FtpWebRequest)WebRequest.Create(url);
+                    request.Method = WebRequestMethods.Ftp.UploadFile;
+                    request.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
+                    request.UsePassive = true;
+                    request.UseBinary = true;
+                    request.KeepAlive = false;
+
+                    using (Stream reqStream = await request.GetRequestStreamAsync())
+                    {
+                        await pngStream.CopyToAsync(reqStream);
+                    }
+
+                    using (FtpWebResponse response = (FtpWebResponse)await request.GetResponseAsync())
+                    {
+                        return $"http://srv452480.hstgr.cloud/images/{remoteDir}/{remoteFileName}";
+                    }
                 }
             }
         }
