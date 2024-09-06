@@ -37,7 +37,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = await OpenConnectionAsync())
             {
-                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND DATE(@Date) = DATE(NOW()) AND Active = 1 AND Deleted = 0", new { EstablishmentUserProfileId = userProfileId, Date = date });
+                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND Start > NOW() AND DATE(Start) = CURDATE() AND Active = 1 AND Deleted = 0", new { EstablishmentUserProfileId = userProfileId });
                 return queryResult.ToList();
             }
         }
@@ -46,7 +46,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = await OpenConnectionAsync())
             {
-                var queryResult = await connection.QueryAsync<int>("SELECT COUNT(*) FROM Appointment WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND DATE(@Date) = DATE(NOW()) AND Active = 1 AND Deleted = 0", new { EstablishmentUserProfileId = userProfileId, Date = date });
+                var queryResult = await connection.QueryAsync<int>("SELECT COUNT(*) FROM Appointment WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND Start > NOW() AND DATE(Start) = CURDATE() AND Active = 1 AND Deleted = 0", new { EstablishmentUserProfileId = userProfileId });
                 return queryResult.FirstOrDefault();
             }
         }
@@ -55,7 +55,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = await OpenConnectionAsync())
             {
-                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND Start > NOW() AND Active = 1 AND Deleted = 0 ORDER BY Start ASC LIMIT 1;", new { EstablishmentUserProfileId = userProfileId});
+                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND Start > NOW() AND DATE(Start) = CURDATE() AND Active = 1 AND Deleted = 0 ORDER BY Start ASC LIMIT 1;", new { EstablishmentUserProfileId = userProfileId});
                 return queryResult.FirstOrDefault();
             }
         }
@@ -64,7 +64,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = await OpenConnectionAsync())
             {
-                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE ClientUserProfileId = @ClientUserProfileId AND Start > NOW() AND Active = 1 AND Deleted = 0 ORDER BY Start ASC LIMIT 1", new { ClientUserProfileId = userProfileId});
+                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE ClientUserProfileId = @ClientUserProfileId AND Start > NOW() AND DATE(Start) = CURDATE() AND Active = 1 AND Deleted = 0 ORDER BY Start ASC LIMIT 1", new { ClientUserProfileId = userProfileId});
                 return queryResult.FirstOrDefault();
             }
         }
@@ -105,17 +105,17 @@ namespace iServiceRepositories.Repositories
             }
         }
 
-        public async Task<Appointment> GetByFilterAsync(int appointmentId, string? clientUserProfileId, string? establishmentUserProfileId)
+        public async Task<Appointment> GetByFilterAsync(int appointmentId, int? clientUserProfileId, int? establishmentUserProfileId)
         {
             using (var connection = await OpenConnectionAsync())
             {
                 var query = "SELECT * FROM Appointment WHERE AppointmentId = @AppointmentId";
 
-                if (string.IsNullOrEmpty(clientUserProfileId) == false)
+                if (clientUserProfileId > 0)
                 {
                     query += " AND ClientUserProfileId = @ClientUserProfileId";
                 }
-                else if (string.IsNullOrEmpty(establishmentUserProfileId) == false)
+                else if (establishmentUserProfileId > 0)
                 {
                     query += " AND EstablishmentUserProfileId = @EstablishmentUserProfileId";
                 }
@@ -132,7 +132,7 @@ namespace iServiceRepositories.Repositories
             using (var connection = await OpenConnectionAsync())
             {
                 var id = await connection.QuerySingleAsync<int>(
-                    "INSERT INTO Appointment (ServiceId, ClientUserProfileId, EstablishmentUserProfileId, AppointmentStatusId, Start, End) VALUES (@ServiceId, @ClientUserProfileId, @EstablishmentUserProfileId, @AppointmentStatusId, @Start, @End); SELECT LAST_INSERT_ID();", appointmentModel);
+                    "INSERT INTO Appointment (ServiceId, ClientUserProfileId, EstablishmentUserProfileId, AppointmentStatusId, EstablishmentEmployeeId, Start, End) VALUES (@ServiceId, @ClientUserProfileId, @EstablishmentUserProfileId, @AppointmentStatusId, @EstablishmentEmployeeId, @Start, @End); SELECT LAST_INSERT_ID();", appointmentModel);
                 return await GetByIdAsync(id);
             }
         }
@@ -142,7 +142,7 @@ namespace iServiceRepositories.Repositories
             using (var connection = await OpenConnectionAsync())
             {
                 await connection.ExecuteAsync(
-                    "UPDATE Appointment SET AppointmentStatusId = @AppointmentStatusId, Start = @Start, End = @End, StartTime = @StartTime, EndTime = @EndTime, LastUpdateDate = NOW() WHERE AppointmentId = @AppointmentId", appointmentUpdateModel);
+                    "UPDATE Appointment SET AppointmentStatusId = @AppointmentStatusId, EstablishmentEmployeeId = @EstablishmentEmployeeId, Start = @Start, End = @End, StartTime = @StartTime, EndTime = @EndTime, LastUpdateDate = NOW() WHERE AppointmentId = @AppointmentId", appointmentUpdateModel);
                 return await GetByIdAsync(appointmentUpdateModel.AppointmentId);
             }
         }

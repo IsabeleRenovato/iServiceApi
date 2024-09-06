@@ -13,6 +13,7 @@ namespace iServiceServices.Services
         private readonly SpecialScheduleRepository _specialScheduleRepository;
         private readonly AppointmentRepository _appointmentRepository;
         private readonly ServiceCategoryRepository _serviceCategoryRepository;
+        private readonly EstablishmentEmployeeRepository _establishmentEmployeeRepository;
         public ServiceService(IConfiguration configuration)
         {
             _serviceRepository = new ServiceRepository(configuration);
@@ -20,6 +21,7 @@ namespace iServiceServices.Services
             _specialScheduleRepository = new SpecialScheduleRepository(configuration);
             _appointmentRepository = new AppointmentRepository(configuration);
             _serviceCategoryRepository = new ServiceCategoryRepository(configuration);
+            _establishmentEmployeeRepository = new EstablishmentEmployeeRepository(configuration);
         }
 
         public async Task<Result<List<Service>>> GetAllServices()
@@ -117,9 +119,9 @@ namespace iServiceServices.Services
                 var schedule = await _scheduleRepository.GetByEstablishmentUserProfileIdAsync(service.EstablishmentUserProfileId);
                 var appointments = await _appointmentRepository.GetByEstablishmentAndDate(service.EstablishmentUserProfileId, date);
                 var specialSchedule = await _specialScheduleRepository.GetByEstablishmentAndDate(service.EstablishmentUserProfileId, date);
-
+                var establishmentEmployees = await _establishmentEmployeeRepository.GetByEstablishmentUserProfileIdAsync(service.EstablishmentUserProfileId, service.ServiceId);
                 var appointmentFinder = new AppointmentFinderService();
-                var availableSlots = appointmentFinder.FindAvailableSlots(schedule, specialSchedule, service, date, appointments);
+                var availableSlots = appointmentFinder.FindAvailableSlots(schedule, specialSchedule, service, date, appointments, establishmentEmployees);
                 if (availableSlots.Any())
                 {
                     foreach (var slot in availableSlots)

@@ -109,7 +109,7 @@ namespace iServiceAPI.Controllers
 
             var tokenInfo = TokenService.GetTokenInfo(jwtToken);
 
-            if (tokenInfo == null || string.IsNullOrEmpty(tokenInfo.UserId))
+            if (tokenInfo == null || tokenInfo.UserId > 0)
             {
                 return Unauthorized(new { message = "ID do usuário não encontrado no token." });
             }

@@ -14,11 +14,11 @@ namespace iServiceServices.Services
             _establishmentEmployeeRepository = new EstablishmentEmployeeRepository(configuration);
         }
 
-        public async Task<Result<List<EstablishmentEmployee>>> GetAllEstablishmentEmployees()
+        public async Task<Result<List<EstablishmentEmployee>>> GetAllEstablishmentEmployees(TokenInfo tokenInfo)
         {
             try
             {
-                var EstablishmentEmployees = await _establishmentEmployeeRepository.GetAsync();
+                var EstablishmentEmployees = await _establishmentEmployeeRepository.GetAsync(tokenInfo.UserProfileId);
                 return Result<List<EstablishmentEmployee>>.Success(EstablishmentEmployees);
             }
             catch (Exception ex)
@@ -27,11 +27,24 @@ namespace iServiceServices.Services
             }
         }
 
-        public async Task<Result<EstablishmentEmployee>> GetEstablishmentEmployeeById(int EstablishmentEmployeeId)
+        public async Task<Result<List<EstablishmentEmployee>>> GetEmployeeAvailability(TokenInfo tokenInfo, int serviceId, DateTime start)
         {
             try
             {
-                var EstablishmentEmployee = await _establishmentEmployeeRepository.GetByIdAsync(EstablishmentEmployeeId);
+                var EstablishmentEmployees = await _establishmentEmployeeRepository.GetEmployeeAvailability(serviceId, start);
+                return Result<List<EstablishmentEmployee>>.Success(EstablishmentEmployees);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<EstablishmentEmployee>>.Failure($"Falha ao obter os EstablishmentEmployees: {ex.Message}");
+            }
+        }
+
+        public async Task<Result<EstablishmentEmployee>> GetEstablishmentEmployeeById(TokenInfo tokenInfo, int EstablishmentEmployeeId)
+        {
+            try
+            {
+                var EstablishmentEmployee = await _establishmentEmployeeRepository.GetByIdAsync(EstablishmentEmployeeId, tokenInfo.UserProfileId);
 
                 if (EstablishmentEmployee == null)
                 {
@@ -46,10 +59,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public async Task<Result<EstablishmentEmployee>> AddEstablishmentEmployee(EstablishmentEmployee EstablishmentEmployeeModel)
+        public async Task<Result<EstablishmentEmployee>> AddEstablishmentEmployee(TokenInfo tokenInfo, EstablishmentEmployee EstablishmentEmployeeModel)
         {
             try
             {
+                EstablishmentEmployeeModel.EstablishmentUserProfileId = tokenInfo.UserProfileId;
                 var newEstablishmentEmployee = await _establishmentEmployeeRepository.InsertAsync(EstablishmentEmployeeModel);
 
                 if (newEstablishmentEmployee != null)
@@ -70,23 +84,36 @@ namespace iServiceServices.Services
             }
         }
 
-        public async Task<Result<EstablishmentEmployee>> UpdateEstablishmentEmployee(EstablishmentEmployee EstablishmentEmployee)
+        public async Task<Result<EstablishmentEmployee>> UpdateEstablishmentEmployee(TokenInfo tokenInfo, EstablishmentEmployee EstablishmentEmployee)
         {
             try
             {
-                var updatedEstablishmentEmployee = await _establishmentEmployeeRepository.UpdateAsync(EstablishmentEmployee);
+                var establishmentEmployee = await _establishmentEmployeeRepository.GetByIdAsync(EstablishmentEmployee.EstablishmentEmployeeId);
 
-                if (updatedEstablishmentEmployee != null)
+                if (establishmentEmployee != null)
                 {
-                    if (EstablishmentEmployee.File != null)
+                    if (establishmentEmployee.EstablishmentUserProfileId == tokenInfo.UserProfileId)
                     {
-                        var path = await new FtpServices().UploadFileAsync(EstablishmentEmployee.File, "employee", $"employee_{EstablishmentEmployee.EstablishmentEmployeeId}.png");
+                        EstablishmentEmployee.EstablishmentUserProfileId = tokenInfo.UserProfileId;
+                        var updatedEstablishmentEmployee = await _establishmentEmployeeRepository.UpdateAsync(EstablishmentEmployee);
 
-                        updatedEstablishmentEmployee = await _establishmentEmployeeRepository.UpdateImageAsync(EstablishmentEmployee.EstablishmentEmployeeId, path);
+                        if (updatedEstablishmentEmployee != null)
+                        {
+                            if (EstablishmentEmployee.File != null)
+                            {
+                                var path = await new FtpServices().UploadFileAsync(EstablishmentEmployee.File, "employee", $"employee_{EstablishmentEmployee.EstablishmentEmployeeId}.png");
+
+                                updatedEstablishmentEmployee = await _establishmentEmployeeRepository.UpdateImageAsync(EstablishmentEmployee.EstablishmentEmployeeId, path);
+                            }
+                        }
+
+                        return Result<EstablishmentEmployee>.Success(updatedEstablishmentEmployee);
                     }
+
+                    return Result<EstablishmentEmployee>.Failure($"Você não tem permissão para atualizar os dados deste funcionário.");
                 }
 
-                return Result<EstablishmentEmployee>.Success(updatedEstablishmentEmployee);
+                return Result<EstablishmentEmployee>.Failure($"Falha ao localizar funcionário.");
             }
             catch (Exception ex)
             {
@@ -94,11 +121,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public async Task<Result<bool>> SetActiveStatus(int EstablishmentEmployeeId, bool isActive)
+        public async Task<Result<bool>> SetActiveStatus(TokenInfo tokenInfo, int EstablishmentEmployeeId, bool isActive)
         {
             try
             {
-                await _establishmentEmployeeRepository.SetActiveStatusAsync(EstablishmentEmployeeId, isActive);
+                await _establishmentEmployeeRepository.SetActiveStatusAsync(EstablishmentEmployeeId, tokenInfo.UserProfileId, isActive);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)
@@ -107,11 +134,11 @@ namespace iServiceServices.Services
             }
         }
 
-        public async Task<Result<bool>> SetDeletedStatus(int EstablishmentEmployeeId, bool isDeleted)
+        public async Task<Result<bool>> SetDeletedStatus(TokenInfo tokenInfo, int EstablishmentEmployeeId, bool isDeleted)
         {
             try
             {
-                await _establishmentEmployeeRepository.SetDeletedStatusAsync(EstablishmentEmployeeId, isDeleted);
+                await _establishmentEmployeeRepository.SetDeletedStatusAsync(EstablishmentEmployeeId, tokenInfo.UserProfileId, isDeleted);
                 return Result<bool>.Success(true);
             }
             catch (Exception ex)

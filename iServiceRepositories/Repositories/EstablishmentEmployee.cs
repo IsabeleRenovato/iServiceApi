@@ -28,12 +28,30 @@ namespace iServiceRepositories.Repositories
             return connection;
         }
 
-        public async Task<List<EstablishmentEmployee>> GetAsync()
+        public async Task<List<EstablishmentEmployee>> GetAsync(int establishmentUserProfileId)
         {
             using (var connection = await OpenConnectionAsync())
             {
-                var queryResult = await connection.QueryAsync<EstablishmentEmployee>("SELECT * FROM EstablishmentEmployee");
+                var queryResult = await connection.QueryAsync<EstablishmentEmployee>("SELECT * FROM EstablishmentEmployee WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId", new { EstablishmentUserProfileId = establishmentUserProfileId });
                 return queryResult.ToList();
+            }
+        }
+
+        public async Task<List<EstablishmentEmployee>> GetEmployeeAvailability(int serviceId, DateTime start)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                var queryResult = await connection.QueryAsync<EstablishmentEmployee>("CALL GetEmployeeAvailability(@ServiceId, @p_Data)", new { ServiceId = serviceId, p_Data = start });
+                return queryResult.ToList();
+            }
+        }
+
+        public async Task<EstablishmentEmployee> GetByIdAsync(int establishmentEmployeeId, int establishmentUserProfileId)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                return await connection.QueryFirstOrDefaultAsync<EstablishmentEmployee>(
+                    "SELECT * FROM EstablishmentEmployee WHERE EstablishmentEmployeeId = @EstablishmentEmployeeId AND EstablishmentUserProfileId = @EstablishmentUserProfileId", new { EstablishmentEmployeeId = establishmentEmployeeId, EstablishmentUserProfileId = establishmentUserProfileId });
             }
         }
 
@@ -43,6 +61,18 @@ namespace iServiceRepositories.Repositories
             {
                 return await connection.QueryFirstOrDefaultAsync<EstablishmentEmployee>(
                     "SELECT * FROM EstablishmentEmployee WHERE EstablishmentEmployeeId = @EstablishmentEmployeeId", new { EstablishmentEmployeeId = establishmentEmployeeId });
+            }
+        }
+
+        public async Task<List<EstablishmentEmployee>> GetByEstablishmentUserProfileIdAsync(int establishmentUserProfileId, int serviceId)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                var queryResult = await connection.QueryAsync<EstablishmentEmployee>(
+                    "SELECT EE.EstablishmentEmployeeId, EE.EstablishmentUserProfileId, EE.Name, EE.Document, EE.DateOfBirth, EE.EmployeeImage, " +
+                    "EE.Active, EE.Deleted, EE.CreationDate, EE.LastUpdateDate FROM iServiceTest.EstablishmentEmployee EE INNER JOIN ServiceEmployee SE ON SE.ServiceId = @ServiceId " +
+                    "AND SE.EstablishmentEmployeeId = EE.EstablishmentEmployeeId WHERE EE.EstablishmentUserProfileId = @EstablishmentUserProfileId AND EE.Active = 1 AND EE.Deleted = 0;", new { ServiceId = serviceId, EstablishmentUserProfileId = establishmentUserProfileId });
+                return queryResult.ToList();
             }
         }
 
@@ -76,21 +106,21 @@ namespace iServiceRepositories.Repositories
             }
         }
 
-        public async Task SetActiveStatusAsync(int establishmentEmployeeId, bool isActive)
+        public async Task SetActiveStatusAsync(int establishmentEmployeeId, int establishmentUserProfileId, bool isActive)
         {
             using (var connection = await OpenConnectionAsync())
             {
                 await connection.ExecuteAsync(
-                    "UPDATE EstablishmentEmployee SET Active = @IsActive WHERE EstablishmentEmployeeId = @EstablishmentEmployeeId", new { IsActive = isActive, establishmentEmployeeId = establishmentEmployeeId });
+                    "UPDATE EstablishmentEmployee SET Active = @IsActive WHERE EstablishmentEmployeeId = @EstablishmentEmployeeId AND EstablishmentUserProfileId = @EstablishmentUserProfileId", new { IsActive = isActive, EstablishmentEmployeeId = establishmentEmployeeId, EstablishmentUserProfileId = establishmentUserProfileId });
             }
         }
 
-        public async Task SetDeletedStatusAsync(int establishmentEmployeeId, bool isDeleted)
+        public async Task SetDeletedStatusAsync(int establishmentEmployeeId, int establishmentUserProfileId, bool isDeleted)
         {
             using (var connection = await OpenConnectionAsync())
             {
                 await connection.ExecuteAsync(
-                    "UPDATE EstablishmentEmployee SET Deleted = @IsDeleted WHERE EstablishmentEmployeeId = @EstablishmentEmployeeId", new { IsDeleted = isDeleted, EstablishmentEmployeeId = establishmentEmployeeId });
+                    "UPDATE EstablishmentEmployee SET Deleted = @IsDeleted WHERE EstablishmentEmployeeId = @EstablishmentEmployeeId AND EstablishmentUserProfileId = @EstablishmentUserProfileId", new { IsDeleted = isDeleted, EstablishmentEmployeeId = establishmentEmployeeId, EstablishmentUserProfileId = establishmentUserProfileId });
             }
         }
     }

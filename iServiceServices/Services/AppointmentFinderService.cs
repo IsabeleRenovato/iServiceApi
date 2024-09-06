@@ -4,17 +4,20 @@ namespace iServiceServices.Services
 {
     public class AppointmentFinderService
     {
-        public List<TimeSpan> FindAvailableSlots(Schedule schedule, List<SpecialSchedule> specialSchedules, Service service, DateTime date, List<Appointment> existingAppointments)
+        public List<TimeSpan> FindAvailableSlots(
+            Schedule schedule,
+            List<SpecialSchedule> specialSchedules,
+            Service service,
+            DateTime date,
+            List<Appointment> existingAppointments,
+            List<EstablishmentEmployee> establishmentEmployees)
         {
             List<TimeSpan> availableSlots = new List<TimeSpan>();
-            // Lógica adaptada para usar strings convertidas para TimeSpan
             var dayOfWeek = (int)date.DayOfWeek;
             var specialDay = specialSchedules.FirstOrDefault(sd => sd.Date.Date == date.Date);
 
-            // Verifica se o dia é um dia de funcionamento normal
             if (!schedule.Days.Contains(dayOfWeek.ToString())) return new List<TimeSpan>();
 
-            // Converte horários de string para TimeSpan
             var start = specialDay != null ? ParseTime(specialDay.Start) : ParseTime(schedule?.Start);
             var end = specialDay != null ? ParseTime(specialDay.End) : ParseTime(schedule?.End);
             var breakStart = specialDay != null ? ParseTime(specialDay.BreakStart) : ParseTime(schedule?.BreakStart);
@@ -26,15 +29,10 @@ namespace iServiceServices.Services
             {
                 DateTime now = DateTime.Now;
                 int minutes = now.Minute;
-                int roundedMinutes = ((minutes + 14) / 15) * 15; // Arredonda os minutos para o próximo intervalo de 15 minutos
-                if (roundedMinutes == 60)
-                {
-                    currentTime = new TimeSpan(now.Hour + 1, 0, 0); // Define a próxima hora e zera os minutos e segundos
-                }
-                else
-                {
-                    currentTime = new TimeSpan(now.Hour, roundedMinutes, 0); // Define a hora atual, minutos arredondados e zera os segundos
-                }
+                int roundedMinutes = ((minutes + 14) / 15) * 15;
+                currentTime = roundedMinutes == 60 ?
+                    new TimeSpan(now.Hour + 1, 0, 0) :
+                    new TimeSpan(now.Hour, roundedMinutes, 0);
             }
 
             while (currentTime.Add(TimeSpan.FromMinutes(service.EstimatedDuration)) <= end)
@@ -47,9 +45,12 @@ namespace iServiceServices.Services
                     continue;
                 }
 
-                var isTimeSlotAvailable = !existingAppointments.Any(app =>
-                    app.Start.Date == date.Date &&
-                    (currentTime < app.End.TimeOfDay && potentialEndTime > app.Start.TimeOfDay));
+                // Verifica se há pelo menos um funcionário disponível neste intervalo
+                var isTimeSlotAvailable = establishmentEmployees.Any(emp =>
+                    !existingAppointments.Any(app =>
+                        app.EstablishmentEmployeeId == emp.EstablishmentEmployeeId &&
+                        app.Start.Date == date.Date &&
+                        (currentTime < app.End.TimeOfDay && potentialEndTime > app.Start.TimeOfDay)));
 
                 if (isTimeSlotAvailable)
                 {
@@ -61,6 +62,7 @@ namespace iServiceServices.Services
 
             return availableSlots;
         }
+
         TimeSpan? ParseTime(string timeString)
         {
             if (string.IsNullOrEmpty(timeString))

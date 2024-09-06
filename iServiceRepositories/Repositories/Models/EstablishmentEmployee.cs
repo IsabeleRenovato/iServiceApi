@@ -13,5 +13,6 @@ namespace iServiceRepositories.Repositories.Models
         public bool Active { get; set; }
         public bool Deleted { get; set; }
         public IFormFile? File { get; set; }
+        public bool? IsAvailable { get; set; }
     }
 }

@@ -7,6 +7,7 @@
         public int ClientUserProfileId { get; set; }
         public int EstablishmentUserProfileId { get; set; }
         public AppointmentStatusEnum AppointmentStatusId { get; set; }
+        public int EstablishmentEmployeeId { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
         public DateTime? StartTime { get; set; }

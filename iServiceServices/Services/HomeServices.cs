@@ -21,8 +21,6 @@ namespace iServiceServices.Services
         public HomeModel()
         {
             NextAppointment = new Appointment();
-            Establishment = new UserInfo();
-            Client = new UserInfo();
             Categories = new List<EstablishmentCategory>();
         }
     }
@@ -51,22 +49,27 @@ namespace iServiceServices.Services
                 {
                     var userInfo = result.Value;
                     var role = userInfo.UserRole;
-                    var appointment = new Appointment();
                     if (role?.UserRoleId == 2)
                     {
                         home.Establishment = userInfo;
                         home.TotalAppointments = await _appointmentRepository.GetCountByDateAsync(userId, DateTime.Now);
                         home.NextAppointment = await _appointmentRepository.GetNextAppointmentEstablishmentAsync(userId);
-                        var client = await _userInfoService.GetUserInfoByUserProfileId(appointment.ClientUserProfileId);
-                        home.Client = client.Value;
+                        if (home.NextAppointment != null)
+                        {
+                            var client = await _userInfoService.GetUserInfoByUserProfileId(home.NextAppointment.ClientUserProfileId);
+                            home.Client = client.Value;
+                        }
                     }
                     if (role?.UserRoleId == 3)
                     {
                         home.Client = userInfo;
                         home.NextAppointment = await _appointmentRepository.GetNextAppointmentClientAsync(userId);
-                        home.TotalAppointments = home?.NextAppointment?.AppointmentId > 0 ? 1 : 0;
-                        var establishment = await _userInfoService.GetUserInfoByUserProfileId(appointment.EstablishmentUserProfileId);
-                        home.Establishment = establishment.Value;
+                        home.TotalAppointments = await _appointmentRepository.GetCountByDateAsync(userId, DateTime.Now);
+                        if (home.NextAppointment != null)
+                        {
+                            var establishment = await _userInfoService.GetUserInfoByUserProfileId(home.NextAppointment.EstablishmentUserProfileId);
+                            home.Establishment = establishment.Value;
+                        }
                     }
                     home.Categories = await _establishmentCategoryRepository.GetAsync();
                     return Result<HomeModel>.Success(home);
