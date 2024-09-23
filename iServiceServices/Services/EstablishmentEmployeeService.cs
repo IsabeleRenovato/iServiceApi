@@ -40,6 +40,19 @@ namespace iServiceServices.Services
             }
         }
 
+        public async Task<Result<List<EstablishmentEmployee>>> GetEmployeeByService(TokenInfo tokenInfo, int serviceId)
+        {
+            try
+            {
+                var EstablishmentEmployees = await _establishmentEmployeeRepository.GetAllByEstablishmentUserProfileIdAsync(tokenInfo.UserProfileId, serviceId);
+                return Result<List<EstablishmentEmployee>>.Success(EstablishmentEmployees);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<EstablishmentEmployee>>.Failure($"Falha ao obter os EstablishmentEmployees: {ex.Message}");
+            }
+        }
+
         public async Task<Result<EstablishmentEmployee>> GetEstablishmentEmployeeById(TokenInfo tokenInfo, int EstablishmentEmployeeId)
         {
             try

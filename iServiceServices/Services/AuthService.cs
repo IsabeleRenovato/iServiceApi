@@ -197,9 +197,9 @@ namespace iServiceServices.Services
             {
                 var user = await new UserRepository(_configuration).GetByEmailAsync(model.Email);
 
-                if (user.UserId > 0 == false)
+                if (user?.UserId > 0 == false)
                 {
-                    return Result<UserInfo>.Failure("Usuário sem pré-cadastro.");
+                    return Result<UserInfo>.Failure("Usuário não cadastrado.");
                 }
 
                 if (!BCrypt.Net.BCrypt.Verify(model.Password, user.Password))

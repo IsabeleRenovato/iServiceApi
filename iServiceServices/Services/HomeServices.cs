@@ -1,6 +1,7 @@
 ﻿using iServiceRepositories.Repositories;
 using iServiceRepositories.Repositories.Models;
 using iServiceServices.Services.Models;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Configuration;
 using MySqlX.XDevAPI.Common;
 using System;
@@ -18,24 +19,28 @@ namespace iServiceServices.Services
         public UserInfo? Client { get; set; }
         public List<EstablishmentCategory>? Categories { get; set; }
         public int? TotalAppointments { get; set; }
+        public int? TotalServicesActives { get; set; }
+        public List<MonthlyReport> MonthlyReports { get; set; }
+
         public HomeModel()
         {
             NextAppointment = new Appointment();
             Categories = new List<EstablishmentCategory>();
+            MonthlyReports = new List<MonthlyReport>();
         }
     }
-
     public class HomeServices
     {
         private readonly UserInfoService _userInfoService;
         private readonly AppointmentRepository _appointmentRepository;
         private readonly EstablishmentCategoryRepository _establishmentCategoryRepository;
-
+        private readonly ServiceRepository _serviceRepository;
         public HomeServices(IConfiguration configuration)
         {
             _userInfoService = new UserInfoService(configuration);
             _appointmentRepository = new AppointmentRepository(configuration);
             _establishmentCategoryRepository = new EstablishmentCategoryRepository(configuration);
+            _serviceRepository = new ServiceRepository(configuration);
         }
 
         public async Task<Result<HomeModel>> GetAsync(int userId)
@@ -54,11 +59,13 @@ namespace iServiceServices.Services
                         home.Establishment = userInfo;
                         home.TotalAppointments = await _appointmentRepository.GetCountByDateAsync(userId, DateTime.Now);
                         home.NextAppointment = await _appointmentRepository.GetNextAppointmentEstablishmentAsync(userId);
+                        home.TotalServicesActives = await _serviceRepository.GetCountActivesAsync();
                         if (home.NextAppointment != null)
                         {
                             var client = await _userInfoService.GetUserInfoByUserProfileId(home.NextAppointment.ClientUserProfileId);
                             home.Client = client.Value;
                         }
+                        home.MonthlyReports = await _appointmentRepository.GetMonthlyReportsAsync(home.Establishment.UserProfile.UserProfileId);
                     }
                     if (role?.UserRoleId == 3)
                     {

@@ -14,5 +14,6 @@ namespace iServiceRepositories.Repositories.Models
         public bool Deleted { get; set; }
         public IFormFile? File { get; set; }
         public bool? IsAvailable { get; set; }
+        public int? AppointmentCount { get; set; }
     }
 }

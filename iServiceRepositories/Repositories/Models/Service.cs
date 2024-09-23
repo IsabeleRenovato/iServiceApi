@@ -20,5 +20,6 @@ namespace iServiceRepositories.Repositories.Models
         public ServiceCategory? ServiceCategory { get; set; }
         public IFormFile? File { get; set; }
         public int? TotalPages { get; set; }
+        public string? EstablishmentEmployeeIds { get; set; }
     }
 }

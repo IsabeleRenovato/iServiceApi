@@ -80,24 +80,6 @@ namespace iServiceAPI.Controllers
             return NotFound(new { message = result.ErrorMessage });
         }
 
-        [HttpPost("Save")]
-        public async Task<ActionResult<Service>> Save([FromForm] Service serviceModel)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var result = await _serviceService.AddService(serviceModel);
-
-            if (result.IsSuccess)
-            {
-                return CreatedAtAction(nameof(GetById), new { serviceId = result.Value.ServiceId }, result.Value);
-            }
-
-            return BadRequest(new { message = result.ErrorMessage });
-        }
-
         [HttpPost]
         public async Task<ActionResult<Service>> Post([FromForm] Service serviceModel)
         {

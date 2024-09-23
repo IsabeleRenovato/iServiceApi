@@ -32,6 +32,14 @@ namespace iServiceRepositories.Repositories
             }
         }
 
+        public async Task<int> GetCountActivesAsync()
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                return await connection.QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) FROM Service WHERE Active = 1 AND Deleted = 0");
+            }
+        }
+
         public async Task<List<Service>> Search(string service, int pageSize, int currentPage)
         {
             using (var connection = await OpenConnectionAsync())

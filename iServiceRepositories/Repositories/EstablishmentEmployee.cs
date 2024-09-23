@@ -64,6 +64,19 @@ namespace iServiceRepositories.Repositories
             }
         }
 
+        public async Task<List<EstablishmentEmployee>> GetAllByEstablishmentUserProfileIdAsync(int establishmentUserProfileId, int serviceId)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                var queryResult = await connection.QueryAsync<EstablishmentEmployee>(
+                    "SELECT EE.EstablishmentEmployeeId, EE.EstablishmentUserProfileId, EE.Name, EE.Document, EE.DateOfBirth, EE.EmployeeImage, EE.Active, EE.Deleted, EE.CreationDate, EE.LastUpdateDate, CASE WHEN SE.EstablishmentEmployeeId IS NOT NULL THEN TRUE ELSE FALSE END AS isAvailable " +
+                    "FROM iServiceTest.EstablishmentEmployee EE " +
+                    "LEFT JOIN ServiceEmployee SE ON SE.ServiceId = @ServiceId AND SE.EstablishmentEmployeeId = EE.EstablishmentEmployeeId AND SE.Active = 1 AND SE.Deleted = 0 " +
+                    "WHERE EE.EstablishmentUserProfileId = @EstablishmentUserProfileId AND EE.Active = 1 AND EE.Deleted = 0", new { ServiceId = serviceId, EstablishmentUserProfileId = establishmentUserProfileId });
+                return queryResult.ToList();
+            }
+        }
+
         public async Task<List<EstablishmentEmployee>> GetByEstablishmentUserProfileIdAsync(int establishmentUserProfileId, int serviceId)
         {
             using (var connection = await OpenConnectionAsync())

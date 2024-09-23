@@ -33,6 +33,15 @@ namespace iServiceRepositories.Repositories
             }
         }
 
+        public async Task<List<MonthlyReport>> GetMonthlyReportsAsync(int establishmentUserProfileId)
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                var queryResult = await connection.QueryAsync<MonthlyReport>("SELECT * FROM MonthlyReport WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId;", new { EstablishmentUserProfileId = establishmentUserProfileId });
+                return queryResult.ToList();
+            }
+        }
+
         public async Task<List<Appointment>> GetAllByDateAsync(int userProfileId, DateTime date)
         {
             using (var connection = await OpenConnectionAsync())
@@ -64,7 +73,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = await OpenConnectionAsync())
             {
-                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE ClientUserProfileId = @ClientUserProfileId AND Start > NOW() AND DATE(Start) = CURDATE() AND Active = 1 AND Deleted = 0 ORDER BY Start ASC LIMIT 1", new { ClientUserProfileId = userProfileId});
+                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE ClientUserProfileId = @ClientUserProfileId AND Start > NOW() AND Active = 1 AND Deleted = 0 ORDER BY Start ASC LIMIT 1", new { ClientUserProfileId = userProfileId});
                 return queryResult.FirstOrDefault();
             }
         }

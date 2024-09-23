@@ -102,17 +102,7 @@ namespace iServiceAPI.Controllers
 
             var jwtToken = TokenService.GetJwtToken(HttpContext);
 
-            if (string.IsNullOrEmpty(jwtToken))
-            {
-                return Unauthorized(new { message = "Token JWT não encontrado." });
-            }
-
             var tokenInfo = TokenService.GetTokenInfo(jwtToken);
-
-            if (tokenInfo == null || tokenInfo.UserId > 0)
-            {
-                return Unauthorized(new { message = "ID do usuário não encontrado no token." });
-            }
 
             var result = await _appointmentService.UpdateStatusAppointment(tokenInfo, appointmentId, status);
 

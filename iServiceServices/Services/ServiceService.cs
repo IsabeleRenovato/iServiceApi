@@ -14,6 +14,7 @@ namespace iServiceServices.Services
         private readonly AppointmentRepository _appointmentRepository;
         private readonly ServiceCategoryRepository _serviceCategoryRepository;
         private readonly EstablishmentEmployeeRepository _establishmentEmployeeRepository;
+        private readonly ServiceEmployeeRepository _serviceEmployeeRepository;
         public ServiceService(IConfiguration configuration)
         {
             _serviceRepository = new ServiceRepository(configuration);
@@ -22,6 +23,7 @@ namespace iServiceServices.Services
             _appointmentRepository = new AppointmentRepository(configuration);
             _serviceCategoryRepository = new ServiceCategoryRepository(configuration);
             _establishmentEmployeeRepository = new EstablishmentEmployeeRepository(configuration);
+            _serviceEmployeeRepository = new ServiceEmployeeRepository(configuration);
         }
 
         public async Task<Result<List<Service>>> GetAllServices()
@@ -49,7 +51,6 @@ namespace iServiceServices.Services
                 return Result<List<Service>>.Failure($"Falha ao obter os serviços: {ex.Message}");
             }
         }
-
 
         public async Task<Result<Service>> GetServiceById(int serviceId)
         {
@@ -170,6 +171,37 @@ namespace iServiceServices.Services
                     newService.ServiceImage = image.Value;
                 }
 
+                if (string.IsNullOrEmpty(request.EstablishmentEmployeeIds) == false)
+                {
+                    var requestedEmployees = request.EstablishmentEmployeeIds
+                        .Split(',')
+                        .Select(int.Parse)
+                        .ToList();
+
+                    var employees = await _establishmentEmployeeRepository.GetAsync(newService.EstablishmentUserProfileId);
+
+                    if (requestedEmployees.All(id => employees.Any(emp => emp.EstablishmentEmployeeId == id)))
+                    {
+                        foreach (var employee in requestedEmployees)
+                        {
+                            _ = _serviceEmployeeRepository.InsertAsync(new ServiceEmployee
+                            {
+                                ServiceEmployeeId = 0,
+                                EstablishmentEmployeeId = employee,
+                                ServiceId = newService.ServiceId,
+                                Active = true,
+                                Deleted = false,
+                                CreationDate = DateTime.Now,
+                                LastUpdateDate = DateTime.Now
+                            });
+                        }
+                    }
+                    else
+                    {
+                        return Result<Service>.Failure("Erro inserir os funcionários neste serviço.");
+                    }
+                }
+
                 return Result<Service>.Success(newService);
             }
             catch (Exception ex)
@@ -206,47 +238,55 @@ namespace iServiceServices.Services
                     request.ServiceImage = image.Value;
                 }
                 var updatedService = await _serviceRepository.UpdateAsync(request);
+
+                if (string.IsNullOrEmpty(request.EstablishmentEmployeeIds) == false)
+                {
+                    var requestedEmployees = request.EstablishmentEmployeeIds
+                        .Split(',')
+                        .Select(int.Parse)
+                        .ToList();
+
+                    var employees = await _establishmentEmployeeRepository.GetAsync(updatedService.EstablishmentUserProfileId);
+                    var serviceEmployees = await _serviceEmployeeRepository.GetByServiceIdAsync(updatedService.ServiceId);
+
+                    var serviceEmployeeIds = serviceEmployees.Select(se => se.EstablishmentEmployeeId).ToList();
+
+                    var employeesToDelete = serviceEmployeeIds.Where(id => !requestedEmployees.Contains(id)).ToList();
+                    foreach (var id in employeesToDelete)
+                    {
+                        await _serviceEmployeeRepository.SetDeletedByEstablishmentEmployeeIdAsync(id, true);
+                    }
+
+                    var newEmployeeIds = requestedEmployees.Where(id => !serviceEmployeeIds.Contains(id)).ToList();
+
+                    foreach (var id in newEmployeeIds)
+                    {
+                        if (employees.Any(emp => emp.EstablishmentEmployeeId == id))
+                        {
+                            var newServiceEmployee = new ServiceEmployee
+                            {
+                                ServiceEmployeeId = 0,
+                                ServiceId = updatedService.ServiceId,
+                                EstablishmentEmployeeId = id,
+                                Active = true,
+                                Deleted = false,
+                                CreationDate = DateTime.Now,
+                                LastUpdateDate = DateTime.Now
+                            };
+                            await _serviceEmployeeRepository.InsertAsync(newServiceEmployee);
+                        }
+                        else
+                        {
+                            return Result<Service>.Failure("Erro inserir os funcionários neste serviço.");
+                        }
+                    }
+                }
+
                 return Result<Service>.Success(updatedService);
             }
             catch (Exception ex)
             {
                 return Result<Service>.Failure($"Falha ao atualizar o serviço: {ex.Message}");
-            }
-        }
-
-        public async Task<Result<string>> UpdateServiceImage(ImageModel model)
-        {
-            try
-            {
-                var service = await _serviceRepository.GetByIdAsync(model.Id);
-
-                if (service?.ServiceId > 0 == false)
-                {
-                    return Result<string>.Failure("Serviço não encontrado.");
-                }
-
-                if (model.File == null)
-                {
-                    return Result<string>.Failure("Falha ao ler o arquivo.");
-                }
-
-                var path = await new FtpServices().UploadFileAsync(model.File, "service", $"service{model.Id}.png");
-
-                if (string.IsNullOrEmpty(path))
-                {
-                    return Result<string>.Failure($"Falha ao subir o arquivo de imagem.");
-                }
-
-                if (await _serviceRepository.UpdateServiceImageAsync(model.Id, path))
-                {
-                    return Result<string>.Success(path);
-                }
-
-                return Result<string>.Failure("Falha ao atualizar a foto de perfil do usuário.");
-            }
-            catch (Exception ex)
-            {
-                return Result<string>.Failure($"Falha ao inserir o perfil de cliente: {ex.Message}");
             }
         }
 
@@ -273,6 +313,35 @@ namespace iServiceServices.Services
             catch (Exception ex)
             {
                 return Result<bool>.Failure($"Falha ao definir o status excluído do serviço: {ex.Message}");
+            }
+        }
+
+        private async Task<Result<string>> UpdateServiceImage(ImageModel model)
+        {
+            try
+            {
+                if (model.File == null)
+                {
+                    return Result<string>.Failure("Falha ao ler o arquivo.");
+                }
+
+                var path = await new FtpServices().UploadFileAsync(model.File, "service", $"service{model.Id}.png");
+
+                if (string.IsNullOrEmpty(path))
+                {
+                    return Result<string>.Failure($"Falha ao subir o arquivo de imagem.");
+                }
+
+                if (await _serviceRepository.UpdateServiceImageAsync(model.Id, path))
+                {
+                    return Result<string>.Success(path);
+                }
+
+                return Result<string>.Failure("Falha ao atualizar a foto de perfil do usuário.");
+            }
+            catch (Exception ex)
+            {
+                return Result<string>.Failure($"Falha ao inserir o perfil de cliente: {ex.Message}");
             }
         }
     }

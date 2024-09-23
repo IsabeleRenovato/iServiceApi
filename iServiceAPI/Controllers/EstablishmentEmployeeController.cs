@@ -59,6 +59,22 @@ namespace iServiceAPI.Controllers
             return BadRequest(new { message = result.ErrorMessage });
         }
 
+        [HttpGet("GetEmployeeByService/{serviceId}")]
+        [Authorize(Roles = "Establishment")]
+        public async Task<ActionResult<List<EstablishmentEmployee>>> GetEmployeeByService(int serviceId)
+        {
+            var tokenInfo = _tokenInfoService.TokenInfo;
+
+            var result = await _establishmentEmployeeService.GetEmployeeByService(tokenInfo, serviceId);
+
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+
+            return BadRequest(new { message = result.ErrorMessage });
+        }
+
         [HttpGet("{EstablishmentEmployeeId}")]
         [Authorize(Roles = "Establishment")]
         public async Task<ActionResult<EstablishmentEmployee>> GetById(int EstablishmentEmployeeId)

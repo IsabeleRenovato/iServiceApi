@@ -11,12 +11,14 @@ namespace iServiceServices.Services
         private readonly UserInfoService _userInfoService;
         private readonly ServiceService _serviceService;
         private readonly FeedbackService _feedbackService;
+        private readonly EstablishmentEmployeeRepository _establishmentEmployeeRepository;
         public AppointmentService(IConfiguration configuration)
         {
             _appointmentRepository = new AppointmentRepository(configuration);
             _userInfoService = new UserInfoService(configuration);
             _serviceService = new ServiceService(configuration);
             _feedbackService = new FeedbackService(configuration);
+            _establishmentEmployeeRepository = new EstablishmentEmployeeRepository(configuration);
         }
 
         public async Task<Result<List<Appointment>>> GetAllAppointments()
@@ -168,6 +170,21 @@ namespace iServiceServices.Services
         {
             try
             {
+                if (appointmentModel?.EstablishmentEmployeeId > 0 == false)
+                {
+                    var establishmentEmployees = await _establishmentEmployeeRepository
+                        .GetEmployeeAvailability(appointmentModel.ServiceId, appointmentModel.Start);
+
+                    appointmentModel.EstablishmentEmployeeId = establishmentEmployees
+                        .Where(ee => ee.IsAvailable == true)
+                        .OrderBy(ee => ee.AppointmentCount.GetValueOrDefault())
+                        .FirstOrDefault()?.EstablishmentEmployeeId ?? 0;
+
+                    if (appointmentModel.EstablishmentEmployeeId == 0)
+                    {
+                        return Result<Appointment>.Failure("Falha ao inserir o agendamento: Nenhum funcionário disponível no momento.");
+                    }
+                }
                 var newAppointment = await _appointmentRepository.InsertAsync(appointmentModel);
                 return Result<Appointment>.Success(newAppointment);
             }
