@@ -64,7 +64,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = await OpenConnectionAsync())
             {
-                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND Start > NOW() AND DATE(Start) = CURDATE() AND Active = 1 AND Deleted = 0 ORDER BY Start ASC LIMIT 1;", new { EstablishmentUserProfileId = userProfileId});
+                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND Start > NOW() AND DATE(Start) = CURDATE() AND AppointmentStatusId IN (1,2,3) AND Active = 1 AND Deleted = 0 ORDER BY Start ASC LIMIT 1;", new { EstablishmentUserProfileId = userProfileId});
                 return queryResult.FirstOrDefault();
             }
         }
@@ -73,7 +73,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = await OpenConnectionAsync())
             {
-                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE ClientUserProfileId = @ClientUserProfileId AND Start > NOW() AND Active = 1 AND Deleted = 0 ORDER BY Start ASC LIMIT 1", new { ClientUserProfileId = userProfileId});
+                var queryResult = await connection.QueryAsync<Appointment>("SELECT * FROM Appointment WHERE ClientUserProfileId = @ClientUserProfileId AND Start > NOW() AND AppointmentStatusId IN (1,2,3) AND Active = 1 AND Deleted = 0 ORDER BY Start ASC LIMIT 1", new { ClientUserProfileId = userProfileId});
                 return queryResult.FirstOrDefault();
             }
         }

@@ -32,11 +32,11 @@ namespace iServiceRepositories.Repositories
             }
         }
 
-        public async Task<int> GetCountActivesAsync()
+        public async Task<int> GetCountActivesAsync(int establishmentUserProfileId)
         {
             using (var connection = await OpenConnectionAsync())
             {
-                return await connection.QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) FROM Service WHERE Active = 1 AND Deleted = 0");
+                return await connection.QueryFirstOrDefaultAsync<int>("SELECT COUNT(*) FROM Service WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND Active = 1 AND Deleted = 0", new { EstablishmentUserProfileId = establishmentUserProfileId });
             }
         }
 

@@ -154,6 +154,10 @@ namespace iServiceServices.Services
                     return Result<Service>.Failure($"Falha ao buscar a categoria.");
                 }
 
+                _ = decimal.TryParse(request.PriceNet.Replace('.', ','), out decimal value);
+
+                request.Price = value > 0 ? value : 0;
+
                 var newService = await _serviceRepository.InsertAsync(request);
 
                 if (newService?.ServiceId > 0 == false)
@@ -237,6 +241,11 @@ namespace iServiceServices.Services
                     });
                     request.ServiceImage = image.Value;
                 }
+
+                _ = decimal.TryParse(request.PriceNet.Replace('.', ','), out decimal value);
+
+                request.Price = value > 0 ? value : 0;
+
                 var updatedService = await _serviceRepository.UpdateAsync(request);
 
                 if (string.IsNullOrEmpty(request.EstablishmentEmployeeIds) == false)

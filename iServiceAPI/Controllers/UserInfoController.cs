@@ -22,6 +22,7 @@ namespace iServiceAPI.Controllers
 
             if (result.IsSuccess)
             {
+                result.Value.User.Password = "";
                 return Ok(result.Value);
             }
 

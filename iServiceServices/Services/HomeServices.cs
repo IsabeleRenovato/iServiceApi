@@ -57,9 +57,9 @@ namespace iServiceServices.Services
                     if (role?.UserRoleId == 2)
                     {
                         home.Establishment = userInfo;
-                        home.TotalAppointments = await _appointmentRepository.GetCountByDateAsync(userId, DateTime.Now);
+                        home.TotalAppointments = await _appointmentRepository.GetCountByDateAsync(userInfo.UserProfile.UserProfileId, DateTime.Now);
                         home.NextAppointment = await _appointmentRepository.GetNextAppointmentEstablishmentAsync(userId);
-                        home.TotalServicesActives = await _serviceRepository.GetCountActivesAsync();
+                        home.TotalServicesActives = await _serviceRepository.GetCountActivesAsync(userInfo.UserProfile.UserProfileId);
                         if (home.NextAppointment != null)
                         {
                             var client = await _userInfoService.GetUserInfoByUserProfileId(home.NextAppointment.ClientUserProfileId);
@@ -70,8 +70,8 @@ namespace iServiceServices.Services
                     if (role?.UserRoleId == 3)
                     {
                         home.Client = userInfo;
-                        home.NextAppointment = await _appointmentRepository.GetNextAppointmentClientAsync(userId);
-                        home.TotalAppointments = await _appointmentRepository.GetCountByDateAsync(userId, DateTime.Now);
+                        home.NextAppointment = await _appointmentRepository.GetNextAppointmentClientAsync(userInfo.UserProfile.UserProfileId);
+                        home.TotalAppointments = await _appointmentRepository.GetCountByDateAsync(userInfo.UserProfile.UserProfileId, DateTime.Now);
                         if (home.NextAppointment != null)
                         {
                             var establishment = await _userInfoService.GetUserInfoByUserProfileId(home.NextAppointment.EstablishmentUserProfileId);

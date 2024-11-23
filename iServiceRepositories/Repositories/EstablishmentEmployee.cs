@@ -32,7 +32,7 @@ namespace iServiceRepositories.Repositories
         {
             using (var connection = await OpenConnectionAsync())
             {
-                var queryResult = await connection.QueryAsync<EstablishmentEmployee>("SELECT * FROM EstablishmentEmployee WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId", new { EstablishmentUserProfileId = establishmentUserProfileId });
+                var queryResult = await connection.QueryAsync<EstablishmentEmployee>("SELECT * FROM EstablishmentEmployee WHERE EstablishmentUserProfileId = @EstablishmentUserProfileId AND Deleted = 0", new { EstablishmentUserProfileId = establishmentUserProfileId });
                 return queryResult.ToList();
             }
         }
@@ -51,7 +51,7 @@ namespace iServiceRepositories.Repositories
             using (var connection = await OpenConnectionAsync())
             {
                 return await connection.QueryFirstOrDefaultAsync<EstablishmentEmployee>(
-                    "SELECT * FROM EstablishmentEmployee WHERE EstablishmentEmployeeId = @EstablishmentEmployeeId AND EstablishmentUserProfileId = @EstablishmentUserProfileId", new { EstablishmentEmployeeId = establishmentEmployeeId, EstablishmentUserProfileId = establishmentUserProfileId });
+                    "SELECT * FROM EstablishmentEmployee WHERE EstablishmentEmployeeId = @EstablishmentEmployeeId AND EstablishmentUserProfileId = @EstablishmentUserProfileId AND Deleted = 0", new { EstablishmentEmployeeId = establishmentEmployeeId, EstablishmentUserProfileId = establishmentUserProfileId });
             }
         }
 
@@ -60,7 +60,7 @@ namespace iServiceRepositories.Repositories
             using (var connection = await OpenConnectionAsync())
             {
                 return await connection.QueryFirstOrDefaultAsync<EstablishmentEmployee>(
-                    "SELECT * FROM EstablishmentEmployee WHERE EstablishmentEmployeeId = @EstablishmentEmployeeId", new { EstablishmentEmployeeId = establishmentEmployeeId });
+                    "SELECT * FROM EstablishmentEmployee WHERE EstablishmentEmployeeId = @EstablishmentEmployeeId AND Deleted = 0", new { EstablishmentEmployeeId = establishmentEmployeeId });
             }
         }
 

@@ -231,7 +231,7 @@ namespace iServiceServices.Services
                         output.Address = await new AddressRepository(_configuration).GetByIdAsync(userProfile.AddressId.GetValueOrDefault());
                     }
                 }
-
+                output.User.Password = "";
                 return Result<UserInfo>.Success(output);
             }
             catch (Exception ex)

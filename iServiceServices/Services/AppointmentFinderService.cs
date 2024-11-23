@@ -16,7 +16,7 @@ namespace iServiceServices.Services
             var dayOfWeek = (int)date.DayOfWeek;
             var specialDay = specialSchedules.FirstOrDefault(sd => sd.Date.Date == date.Date);
 
-            if (!schedule.Days.Contains(dayOfWeek.ToString())) return new List<TimeSpan>();
+            if (!schedule.Days.Contains(dayOfWeek.ToString()) && specialDay == null) return new List<TimeSpan>();
 
             var start = specialDay != null ? ParseTime(specialDay.Start) : ParseTime(schedule?.Start);
             var end = specialDay != null ? ParseTime(specialDay.End) : ParseTime(schedule?.End);

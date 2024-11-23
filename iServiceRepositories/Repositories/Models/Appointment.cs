@@ -18,6 +18,7 @@
         public DateTime LastUpdateDate { get; set; }
         public UserInfo? ClientUserInfo { get; set; }
         public UserInfo? EstablishmentUserInfo { get; set; }
+        public EstablishmentEmployee? EstablishmentEmployee { get; set; }
         public Service? Service { get; set; }
         public Feedback? Feedback { get; set; }
     }

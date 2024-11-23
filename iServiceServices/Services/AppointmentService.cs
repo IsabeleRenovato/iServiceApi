@@ -67,6 +67,11 @@ namespace iServiceServices.Services
                         var service = await _serviceService.GetServiceById(appointment.ServiceId);
                         appointment.Service = service.Value;
 
+                        if (appointment?.EstablishmentEmployeeId > 0) 
+                        { 
+                            appointment.EstablishmentEmployee = await _establishmentEmployeeRepository.GetByIdAsync(appointment.EstablishmentEmployeeId);
+                        }
+
                         var feedback = await _feedbackService.GetByAppointmentId(appointment.AppointmentId);
                         if (feedback.IsSuccess)
                         {

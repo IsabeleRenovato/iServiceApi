@@ -11,6 +11,7 @@ namespace iServiceRepositories.Repositories.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
+        public string PriceNet { get; set; }
         public int EstimatedDuration { get; set; }
         public string? ServiceImage { get; set; }
         public bool Active { get; set; }
