@@ -6,7 +6,7 @@ Linguagens utilizadas:
 
 - C# 
 - Dart
-- Flutter [![(Link para a Aplicação)](https://github.com/IsabeleRenovato/iServiceApplication.git)
+- Flutter ![(Link para a Aplicação)](https://github.com/IsabeleRenovato/iServiceApplication.git)
 - MySQL
 
 Funcionalidades para Prestadores de Serviços:
