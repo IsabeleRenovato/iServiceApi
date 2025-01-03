@@ -6,7 +6,7 @@ Linguagens utilizadas:
 
 - C# 
 - Dart
-- Flutter [![(Link para a Aplicação)](https://github.com/IsabeleRenovato/iServiceApi/blob/main/Desenvolvimento%20de%20Sistema%20Integrado%20para%20Agendamento%20e%20Gerenciamento%20de%20Servi%C3%A7os.jpg)
+- Flutter [![(Link para a Aplicação)](https://github.com/IsabeleRenovato/iServiceApplication.git)
 - MySQL
 
 Funcionalidades para Prestadores de Serviços:
