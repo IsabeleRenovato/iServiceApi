@@ -6,7 +6,7 @@ Linguagens utilizadas:
 
 - C# 
 - Dart
-- Flutter ![(Link para a Aplicação)](https://github.com/IsabeleRenovato/iServiceApplication.git)
+- Flutter [(Link para a Aplicação)](https://github.com/IsabeleRenovato/iServiceApplication.git)
 - MySQL
 
 Funcionalidades para Prestadores de Serviços:
@@ -51,7 +51,7 @@ Funcionalidades para Clientes:
   
 - Avaliar Agendamento: Permitir que os clientes deixem feedback sobre os serviços recebidos após a conclusão do atendimento.
 
-
+[Confira o video da aplicação em funcionamento](https://github.com/IsabeleRenovato/iServiceApi/blob/main/Video_TCC.mp4)
 
 ![iservice](./Desenvolvimento%20de%20Sistema%20Integrado%20para%20Agendamento%20e%20Gerenciamento%20de%20Serviços.jpg)
 
